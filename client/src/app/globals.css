@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .text-red {
+    color: red;
+  }
+}
