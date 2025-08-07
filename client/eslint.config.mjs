@@ -1,3 +1,8 @@
+/*
+  ESLint configuration (Flat config).
+  - Extends Next.js TypeScript and Core Web Vitals rules
+  - Compatible with tooling that still expects an eslintrc-style base directory
+*/
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { FlatCompat } from "@eslint/eslintrc";

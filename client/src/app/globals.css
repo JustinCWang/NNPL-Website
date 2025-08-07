@@ -1,5 +1,11 @@
+/*
+  Global styles for the application.
+  - Imports Tailwind CSS (v4) layers
+  - Defines custom utilities
+*/
 @import "tailwindcss";
 
+/* Custom utility classes layered on top of Tailwind */
 @layer utilities {
   .text-red {
     color: red;
