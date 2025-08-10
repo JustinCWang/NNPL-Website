@@ -54,18 +54,22 @@ export default function Home() {
       {/* Site header with brand and primary navigation */}
       <header className="border-b">
         <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
-          <div className="font-semibold">NNPL</div>
+          <img 
+            src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/nnpl_logo.png" 
+            alt="NNPL Logo" 
+            className="h-8"
+          />
           {isAuthed ? (
             <nav className="flex items-center gap-4 text-sm">
-              <Link href="/home" className="hover:underline">Home</Link>
-              <Link href="/events" className="hover:underline">Events</Link>
               <Link href="/profile" className="hover:underline">Profile</Link>
               <button onClick={handleSignOut} className="rounded-md border px-3 py-1.5 hover:bg-gray-50">Sign out</button>
             </nav>
           ) : (
-            <nav className="flex gap-4">
-              <Link href="/login" className="text-sm hover:underline">Log in</Link>
-              <Link href="/signup" className="inline-flex items-center rounded-md bg-black px-3 py-1.5 text-sm text-white hover:bg-gray-800">Sign up</Link>
+            <nav className="flex items-center gap-4">
+              <Link href="/home" className="hover:underline">Home</Link>
+              <Link href="/events" className="hover:underline">Events</Link>
+              <Link href="/about-us" className="hover:underline">About Us</Link>
+              <Link href="/signup" className="inline-flex items-center rounded-md bg-black px-3 py-1.5 text-sm text-white hover:bg-gray-800">Log in/Sign up</Link>
             </nav>
           )}
         </div>
