@@ -6,13 +6,14 @@
 */
 
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Shantell_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 // Initialize Google fonts and expose them as CSS variables
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const shantellSans = Shantell_Sans({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -42,8 +43,8 @@ export default function RootLayout({
     // Base document markup
     <html lang="en">
       <body
-        // Apply font variables and smoothing to all pages
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        // Apply font directly and smoothing
+        className={`${shantellSans.className} ${geistMono.variable} antialiased`}
       >
         {/* Render the active route */}
         {children}
