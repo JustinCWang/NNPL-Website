@@ -5,6 +5,7 @@
   - If logged in, shows quick navigation to protected app pages + sign-out
 */
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
@@ -54,10 +55,13 @@ export default function Home() {
       {/* Site header with brand and primary navigation */}
       <header className="border-b">
         <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
-          <img 
-            src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/nnpl_logo.png" 
-            alt="NNPL Logo" 
-            className="h-8"
+          <Image
+            src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/nnpl_logo.svg"
+            alt="NNPL Logo"
+            width={128}
+            height={32}
+            className="h-10 w-auto"
+            priority
           />
           {isAuthed ? (
             <nav className="flex items-center gap-4 text-sm">
