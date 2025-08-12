@@ -49,8 +49,9 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-dvh grid place-items-center">
-      <div className="w-full max-w-sm rounded-2xl border bg-white/70 backdrop-blur-sm p-6">
-        <h1 className="text-xl font-semibold">Log in</h1>
+      <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/40 backdrop-blur-md p-8 shadow-lg">
+        <h1 className="text-2xl font-semibold text-center">Log in</h1>
+        <p className="mt-2 text-sm text-gray-700 text-center">Access your account to manage events and your profile.</p>
         {/* Credentials form */}
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
@@ -60,7 +61,7 @@ export default function LoginPage() {
               type="email"
               required
               placeholder="you@example.com"
-              className="mt-1 w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+              className="mt-1 w-full rounded-md border border-white/50 bg-white/80 px-3 py-2 outline-none focus:ring-2 focus:ring-black"
             />
           </div>
           <div>
@@ -70,7 +71,7 @@ export default function LoginPage() {
               type="password"
               required
               placeholder="••••••••"
-              className="mt-1 w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+              className="mt-1 w-full rounded-md border border-white/50 bg-white/80 px-3 py-2 outline-none focus:ring-2 focus:ring-black"
             />
           </div>
           {/* Error message */}
@@ -89,14 +90,14 @@ export default function LoginPage() {
           </button>
         </form>
         {/* Cross-link to signup */}
-        <p className="mt-4 text-sm text-gray-600">
+        <p className="mt-4 text-sm text-gray-700 text-center">
           Don’t have an account?{" "}
           <Link href="/signup" className="underline">
             Sign up
           </Link>
         </p>
         {/* Back to home */}
-        <p className="mt-6 text-center text-xs text-gray-500">
+        <p className="mt-6 text-center text-xs text-gray-600">
           <Link href="/" className="hover:underline">
             Back to home
           </Link>

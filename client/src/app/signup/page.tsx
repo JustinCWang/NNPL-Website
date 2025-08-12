@@ -54,8 +54,9 @@ export default function SignupPage() {
 
   return (
     <main className="min-h-dvh grid place-items-center">
-      <div className="w-full max-w-sm rounded-2xl border bg-white/70 backdrop-blur-sm p-6">
-        <h1 className="text-xl font-semibold">Create your account</h1>
+      <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/40 backdrop-blur-md p-8 shadow-lg">
+        <h1 className="text-2xl font-semibold text-center">Create your account</h1>
+        <p className="mt-2 text-sm text-gray-700 text-center">Join NNPL and start tracking events, stores, and more.</p>
         {/* Signup form */}
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
@@ -65,7 +66,7 @@ export default function SignupPage() {
               type="text"
               required
               placeholder="Your name"
-              className="mt-1 w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+              className="mt-1 w-full rounded-md border border-white/50 bg-white/80 px-3 py-2 outline-none focus:ring-2 focus:ring-black"
             />
           </div>
           <div>
@@ -75,7 +76,7 @@ export default function SignupPage() {
               type="email"
               required
               placeholder="you@example.com"
-              className="mt-1 w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+              className="mt-1 w-full rounded-md border border-white/50 bg-white/80 px-3 py-2 outline-none focus:ring-2 focus:ring-black"
             />
           </div>
           <div>
@@ -85,7 +86,7 @@ export default function SignupPage() {
               type="password"
               required
               placeholder="••••••••"
-              className="mt-1 w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+              className="mt-1 w-full rounded-md border border-white/50 bg-white/80 px-3 py-2 outline-none focus:ring-2 focus:ring-black"
             />
           </div>
           {/* Error message */}
@@ -104,14 +105,14 @@ export default function SignupPage() {
           </button>
         </form>
         {/* Cross-link to login */}
-        <p className="mt-4 text-sm text-gray-600">
+        <p className="mt-4 text-sm text-gray-700 text-center">
           Already have an account?{" "}
           <Link href="/login" className="underline">
             Log in
           </Link>
         </p>
         {/* Back to home */}
-        <p className="mt-6 text-center text-xs text-gray-500">
+        <p className="mt-6 text-center text-xs text-gray-600">
           <Link href="/" className="hover:underline">
             Back to home
           </Link>
