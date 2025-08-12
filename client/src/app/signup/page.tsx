@@ -53,8 +53,8 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="min-h-dvh grid place-items-center bg-white">
-      <div className="w-full max-w-sm rounded-2xl border p-6">
+    <main className="min-h-dvh grid place-items-center">
+      <div className="w-full max-w-sm rounded-2xl border bg-white/70 backdrop-blur-sm p-6">
         <h1 className="text-xl font-semibold">Create your account</h1>
         {/* Signup form */}
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">

@@ -75,7 +75,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
   }
 
   return (
-    <div className="min-h-dvh bg-white text-gray-900">
+    <div className="min-h-dvh text-gray-900">
       <header className="border-b">
         <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
           {/* Minimal app navigation across protected pages */}

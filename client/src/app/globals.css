@@ -5,6 +5,17 @@
 */
 @import "tailwindcss";
 
+/* Global site background */
+@layer base {
+  body {
+    background-image: url("https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/Desert%20Gradient.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+}
+
 /* Custom utility classes layered on top of Tailwind */
 @layer utilities {
   .text-red {

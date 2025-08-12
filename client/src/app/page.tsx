@@ -51,7 +51,7 @@ export default function Home() {
     router.refresh();
   }
   return (
-    <main className="min-h-dvh bg-white text-gray-900">
+    <main className="min-h-dvh text-gray-900">
       {/* Site header with brand and primary navigation */}
       <header className="border-b">
         <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
@@ -94,17 +94,17 @@ export default function Home() {
       </section>
 
       {/* Feature highlights */}
-      <section className="bg-gray-50 border-t border-b">
+      <section className="border-t border-b/50 bg-white/30">
         <div className="mx-auto max-w-6xl px-6 py-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-lg border bg-white p-6">
+          <div className="rounded-lg border bg-white/60 p-6">
             <h3 className="font-semibold">Fast</h3>
             <p className="mt-2 text-sm text-gray-600">Next.js 15 + React 19 + Tailwind v4.</p>
           </div>
-          <div className="rounded-lg border bg-white p-6">
+          <div className="rounded-lg border bg-white/60 p-6">
             <h3 className="font-semibold">Modern</h3>
             <p className="mt-2 text-sm text-gray-600">App Router, file-based routing, and server components.</p>
           </div>
-          <div className="rounded-lg border bg-white p-6">
+          <div className="rounded-lg border bg-white/60 p-6">
             <h3 className="font-semibold">Flexible</h3>
             <p className="mt-2 text-sm text-gray-600">Use this as a base for your product.</p>
           </div>
