@@ -8,7 +8,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, FormEvent } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
-import { useRouter } from "next/navigation";
 
 /**
  * Landing page route component.
@@ -19,7 +18,6 @@ import { useRouter } from "next/navigation";
  */
 export default function Home() {
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
-  const router = useRouter();
   
   // Contact form submit handler (client-side placeholder)
   function handleContactSubmit(event: FormEvent<HTMLFormElement>) {
@@ -67,44 +65,58 @@ export default function Home() {
     };
   }, []);
 
-  // Sign out and refresh the page to update UI
-  async function handleSignOut() {
-    const supabase = getSupabaseClient();
-    await supabase.auth.signOut();
-    router.refresh();
-  }
+  // Note: Header UI is unified for authed and unauthed states.
+  // When authenticated, we show an extra "Dashboard" tab.
   return (
     <main className="min-h-dvh text-gray-900">
       {/* Site header with brand and primary navigation */}
       <header className="border-b">
-        <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Image
-            src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/nnpl_logo.svg"
-            alt="NNPL Logo"
-            width={128}
-            height={32}
-            className="h-10 w-auto"
-            priority
-          />
-          {isAuthed ? (
-            <nav className="flex items-center gap-4 text-sm">
-              <Link href="/profile" className="hover:underline">Profile</Link>
-              <button onClick={handleSignOut} className="rounded-md border px-3 py-1.5 hover:bg-gray-50">Sign out</button>
-            </nav>
-          ) : (
-            <nav className="flex items-center gap-5 text-sm">
-              <Link href="/events" className="hover:underline">Events</Link>
-              <Link href="/local-stores" className="hover:underline">Local Stores</Link>
-              <Link href="/how-to-play" className="hover:underline">How to Play</Link>
-              <Link href="/about-us" className="hover:underline">About Us</Link>
+        <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-4 grid grid-cols-3 items-center">
+          {/* Left: Logo */}
+          <div className="justify-self-start">
+            <Link href="/">
+              <Image
+                src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/nnpl_logo.svg"
+                alt="NNPL Logo"
+                width={128}
+                height={32}
+                className="h-10 w-auto"
+                priority
+              />
+            </Link>
+          </div>
+          {/* Center: Primary navigation */}
+          <nav className="justify-self-center flex items-center gap-5 text-sm">
+            {isAuthed && (
+              <Link href="/home" className="font-semibold hover:underline">Home</Link>
+            )}
+            <Link href="/events" className="hover:underline">Events</Link>
+            <Link href="/stores" className="hover:underline">Local Stores</Link>
+            <Link href="/guide" className="hover:underline">How to Play</Link>
+            <Link href="/about-us" className="hover:underline">About Us</Link>
+          </nav>
+          {/* Right: Auth actions */}
+          <div className="justify-self-end">
+            {isAuthed ? (
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const supabase = getSupabaseClient();
+                  await supabase.auth.signOut();
+                  window.location.assign("/");
+                }}
+              >
+                <button className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50">Sign out</button>
+              </form>
+            ) : (
               <Link
                 href="/login"
-                className="inline-flex items-center rounded-md border px-3 py-1.5 hover:bg-white/50"
+                className="inline-flex items-center rounded-md border px-3 py-1.5 text-sm hover:bg-white/50"
               >
                 Log in / Sign up
               </Link>
-            </nav>
-          )}
+            )}
+          </div>
         </div>
       </header>
 

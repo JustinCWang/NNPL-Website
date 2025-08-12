@@ -8,6 +8,7 @@
 
 import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 
@@ -75,17 +76,37 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
   }
 
   return (
-    <div className="min-h-dvh text-gray-900">
+    <div className="min-h-dvh text-gray-900 flex flex-col">
       <header className="border-b">
-        <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
-          {/* Minimal app navigation across protected pages */}
-          <nav className="flex items-center gap-6 text-sm">
+        <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <Image
+                src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/nnpl_logo.svg"
+                alt="NNPL Logo"
+                width={128}
+                height={32}
+                className="h-10 w-auto"
+                priority
+              />
+            </Link>
+          </div>
+          <nav className="flex items-center gap-5 text-sm">
+            {/* Dashboard first */}
             <Link href="/home" className={pathname === "/home" ? "font-semibold" : "hover:underline"}>
               Home
             </Link>
+            {/* Shared public links */}
             <Link href="/events" className={pathname === "/events" ? "font-semibold" : "hover:underline"}>
               Events
             </Link>
+            <Link href="/stores" className={pathname === "/stores" ? "font-semibold" : "hover:underline"}>
+              Local Stores
+            </Link>
+            <Link href="/guide" className={pathname === "/guide" ? "font-semibold" : "hover:underline"}>
+              How to Play
+            </Link>
+            {/* Dashboard-only extras */}
             <Link href="/profile" className={pathname === "/profile" ? "font-semibold" : "hover:underline"}>
               Profile
             </Link>
@@ -93,7 +114,10 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
           <SignOutButton />
         </div>
       </header>
-      <div className="mx-auto max-w-6xl px-6 py-8">{children}</div>
+      <main className="flex-1 mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-8">{children}</main>
+      <footer className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-12 text-sm text-gray-700 text-center">
+        © {new Date().getFullYear()} NNPL. All rights reserved.
+      </footer>
     </div>
   );
 }
