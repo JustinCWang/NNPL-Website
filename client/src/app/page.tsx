@@ -106,7 +106,7 @@ export default function Home() {
                   window.location.assign("/");
                 }}
               >
-                <button className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50">Sign out</button>
+                <button className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">Sign out</button>
               </form>
             ) : (
               <Link
@@ -184,7 +184,7 @@ export default function Home() {
               <textarea name="message" rows={5} required className="mt-1 w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-black" />
             </div>
             <div>
-              <button type="submit" className="inline-flex items-center rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800">Send</button>
+              <button type="submit" className="inline-flex items-center rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800 cursor-pointer">Send</button>
             </div>
           </form>
         </div>
