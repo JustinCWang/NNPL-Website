@@ -48,8 +48,9 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-dvh grid place-items-center">
-      <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/40 backdrop-blur-md p-8 shadow-lg">
+    <div className="min-h-dvh text-gray-900 flex flex-col">
+      <main className="flex-1 grid place-items-center">
+        <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/40 backdrop-blur-md p-8 shadow-lg">
         <h1 className="text-2xl font-semibold text-center">Log in</h1>
         <p className="mt-2 text-sm text-gray-700 text-center">Access your account to manage events and your profile.</p>
         {/* Credentials form */}
@@ -102,8 +103,12 @@ export default function LoginPage() {
             Back to home
           </Link>
         </p>
-      </div>
-    </main>
+        </div>
+      </main>
+      <footer className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-12 text-sm text-gray-700 text-center">
+        © {new Date().getFullYear()} NNPL. All rights reserved.
+      </footer>
+    </div>
   );
 }
 
