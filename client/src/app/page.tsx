@@ -70,8 +70,8 @@ export default function Home() {
   return (
     <main className="min-h-dvh text-gray-900">
       {/* Site header with brand and primary navigation */}
-      <header className="border-b">
-        <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-4 grid grid-cols-3 items-center">
+      <header className="py-4 px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-screen-xl bg-gray-50 border-1 border-gray-200 rounded-full shadow-xl px-6 lg:px-8 py-4 grid grid-cols-3 items-center">
           {/* Left: Logo */}
           <div className="justify-self-start">
             <Link href="/">
@@ -90,7 +90,7 @@ export default function Home() {
             {isAuthed && (
               <Link href="/home" className="font-semibold hover:underline">Home</Link>
             )}
-            <Link href="/events" className="hover:underline">Events</Link>
+            <a href="#upcoming-events" className="hover:underline">Events</a>
             <Link href="/stores" className="hover:underline">Local Stores</Link>
             <Link href="/guide" className="hover:underline">How to Play</Link>
             <Link href="/about-us" className="hover:underline">About Us</Link>
@@ -111,7 +111,7 @@ export default function Home() {
             ) : (
               <Link
                 href="/login"
-                className="inline-flex items-center rounded-md border px-3 py-1.5 text-sm hover:bg-white/50"
+                className="inline-flex items-center rounded-md bg-black text-white px-3 py-1.5 text-sm hover:bg-gray-800"
               >
                 Log in / Sign up
               </Link>
@@ -129,13 +129,13 @@ export default function Home() {
           </p>
           <div className="mt-8 flex gap-3 justify-center">
             <Link href="/signup" className="inline-flex items-center rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800">Get Started</Link>
-            <Link href="/events" className="inline-flex items-center rounded-md border px-4 py-2 hover:bg-white/50">View Events</Link>
+            <a href="#upcoming-events" className="inline-flex items-center rounded-md border px-4 py-2 hover:bg-white/50">View Events</a>
           </div>
         </div>
       </section>
 
       {/* Upcoming Events */}
-      <section className="border-t border-b/50 bg-white/30">
+      <section id="upcoming-events" className="border-t border-b/50 bg-white/30">
         <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16">
           <h2 className="text-2xl font-semibold text-center">Upcoming Events</h2>
           <div className="mt-8 grid justify-center gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -144,12 +144,12 @@ export default function Home() {
                 <div className="text-sm text-gray-600">{evt.date}</div>
                 <h3 className="mt-1 text-lg font-semibold">{evt.title}</h3>
                 <div className="mt-1 text-sm text-gray-700">{evt.location}</div>
-                <Link href="/events" className="mt-4 inline-flex items-center text-sm underline">Details</Link>
+                <a href="#upcoming-events" className="mt-4 inline-flex items-center text-sm underline">Details</a>
               </div>
             ))}
           </div>
           <div className="mt-8 text-center">
-            <Link href="/events" className="inline-flex items-center rounded-md border px-4 py-2 hover:bg-white/50">See all events</Link>
+            <a href="#upcoming-events" className="inline-flex items-center rounded-md border px-4 py-2 hover:bg-white/50">See all events</a>
           </div>
         </div>
       </section>
