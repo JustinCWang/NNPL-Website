@@ -6,7 +6,7 @@
 */
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent, useRef } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 
 /**
@@ -98,16 +98,7 @@ export default function Home() {
           {/* Right: Auth actions */}
           <div className="justify-self-end">
             {isAuthed ? (
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const supabase = getSupabaseClient();
-                  await supabase.auth.signOut();
-                  window.location.assign("/");
-                }}
-              >
-                <button className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">Sign out</button>
-              </form>
+              <LandingPageProfileDropdown />
             ) : (
               <Link
                 href="/login"
@@ -195,5 +186,132 @@ export default function Home() {
         © {new Date().getFullYear()} NNPL. All rights reserved.
       </footer>
     </main>
+  );
+}
+
+/**
+ * Generate initials from a user's name
+ */
+function getInitials(name: string): string {
+  if (!name) return 'U';
+  
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  } else {
+    return words.slice(0, 2).map(word => word.charAt(0).toUpperCase()).join('');
+  }
+}
+
+/**
+ * Profile dropdown component for the landing page
+ */
+function LandingPageProfileDropdown() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Get user info for display
+    const supabase = getSupabaseClient();
+    
+    // Get user metadata (name) and database info (username)
+    const fetchUserData = async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        const user = data.user;
+        if (user) {
+          setUserName(user.user_metadata?.name ?? null);
+          
+          try {
+            // Get username from Users table
+            const { data: dbResult } = await supabase
+              .from('Users')
+              .select('username')
+              .eq('user_id', user.id)
+              .single();
+            
+            setUsername(dbResult?.username ?? user.email?.split('@')[0] ?? 'User');
+          } catch {
+            // Fallback to email prefix if database query fails
+            setUsername(user.email?.split('@')[0] ?? 'User');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    
+    fetchUserData();
+
+    // Close dropdown when clicking outside
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  async function handleSignOut() {
+    const supabase = getSupabaseClient();
+    await supabase.auth.signOut();
+    window.location.assign("/");
+  }
+
+  // Get initials for avatar
+  const initials = getInitials(userName || 'User');
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      {/* Avatar button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-8 h-8 rounded-full bg-gray-600 text-white text-sm font-medium flex items-center justify-center hover:bg-gray-700 transition-colors"
+        aria-label="Profile menu"
+      >
+        {initials}
+      </button>
+
+      {/* Dropdown menu */}
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+          <div className="py-1">
+            {/* User info */}
+            <div className="px-4 py-2 text-sm text-gray-700 border-b">
+              {username || 'User'}
+            </div>
+            
+            {/* Navigation links */}
+            <Link
+              href="/home"
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => setIsOpen(false)}
+            >
+              Dashboard
+            </Link>
+            
+            <Link
+              href="/profile"
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => setIsOpen(false)}
+            >
+              Profile
+            </Link>
+            
+            {/* Sign out */}
+            <button
+              onClick={handleSignOut}
+              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

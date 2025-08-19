@@ -6,7 +6,7 @@
   - Provides a simple top navigation and a sign-out control
 */
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -106,12 +106,8 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
             <Link href="/guide" className={pathname === "/guide" ? "font-semibold" : "hover:underline"}>
               How to Play
             </Link>
-            {/* Dashboard-only extras */}
-            <Link href="/profile" className={pathname === "/profile" ? "font-semibold" : "hover:underline"}>
-              Profile
-            </Link>
           </nav>
-          <SignOutButton />
+          <ProfileDropdown />
         </div>
       </header>
       <main className="flex-1 mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-8">{children}</main>
@@ -123,23 +119,122 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
 }
 
 /**
- * Signs the user out and returns to the public landing page.
+ * Generate initials from a user's name
  */
-function SignOutButton() {
+function getInitials(name: string): string {
+  if (!name) return 'U';
+  
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  } else {
+    return words.slice(0, 2).map(word => word.charAt(0).toUpperCase()).join('');
+  }
+}
+
+/**
+ * Profile dropdown with avatar and menu options
+ */
+function ProfileDropdown() {
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Get user info for display
+    const supabase = getSupabaseClient();
+    
+    // Get user metadata (name) and database info (username)
+    const fetchUserData = async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        const user = data.user;
+        if (user) {
+          setUserName(user.user_metadata?.name ?? null);
+          
+          try {
+            // Get username from Users table
+            const { data: dbResult } = await supabase
+              .from('Users')
+              .select('username')
+              .eq('user_id', user.id)
+              .single();
+            
+            setUsername(dbResult?.username ?? user.email?.split('@')[0] ?? 'User');
+          } catch {
+            // Fallback to email prefix if database query fails
+            setUsername(user.email?.split('@')[0] ?? 'User');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    
+    fetchUserData();
+
+    // Close dropdown when clicking outside
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   async function handleSignOut() {
     const supabase = getSupabaseClient();
     await supabase.auth.signOut();
     router.replace("/");
   }
+
+  // Get initials for avatar
+  const initials = getInitials(userName || 'User');
+
   return (
-    <button
-      onClick={handleSignOut}
-      className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50"
-      aria-label="Sign out"
-    >
-      Sign out
-    </button>
+    <div className="relative" ref={dropdownRef}>
+      {/* Avatar button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-10 h-10 rounded-full bg-gray-600 text-white text-sm font-medium flex items-center justify-center hover:bg-gray-700 transition-colors"
+        aria-label="Profile menu"
+      >
+        {initials}
+      </button>
+
+      {/* Dropdown menu */}
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+          <div className="py-1">
+            {/* User info */}
+            <div className="px-4 py-2 text-sm text-gray-700 border-b">
+              {username || 'User'}
+            </div>
+            
+            {/* Profile link */}
+            <Link
+              href="/profile"
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => setIsOpen(false)}
+            >
+              Profile
+            </Link>
+            
+            {/* Sign out */}
+            <button
+              onClick={handleSignOut}
+              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
