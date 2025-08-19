@@ -33,12 +33,13 @@ export default function SignupPage() {
     const password = String(formData.get("password") || "");
 
     const supabase = getSupabaseClient();
+    
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { name },
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/home`,
       },
     });
 
@@ -49,7 +50,9 @@ export default function SignupPage() {
       return;
     }
 
-    router.push("/");
+    // User created, verification email sent automatically by Supabase
+    // Redirect to login page with prefilled email
+    router.push('/login?new_user=true&email=' + encodeURIComponent(email));
   }
 
   return (
@@ -126,4 +129,3 @@ export default function SignupPage() {
     </div>
   );
 }
-

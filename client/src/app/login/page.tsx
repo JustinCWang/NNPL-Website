@@ -6,7 +6,7 @@
 */
 "use client";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
@@ -18,6 +18,20 @@ export default function LoginPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showNewUserMessage, setShowNewUserMessage] = useState(false);
+  const [prefillEmail, setPrefillEmail] = useState("");
+
+  // Check for new user parameters on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('new_user') === 'true') {
+      setShowNewUserMessage(true);
+      const email = urlParams.get('email');
+      if (email) {
+        setPrefillEmail(email);
+      }
+    }
+  }, []);
 
   /**
    * Handles form submission by validating fields and
@@ -44,7 +58,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/");
+    router.push("/home");
   }
 
   return (
@@ -52,7 +66,19 @@ export default function LoginPage() {
       <main className="flex-1 grid place-items-center">
         <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/40 backdrop-blur-md p-8 shadow-lg">
         <h1 className="text-2xl font-semibold text-center">Log in</h1>
-        <p className="mt-2 text-sm text-gray-700 text-center">Access your account to manage events and your profile.</p>
+        <p className="mt-2 text-sm text-gray-700 text-center">
+          {showNewUserMessage 
+            ? "Welcome! Please check your email and verify your account before logging in." 
+            : "Access your account to manage events and your profile."
+          }
+        </p>
+        {showNewUserMessage && (
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-sm text-blue-800">
+              📧 Account created successfully! Please check your email and click the verification link before logging in.
+            </p>
+          </div>
+        )}
         {/* Credentials form */}
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
@@ -62,6 +88,7 @@ export default function LoginPage() {
               type="email"
               required
               placeholder="you@example.com"
+              defaultValue={prefillEmail}
               className="mt-1 w-full rounded-md border border-white/50 bg-white/80 px-3 py-2 outline-none focus:ring-2 focus:ring-black"
             />
           </div>
