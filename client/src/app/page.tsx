@@ -6,8 +6,10 @@
 */
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
+import ProfileDropdown from "@/components/layout/ProfileDropdown";
+import ContactForm from "@/components/ui/ContactForm";
 
 /**
  * Landing page route component.
@@ -18,21 +20,6 @@ import { getSupabaseClient } from "@/lib/supabaseClient";
  */
 export default function Home() {
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
-  
-  // Contact form submit handler (client-side placeholder)
-  function handleContactSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const name = String(formData.get("name") || "");
-    const email = String(formData.get("email") || "");
-    const message = String(formData.get("message") || "");
-    if (!name || !email || !message) {
-      alert("Please complete all fields.");
-      return;
-    }
-    alert("Thanks! Your message has been received.");
-    (event.currentTarget as HTMLFormElement).reset();
-  }
 
   // Auth state bootstrap and live sync:
   // - Check session (fast path), fallback to getUser
@@ -98,16 +85,7 @@ export default function Home() {
           {/* Right: Auth actions */}
           <div className="justify-self-end">
             {isAuthed ? (
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const supabase = getSupabaseClient();
-                  await supabase.auth.signOut();
-                  window.location.assign("/");
-                }}
-              >
-                <button className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">Sign out</button>
-              </form>
+              <ProfileDropdown variant="landing" />
             ) : (
               <Link
                 href="/login"
@@ -169,24 +147,7 @@ export default function Home() {
       {/* Contact Us */}
       <section className="border-t border-b/50 bg-white/30">
         <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16">
-          <h2 className="text-2xl font-semibold text-center">Contact Us</h2>
-          <form onSubmit={handleContactSubmit} className="mt-8 grid gap-4 max-w-xl mx-auto">
-            <div>
-              <label className="block text-sm font-medium">Name</label>
-              <input name="name" type="text" required className="mt-1 w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-black" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Email</label>
-              <input name="email" type="email" required className="mt-1 w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-black" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Message</label>
-              <textarea name="message" rows={5} required className="mt-1 w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-black" />
-            </div>
-            <div>
-              <button type="submit" className="inline-flex items-center rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800 cursor-pointer">Send</button>
-            </div>
-          </form>
+          <ContactForm />
         </div>
       </section>
 
@@ -197,3 +158,5 @@ export default function Home() {
     </main>
   );
 }
+
+

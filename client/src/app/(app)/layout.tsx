@@ -11,6 +11,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabaseClient";
+import ProfileDropdown from "@/components/layout/ProfileDropdown";
 
 /**
  * Wraps protected pages and blocks access when not authenticated.
@@ -106,12 +107,8 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
             <Link href="/guide" className={pathname === "/guide" ? "font-semibold" : "hover:underline"}>
               How to Play
             </Link>
-            {/* Dashboard-only extras */}
-            <Link href="/profile" className={pathname === "/profile" ? "font-semibold" : "hover:underline"}>
-              Profile
-            </Link>
           </nav>
-          <SignOutButton />
+          <ProfileDropdown variant="protected" />
         </div>
       </header>
       <main className="flex-1 mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-8">{children}</main>
@@ -119,27 +116,6 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
         © {new Date().getFullYear()} NNPL. All rights reserved.
       </footer>
     </div>
-  );
-}
-
-/**
- * Signs the user out and returns to the public landing page.
- */
-function SignOutButton() {
-  const router = useRouter();
-  async function handleSignOut() {
-    const supabase = getSupabaseClient();
-    await supabase.auth.signOut();
-    router.replace("/");
-  }
-  return (
-    <button
-      onClick={handleSignOut}
-      className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50"
-      aria-label="Sign out"
-    >
-      Sign out
-    </button>
   );
 }
 
