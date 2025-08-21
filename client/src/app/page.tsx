@@ -74,10 +74,7 @@ export default function Home() {
           </div>
           {/* Center: Primary navigation */}
           <nav className="justify-self-center flex items-center gap-5 text-sm">
-            {isAuthed && (
-              <Link href="/home" className="font-semibold hover:underline">Home</Link>
-            )}
-            <a href="#upcoming-events" className="hover:underline">Events</a>
+            <Link href="/events" className="hover:underline">Events</Link>
             <Link href="/stores" className="hover:underline">Local Stores</Link>
             <Link href="/guide" className="hover:underline">How to Play</Link>
             <Link href="/about-us" className="hover:underline">About Us</Link>

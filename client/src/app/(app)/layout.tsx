@@ -97,14 +97,14 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
             <Link href="/home" className={pathname === "/home" ? "font-semibold" : "hover:underline"}>
               Home
             </Link>
-            {/* Shared public links */}
-            <Link href="/events" className={pathname === "/events" ? "font-semibold" : "hover:underline"}>
+            {/* Protected versions with enhanced features */}
+            <Link href="/my-events" className={pathname === "/my-events" ? "font-semibold" : "hover:underline"}>
               Events
             </Link>
-            <Link href="/stores" className={pathname === "/stores" ? "font-semibold" : "hover:underline"}>
+            <Link href="/my-stores" className={pathname === "/my-stores" ? "font-semibold" : "hover:underline"}>
               Local Stores
             </Link>
-            <Link href="/guide" className={pathname === "/guide" ? "font-semibold" : "hover:underline"}>
+            <Link href="/my-guide" className={pathname === "/my-guide" ? "font-semibold" : "hover:underline"}>
               How to Play
             </Link>
           </nav>
