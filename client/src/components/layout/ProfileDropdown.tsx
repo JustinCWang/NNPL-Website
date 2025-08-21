@@ -27,7 +27,15 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
   const [isOpen, setIsOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(() => {
+    // Try to get cached avatar URL from localStorage for instant loading
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('cached_avatar_url');
+    }
+    return null;
+  });
+
+  const [imageError, setImageError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchUserData = async () => {
@@ -47,7 +55,18 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
             .single();
           
           setUsername(dbResult?.username ?? user.email?.split('@')[0] ?? 'User');
-          setAvatarUrl(dbResult?.avatar_path ?? null);
+          const newAvatarUrl = dbResult?.avatar_path ?? null;
+          setAvatarUrl(newAvatarUrl);
+          setImageError(false); // Reset error state when new avatar URL is set
+          
+          // Cache the avatar URL in localStorage for instant loading on future visits
+          if (typeof window !== 'undefined') {
+            if (newAvatarUrl) {
+              localStorage.setItem('cached_avatar_url', newAvatarUrl);
+            } else {
+              localStorage.removeItem('cached_avatar_url');
+            }
+          }
         } catch {
           // Fallback to email prefix if database query fails
           setUsername(user.email?.split('@')[0] ?? 'User');
@@ -98,24 +117,34 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
   // Get initials for avatar
   const initials = getInitials(userName || 'User');
 
+  // Determine what to show: prioritize image if available and not errored, fallback to initials
+  const shouldShowImage = avatarUrl && !imageError;
+
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Avatar button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`w-10 h-10 rounded-full text-white text-sm font-medium flex items-center justify-center transition-colors overflow-hidden relative ${
-          avatarUrl 
+          shouldShowImage 
             ? 'bg-transparent hover:bg-black/10' 
             : 'bg-gray-600 hover:bg-gray-700'
         }`}
         aria-label="Profile menu"
       >
-        {avatarUrl ? (
+        {shouldShowImage ? (
           <Image 
             src={avatarUrl} 
             alt="Profile" 
             fill
             className="object-cover"
+            onError={() => {
+              setImageError(true);
+              // Clear cached avatar URL if it fails to load (might be stale)
+              if (typeof window !== 'undefined') {
+                localStorage.removeItem('cached_avatar_url');
+              }
+            }}
           />
         ) : (
           initials
