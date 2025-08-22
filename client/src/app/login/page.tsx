@@ -20,6 +20,13 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [showNewUserMessage, setShowNewUserMessage] = useState(false);
   const [prefillEmail, setPrefillEmail] = useState("");
+  
+  // Forgot password states
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
 
   // Check for new user parameters on component mount
   useEffect(() => {
@@ -59,6 +66,39 @@ export default function LoginPage() {
     }
 
     router.push("/home");
+  }
+
+  /**
+   * Handles forgot password form submission
+   */
+  async function handleForgotPassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setResetError(null);
+    setIsResetting(true);
+
+    const supabase = getSupabaseClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    setIsResetting(false);
+
+    if (error) {
+      setResetError(error.message);
+      return;
+    }
+
+    setResetSuccess(true);
+  }
+
+  /**
+   * Resets the forgot password modal state
+   */
+  function resetForgotPasswordModal() {
+    setShowForgotPassword(false);
+    setResetEmail("");
+    setResetSuccess(false);
+    setResetError(null);
   }
 
   return (
@@ -102,6 +142,18 @@ export default function LoginPage() {
               className="mt-1 w-full rounded-md border border-white/50 bg-white/80 px-3 py-2 outline-none focus:ring-2 focus:ring-black"
             />
           </div>
+          
+          {/* Forgot Password Link */}
+          <div className="text-right">
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              className="text-sm text-gray-600 hover:text-gray-800 hover:underline"
+            >
+              Forgot password?
+            </button>
+          </div>
+          
           {/* Error message */}
           {error && (
             <p className="text-sm text-red-600" role="alert">
@@ -132,6 +184,87 @@ export default function LoginPage() {
         </p>
         </div>
       </main>
+      
+      {/* Forgot Password Modal */}
+      {showForgotPassword && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Reset Password</h2>
+              <button
+                onClick={resetForgotPasswordModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {resetSuccess ? (
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Check Your Email</h3>
+                <p className="text-gray-600 mb-6">
+                  We&apos;ve sent a password reset link to <strong>{resetEmail}</strong>. 
+                  Click the link in the email to reset your password.
+                </p>
+                <button
+                  onClick={resetForgotPasswordModal}
+                  className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword}>
+                <p className="text-gray-600 mb-4">
+                  Enter your email address and we&apos;ll send you a link to reset your password.
+                </p>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+                
+                {resetError && (
+                  <p className="text-sm text-red-600 mb-4" role="alert">
+                    {resetError}
+                  </p>
+                )}
+                
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={resetForgotPasswordModal}
+                    className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isResetting}
+                    className="flex-1 bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 disabled:opacity-60"
+                  >
+                    {isResetting ? "Sending..." : "Send Reset Link"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+      
       <footer className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-12 text-sm text-gray-700 text-center">
         © {new Date().getFullYear()} NNPL. All rights reserved.
       </footer>
