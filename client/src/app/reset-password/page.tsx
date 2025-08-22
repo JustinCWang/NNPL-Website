@@ -5,11 +5,11 @@
 */
 "use client";
 import Link from "next/link";
-import { FormEvent, useState, useEffect } from "react";
+import { FormEvent, useState, useEffect, Suspense } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -241,5 +241,21 @@ export default function ResetPasswordPage() {
         © {new Date().getFullYear()} NNPL. All rights reserved.
       </footer>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-dvh text-gray-900 flex flex-col">
+        <main className="flex-1 grid place-items-center">
+          <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/40 backdrop-blur-md p-8 shadow-lg text-center">
+            <div className="text-sm text-gray-600">Loading...</div>
+          </div>
+        </main>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
