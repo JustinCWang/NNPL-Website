@@ -27,6 +27,7 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
   const [isOpen, setIsOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(() => {
     // Try to get cached avatar URL from localStorage for instant loading
     if (typeof window !== 'undefined') {
@@ -47,14 +48,15 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
         setUserName(user.user_metadata?.name ?? null);
         
         try {
-          // Get username and avatar from Users table
+          // Get username, avatar, and role from Users table
           const { data: dbResult } = await supabase
             .from('Users')
-            .select('username, avatar_path')
+            .select('username, avatar_path, role')
             .eq('user_id', user.id)
             .single();
           
           setUsername(dbResult?.username ?? user.email?.split('@')[0] ?? 'User');
+          setUserRole(dbResult?.role ?? null);
           const newAvatarUrl = dbResult?.avatar_path ?? null;
           setAvatarUrl(newAvatarUrl);
           setImageError(false); // Reset error state when new avatar URL is set
@@ -70,6 +72,7 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
         } catch {
           // Fallback to email prefix if database query fails
           setUsername(user.email?.split('@')[0] ?? 'User');
+          setUserRole(null);
           setAvatarUrl(null);
         }
       }
@@ -178,6 +181,17 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
             >
               Profile
             </Link>
+
+            {/* Admin link - only show for admin users */}
+            {userRole === 'admin' && (
+              <Link
+                href="/admin"
+                className="block px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                Admin Dashboard
+              </Link>
+            )}
             
             {/* Sign out */}
             <button

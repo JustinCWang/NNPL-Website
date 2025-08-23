@@ -34,7 +34,7 @@ export default function ProfilePage() {
       // Get user profile data from database
       const { data: profileData } = await supabase
         .from('Users')
-        .select('username, email, avatar_path')
+        .select('username, email, avatar_path, role')
         .eq('user_id', user.id)
         .single();
 
