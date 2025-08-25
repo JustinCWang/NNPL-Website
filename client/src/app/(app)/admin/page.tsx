@@ -8,12 +8,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabaseClient";
+import StoreManagement from "@/components/admin/StoreManagement";
 
 export default function AdminPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<'dashboard' | 'stores'>('dashboard');
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -85,91 +87,126 @@ export default function AdminPage() {
         </p>
       </div>
 
-      {/* Admin Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Total Users</h3>
-          <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
-          <p className="text-xs text-gray-500 mt-1">Coming soon</p>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Active Events</h3>
-          <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
-          <p className="text-xs text-gray-500 mt-1">Coming soon</p>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Stores</h3>
-          <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
-          <p className="text-xs text-gray-500 mt-1">Coming soon</p>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Reports</h3>
-          <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
-          <p className="text-xs text-gray-500 mt-1">Coming soon</p>
-        </div>
+      {/* Navigation Tabs */}
+      <div className="border-b border-gray-200 mb-8">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveSection('dashboard')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeSection === 'dashboard'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Dashboard Overview
+          </button>
+          <button
+            onClick={() => setActiveSection('stores')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeSection === 'stores'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Store Management
+          </button>
+        </nav>
       </div>
 
-      {/* Admin Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* User Management */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">User Management</h2>
-          <p className="text-gray-600 mb-4">
-            Manage user accounts, roles, and permissions across the platform.
-          </p>
-          <button 
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-            disabled
-          >
-            Manage Users (Coming Soon)
-          </button>
-        </div>
+      {/* Content based on active section */}
+      {activeSection === 'dashboard' && (
+        <>
+          {/* Admin Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Total Users</h3>
+              <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
+              <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Active Events</h3>
+              <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
+              <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Stores</h3>
+              <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
+              <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Reports</h3>
+              <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
+              <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+            </div>
+          </div>
 
-        {/* Event Management */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Event Management</h2>
-          <p className="text-gray-600 mb-4">
-            Create, edit, and manage tournaments and events for the league.
-          </p>
-          <button 
-            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-            disabled
-          >
-            Manage Events (Coming Soon)
-          </button>
-        </div>
+          {/* Admin Actions */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* User Management */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">User Management</h2>
+              <p className="text-gray-600 mb-4">
+                Manage user accounts, roles, and permissions across the platform.
+              </p>
+              <button 
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                disabled
+              >
+                Manage Users (Coming Soon)
+              </button>
+            </div>
 
-        {/* Store Management */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Store Management</h2>
-          <p className="text-gray-600 mb-4">
-            Add and manage local game stores and their information.
-          </p>
-          <button 
-            className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
-            disabled
-          >
-            Manage Stores (Coming Soon)
-          </button>
-        </div>
+            {/* Event Management */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Event Management</h2>
+              <p className="text-gray-600 mb-4">
+                Create, edit, and manage tournaments and events for the league.
+              </p>
+              <button 
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                disabled
+              >
+                Manage Events (Coming Soon)
+              </button>
+            </div>
 
-        {/* System Settings */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">System Settings</h2>
-          <p className="text-gray-600 mb-4">
-            Configure platform settings, notifications, and system preferences.
-          </p>
-          <button 
-            className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
-            disabled
-          >
-            System Settings (Coming Soon)
-          </button>
-        </div>
-      </div>
+            {/* Store Management */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Store Management</h2>
+              <p className="text-gray-600 mb-4">
+                Add and manage local game stores and their information.
+              </p>
+              <button 
+                onClick={() => setActiveSection('stores')}
+                className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
+              >
+                Manage Stores
+              </button>
+            </div>
+
+            {/* System Settings */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">System Settings</h2>
+              <p className="text-gray-600 mb-4">
+                Configure platform settings, notifications, and system preferences.
+              </p>
+              <button 
+                className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
+                disabled
+              >
+                System Settings (Coming Soon)
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {activeSection === 'stores' && (
+        <StoreManagement />
+      )}
 
       {/* Admin Info */}
       <div className="mt-8 p-4 bg-blue-50 rounded-lg">
