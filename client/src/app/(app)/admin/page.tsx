@@ -9,13 +9,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import StoreManagement from "@/components/admin/StoreManagement";
+import EventManagement from "@/components/admin/EventManagement";
 
 export default function AdminPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<'dashboard' | 'stores'>('dashboard');
+  const [activeSection, setActiveSection] = useState<'dashboard' | 'stores' | 'events'>('dashboard');
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -110,6 +111,16 @@ export default function AdminPage() {
           >
             Store Management
           </button>
+          <button
+            onClick={() => setActiveSection('events')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeSection === 'events'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Event Management
+          </button>
         </nav>
       </div>
 
@@ -166,10 +177,10 @@ export default function AdminPage() {
                 Create, edit, and manage tournaments and events for the league.
               </p>
               <button 
+                onClick={() => setActiveSection('events')}
                 className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-                disabled
               >
-                Manage Events (Coming Soon)
+                Manage Events
               </button>
             </div>
 
@@ -206,6 +217,10 @@ export default function AdminPage() {
 
       {activeSection === 'stores' && (
         <StoreManagement />
+      )}
+
+      {activeSection === 'events' && (
+        <EventManagement />
       )}
 
       {/* Admin Info */}
