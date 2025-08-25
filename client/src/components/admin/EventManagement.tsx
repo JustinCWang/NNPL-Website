@@ -219,7 +219,7 @@ export default function EventManagement() {
       );
       
       if (existingEvent) {
-        setError(`An event with the same name already exists on ${newDate.toLocaleDateString()} at this store.`);
+        setError(`An event with the same name already exists on ${new Date(newDateString).toLocaleDateString()} at this store.`);
         return;
       }
 
