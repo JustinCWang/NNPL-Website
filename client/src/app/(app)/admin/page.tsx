@@ -10,13 +10,14 @@ import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import StoreManagement from "@/components/admin/StoreManagement";
 import EventManagement from "@/components/admin/EventManagement";
+import UserManagement from "@/components/admin/UserManagement";
 
 export default function AdminPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<'dashboard' | 'stores' | 'events'>('dashboard');
+  const [activeSection, setActiveSection] = useState<'dashboard' | 'stores' | 'events' | 'users'>('dashboard');
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -121,6 +122,16 @@ export default function AdminPage() {
           >
             Event Management
           </button>
+          <button
+            onClick={() => setActiveSection('users')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeSection === 'users'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            User Management
+          </button>
         </nav>
       </div>
 
@@ -163,10 +174,10 @@ export default function AdminPage() {
                 Manage user accounts, roles, and permissions across the platform.
               </p>
               <button 
+                onClick={() => setActiveSection('users')}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                disabled
               >
-                Manage Users (Coming Soon)
+                Manage Users
               </button>
             </div>
 
@@ -221,6 +232,10 @@ export default function AdminPage() {
 
       {activeSection === 'events' && (
         <EventManagement />
+      )}
+
+      {activeSection === 'users' && (
+        <UserManagement />
       )}
 
       {/* Admin Info */}
