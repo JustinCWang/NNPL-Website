@@ -7,17 +7,20 @@
   - Loads stores for the dropdown selection
 */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { Event, EventFormData, CreateEventData, UpdateEventData } from '@/types/event';
 import { Store } from '@/types/store';
 import EventForm from './EventForm';
 import EventList from './EventList';
+import EventFilters from './EventFilters';
+import { addDaysToDate } from '@/lib/dateUtils';
 
 type ViewMode = 'list' | 'add' | 'edit';
 
 export default function EventManagement() {
   const [events, setEvents] = useState<Event[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [stores, setStores] = useState<Store[]>([]);
   const [currentView, setCurrentView] = useState<ViewMode>('list');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -203,6 +206,56 @@ export default function EventManagement() {
     }
   };
 
+  const handleRenewEvent = async (event: Event) => {
+    try {
+      setError(null);
+      
+      // Calculate the date one week from the original event using our date utility
+      const newDateString = addDaysToDate(event.date, 7);
+      const existingEvent = events.find(e => 
+        e.date === newDateString && 
+        e.store_id === event.store_id &&
+        e.name === event.name
+      );
+      
+      if (existingEvent) {
+        setError(`An event with the same name already exists on ${newDate.toLocaleDateString()} at this store.`);
+        return;
+      }
+
+      const supabase = getSupabaseClient();
+      const createData: CreateEventData = {
+        name: event.name,
+        date: newDateString,
+        is_weekly: event.is_weekly,
+        is_cup: event.is_cup,
+        is_challenge: event.is_challenge,
+        is_prerelease: event.is_prerelease,
+        store_id: event.store_id,
+      };
+
+      const { data, error: insertError } = await supabase
+        .from('Events')
+        .insert([createData])
+        .select(`
+          *,
+          store:Stores(name, location)
+        `)
+        .single();
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      // Add the new event to the list
+      setEvents(prev => [...prev, data]);
+      setSuccessMessage(`Weekly event "${event.name}" has been renewed for ${newDateString}.`);
+    } catch (err) {
+      console.error('Error renewing event:', err);
+      setError('Failed to renew event. Please try again.');
+    }
+  };
+
   const handleEditEvent = (event: Event) => {
     setSelectedEvent(event);
     setCurrentView('edit');
@@ -212,6 +265,10 @@ export default function EventManagement() {
     setCurrentView('list');
     setSelectedEvent(null);
   };
+
+  const handleFiltersChange = useCallback((filtered: Event[]) => {
+    setFilteredEvents(filtered);
+  }, []);
 
   const handleFormSubmit = async (formData: EventFormData) => {
     if (currentView === 'add') {
@@ -305,12 +362,21 @@ export default function EventManagement() {
 
       {/* Content */}
       {currentView === 'list' && (
-        <EventList
-          events={events}
-          onEdit={handleEditEvent}
-          onDelete={handleDeleteEvent}
-          isLoading={isLoading}
-        />
+        <>
+          <EventFilters
+            events={events}
+            stores={stores}
+            onFiltersChange={handleFiltersChange}
+          />
+          <EventList
+            events={filteredEvents}
+            onEdit={handleEditEvent}
+            onDelete={handleDeleteEvent}
+            onRenew={handleRenewEvent}
+            isLoading={isLoading}
+            showSortIndicator={false}
+          />
+        </>
       )}
 
       {(currentView === 'add' || currentView === 'edit') && (

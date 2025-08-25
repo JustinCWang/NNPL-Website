@@ -7,16 +7,25 @@
   - Loading states and empty state handling
 */
 
+import { useState } from 'react';
 import { Event } from '@/types/event';
+import { formatDisplayDate, isDatePast } from '@/lib/dateUtils';
 
 interface EventListProps {
   events: Event[];
   onEdit: (event: Event) => void;
   onDelete: (eventId: string) => void;
+  onRenew?: (event: Event) => void;
   isLoading?: boolean;
+  showSortIndicator?: boolean;
 }
 
-export default function EventList({ events, onEdit, onDelete, isLoading = false }: EventListProps) {
+type SortField = 'name' | 'date' | 'store' | 'type';
+type SortDirection = 'asc' | 'desc';
+
+export default function EventList({ events, onEdit, onDelete, onRenew, isLoading = false, showSortIndicator = true }: EventListProps) {
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow-sm border">
@@ -56,15 +65,51 @@ export default function EventList({ events, onEdit, onDelete, isLoading = false 
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+  const handleRenewClick = (event: Event) => {
+    if (onRenew) {
+      onRenew(event);
+    }
   };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return (
+        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+        </svg>
+      );
+    }
+    
+    return sortDirection === 'asc' ? (
+      <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+      </svg>
+    ) : (
+      <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    );
+  };
+
+  const getEventTypeString = (event: Event) => {
+    const types = [];
+    if (event.is_weekly) types.push('Weekly');
+    if (event.is_cup) types.push('Cup');
+    if (event.is_challenge) types.push('Challenge');
+    if (event.is_prerelease) types.push('Prerelease');
+    return types.join(', ') || 'Other';
+  };
+
+  // formatDate function removed - now using formatDisplayDate from dateUtils
 
   const getEventTypeBadges = (event: Event) => {
     const badges = [];
@@ -104,43 +149,89 @@ export default function EventList({ events, onEdit, onDelete, isLoading = false 
     return badges;
   };
 
-  const isEventPast = (dateString: string) => {
-    const eventDate = new Date(dateString);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return eventDate < today;
-  };
+  // isEventPast function removed - now using isDatePast from dateUtils
 
-  // Sort events by date (upcoming first, then past events)
+  // Sort events based on selected field and direction
   const sortedEvents = [...events].sort((a, b) => {
-    const dateA = new Date(a.date);
-    const dateB = new Date(b.date);
-    return dateA.getTime() - dateB.getTime();
+    let comparison = 0;
+    
+    switch (sortField) {
+      case 'name':
+        comparison = a.name.localeCompare(b.name);
+        break;
+      case 'date':
+        comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+        break;
+      case 'store':
+        const storeA = a.store?.name || '';
+        const storeB = b.store?.name || '';
+        comparison = storeA.localeCompare(storeB);
+        break;
+      case 'type':
+        const typeA = getEventTypeString(a);
+        const typeB = getEventTypeString(b);
+        comparison = typeA.localeCompare(typeB);
+        break;
+    }
+    
+    return sortDirection === 'asc' ? comparison : -comparison;
   });
 
   return (
     <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">
-          All Events ({events.length})
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">
+            All Events ({events.length})
+          </h3>
+          {showSortIndicator && (
+            <div className="text-sm text-gray-500">
+              Sorted by: <span className="font-medium capitalize">{sortField}</span> 
+              <span className="ml-1">({sortDirection === 'asc' ? 'A-Z' : 'Z-A'})</span>
+            </div>
+          )}
+        </div>
       </div>
       
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Event Name
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                onClick={() => handleSort('name')}
+              >
+                <div className="flex items-center space-x-1">
+                  <span>Event Name</span>
+                  {getSortIcon('name')}
+                </div>
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                onClick={() => handleSort('date')}
+              >
+                <div className="flex items-center space-x-1">
+                  <span>Date</span>
+                  {getSortIcon('date')}
+                </div>
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Store
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                onClick={() => handleSort('store')}
+              >
+                <div className="flex items-center space-x-1">
+                  <span>Store</span>
+                  {getSortIcon('store')}
+                </div>
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Event Types
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                onClick={() => handleSort('type')}
+              >
+                <div className="flex items-center space-x-1">
+                  <span>Event Types</span>
+                  {getSortIcon('type')}
+                </div>
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -151,20 +242,20 @@ export default function EventList({ events, onEdit, onDelete, isLoading = false 
             {sortedEvents.map((event) => (
               <tr 
                 key={event.event_id} 
-                className={`hover:bg-gray-50 ${isEventPast(event.date) ? 'opacity-60' : ''}`}
+                className={`hover:bg-gray-50 ${isDatePast(event.date) ? 'opacity-60' : ''}`}
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{event.name}</div>
-                      {isEventPast(event.date) && (
+                      {isDatePast(event.date) && (
                         <div className="text-xs text-gray-500">Past Event</div>
                       )}
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-600">{formatDate(event.date)}</div>
+                  <div className="text-sm text-gray-600">{formatDisplayDate(event.date)}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
@@ -181,6 +272,17 @@ export default function EventList({ events, onEdit, onDelete, isLoading = false 
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex gap-2 justify-end">
+                    {event.is_weekly && onRenew && (
+                      <button
+                        onClick={() => handleRenewClick(event)}
+                        className="text-green-600 hover:text-green-900 transition-colors"
+                        title="Renew weekly event (create next week)"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      </button>
+                    )}
                     <button
                       onClick={() => onEdit(event)}
                       className="text-blue-600 hover:text-blue-900 transition-colors"

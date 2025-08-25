@@ -12,12 +12,68 @@ import StoreManagement from "@/components/admin/StoreManagement";
 import EventManagement from "@/components/admin/EventManagement";
 import UserManagement from "@/components/admin/UserManagement";
 
+interface AdminStats {
+  totalUsers: number;
+  activeEvents: number;
+  totalStores: number;
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'dashboard' | 'stores' | 'events' | 'users'>('dashboard');
+  const [stats, setStats] = useState<AdminStats>({ totalUsers: 0, activeEvents: 0, totalStores: 0 });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  const fetchAdminStats = async () => {
+    try {
+      const supabase = getSupabaseClient();
+      
+      // Fetch total users count
+      const { count: totalUsers, error: usersError } = await supabase
+        .from('Users')
+        .select('*', { count: 'exact', head: true });
+
+      if (usersError) {
+        console.error('Error fetching users count:', usersError);
+      }
+
+      // Fetch total stores count
+      const { count: totalStores, error: storesError } = await supabase
+        .from('Stores')
+        .select('*', { count: 'exact', head: true });
+
+      if (storesError) {
+        console.error('Error fetching stores count:', storesError);
+      }
+
+      // Fetch active events count (events that are not yesterday's date)
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayString = yesterday.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+
+      const { count: activeEvents, error: eventsError } = await supabase
+        .from('Events')
+        .select('*', { count: 'exact', head: true })
+        .gt('date', yesterdayString);
+
+      if (eventsError) {
+        console.error('Error fetching events count:', eventsError);
+      }
+
+      setStats({
+        totalUsers: totalUsers || 0,
+        activeEvents: activeEvents || 0,
+        totalStores: totalStores || 0,
+      });
+      setStatsLoading(false);
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+      setStatsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -56,6 +112,9 @@ export default function AdminPage() {
 
         setIsAdmin(true);
         setIsLoading(false);
+        
+        // Fetch admin statistics after confirming admin access
+        fetchAdminStats();
       } catch (error) {
         console.error('Error checking admin access:', error);
         router.replace("/home");
@@ -141,27 +200,87 @@ export default function AdminPage() {
           {/* Admin Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Total Users</h3>
-              <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
-              <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Total Users</h3>
+                  {statsLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 bg-gray-200 rounded w-16 mt-2"></div>
+                    </div>
+                  ) : (
+                    <p className="text-2xl font-bold text-gray-900 mt-2">{stats.totalUsers.toLocaleString()}</p>
+                  )}
+                </div>
+              </div>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Active Events</h3>
-              <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
-              <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Active Events</h3>
+                  {statsLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 bg-gray-200 rounded w-16 mt-2"></div>
+                    </div>
+                  ) : (
+                    <p className="text-2xl font-bold text-gray-900 mt-2">{stats.activeEvents.toLocaleString()}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">Today and future events</p>
+                </div>
+              </div>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Stores</h3>
-              <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
-              <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Stores</h3>
+                  {statsLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 bg-gray-200 rounded w-16 mt-2"></div>
+                    </div>
+                  ) : (
+                    <p className="text-2xl font-bold text-gray-900 mt-2">{stats.totalStores.toLocaleString()}</p>
+                  )}
+                </div>
+              </div>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Reports</h3>
-              <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
-              <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2 2z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Reports</h3>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
+                  <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+                </div>
+              </div>
             </div>
           </div>
 

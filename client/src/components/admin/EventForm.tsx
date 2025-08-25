@@ -10,6 +10,7 @@
 import { useState, useEffect } from 'react';
 import { Event, EventFormData } from '@/types/event';
 import { Store } from '@/types/store';
+import { isDatePast } from '@/lib/dateUtils';
 
 interface EventFormProps {
   event?: Event | null;
@@ -56,11 +57,7 @@ export default function EventForm({ event, stores, onSubmit, onCancel, isLoading
     if (!formData.date) {
       newErrors.date = 'Event date is required';
     } else {
-      const selectedDate = new Date(formData.date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      if (selectedDate < today) {
+      if (isDatePast(formData.date)) {
         newErrors.date = 'Event date cannot be in the past';
       }
     }
