@@ -1,11 +1,92 @@
+"use client";
 /*
   Public Events page ("/events").
   - Accessible without authentication
-  - Shows upcoming events and tournaments
+  - Shows upcoming events and tournaments with real data from Supabase
 */
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getSupabaseClient } from "@/lib/supabaseClient";
+import { Event } from "@/types/event";
 
 export default function EventsPage() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchEvents() {
+      const supabase = getSupabaseClient();
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('Events')
+          .select(`
+            *,
+            store:Stores(name, location)
+          `)
+          .gte('date', new Date().toISOString().split('T')[0]) // Only future events
+          .order('date', { ascending: true });
+
+        if (eventsError) {
+          console.error('Error fetching events:', eventsError);
+          setError('Failed to load events. Please try again later.');
+        } else {
+          setEvents(eventsData || []);
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        setError('An unexpected error occurred. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchEvents();
+  }, []);
+
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric',
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  // Helper function to get event type label and color
+  const getEventTypeInfo = (event: Event) => {
+    if (event.is_prerelease) return { label: 'Prerelease', color: 'bg-purple-100 text-purple-800' };
+    if (event.is_cup) return { label: 'Cup', color: 'bg-blue-100 text-blue-800' };
+    if (event.is_challenge) return { label: 'Challenge', color: 'bg-green-100 text-green-800' };
+    if (event.is_weekly) return { label: 'Weekly', color: 'bg-orange-100 text-orange-800' };
+    return { label: 'Event', color: 'bg-gray-100 text-gray-800' };
+  };
+
+  // Group events by month
+  const groupEventsByMonth = (events: Event[]) => {
+    const grouped: { [key: string]: Event[] } = {};
+    
+    events.forEach(event => {
+      const date = new Date(event.date);
+      const monthKey = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+      
+      if (!grouped[monthKey]) {
+        grouped[monthKey] = [];
+      }
+      grouped[monthKey].push(event);
+    });
+    
+    return grouped;
+  };
+
+  const groupedEvents = groupEventsByMonth(events);
+
   return (
     <main className="min-h-dvh text-gray-900">
       {/* Simple header for public pages */}
@@ -16,14 +97,93 @@ export default function EventsPage() {
       </header>
       
       <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-semibold">Events</h1>
-          <p className="mt-4 text-gray-700">Stay up to date with upcoming tournaments and events in the NNPL community.</p>
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl font-semibold text-center">Events</h1>
+          <p className="mt-4 text-gray-700 text-center max-w-3xl mx-auto">
+            Stay up to date with upcoming tournaments and events in the NNPL community.
+          </p>
           
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Upcoming Events</h2>
-            <p className="text-gray-600">Event listings coming soon. Check back for tournament schedules and community gatherings.</p>
-          </div>
+          {loading ? (
+            <div className="mt-12 text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <p className="mt-2 text-gray-600">Loading events...</p>
+            </div>
+          ) : error ? (
+            <div className="mt-12 text-center">
+              <p className="text-red-600">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="mt-4 inline-flex items-center rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : events.length > 0 ? (
+            <div className="mt-12">
+              {Object.entries(groupedEvents).map(([month, monthEvents]) => (
+                <div key={month} className="mb-12">
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-6 border-b pb-2">
+                    {month}
+                  </h2>
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {monthEvents.map((event) => {
+                      const eventType = getEventTypeInfo(event);
+                      return (
+                        <div key={event.event_id} className="rounded-lg border bg-white shadow-sm hover:shadow-md transition-shadow p-6">
+                          <div className="flex items-start justify-between mb-3">
+                            <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${eventType.color}`}>
+                              {eventType.label}
+                            </span>
+                            <div className="text-sm text-gray-500 text-right">
+                              {formatDate(event.date)}
+                            </div>
+                          </div>
+                          
+                          <h3 className="text-lg font-semibold text-gray-900 mb-3">{event.name}</h3>
+                          
+                          <div className="space-y-2 text-sm text-gray-700">
+                            {event.store ? (
+                              <>
+                                <div className="flex items-center gap-2">
+                                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                  </svg>
+                                  <span className="font-medium">{event.store.name}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  </svg>
+                                  <span>{event.store.location}</span>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="text-gray-500 italic">Store information not available</div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              
+              <div className="mt-12 text-center">
+                <p className="text-gray-600 mb-4">
+                  {events.length} upcoming event{events.length !== 1 ? 's' : ''} found
+                </p>
+                <p className="text-sm text-gray-500">
+                  Events are sorted by date from closest to farthest. Check back regularly for new events!
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-12 text-center">
+              <p className="text-gray-600">No upcoming events found.</p>
+              <p className="text-sm text-gray-500 mt-2">Check back later for new events and tournaments.</p>
+            </div>
+          )}
         </div>
       </section>
     </main>

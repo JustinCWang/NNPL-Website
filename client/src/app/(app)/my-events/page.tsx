@@ -1,13 +1,73 @@
 /*
   Protected Events page ("/events" - authenticated users).
-  - Shows upcoming events and tournaments
+  - Shows upcoming events and tournaments with real data from Supabase
   - Additional features: event registration, personal calendar, notifications
 */
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getSupabaseClient } from "@/lib/supabaseClient";
+import { Event } from "@/types/event";
 
 export default function EventsPage() {
   const [selectedTab, setSelectedTab] = useState<'upcoming' | 'registered' | 'history'>('upcoming');
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchEvents() {
+      const supabase = getSupabaseClient();
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('Events')
+          .select(`
+            *,
+            store:Stores(name, location)
+          `)
+          .gte('date', new Date().toISOString().split('T')[0]) // Only future events
+          .order('date', { ascending: true });
+
+        if (eventsError) {
+          console.error('Error fetching events:', eventsError);
+          setError('Failed to load events. Please try again later.');
+        } else {
+          setEvents(eventsData || []);
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        setError('An unexpected error occurred. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchEvents();
+  }, []);
+
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Helper function to get event type label and color
+  const getEventTypeInfo = (event: Event) => {
+    if (event.is_prerelease) return { label: 'Prerelease', color: 'bg-purple-100 text-purple-800' };
+    if (event.is_cup) return { label: 'Cup', color: 'bg-blue-100 text-blue-800' };
+    if (event.is_challenge) return { label: 'Challenge', color: 'bg-green-100 text-green-800' };
+    if (event.is_weekly) return { label: 'Weekly', color: 'bg-orange-100 text-orange-800' };
+    return { label: 'Event', color: 'bg-gray-100 text-gray-800' };
+  };
 
   return (
     <main>
@@ -55,21 +115,62 @@ export default function EventsPage() {
       {/* Tab Content */}
       {selectedTab === 'upcoming' && (
         <div className="space-y-4">
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-2">Weekly Tournament</h3>
-            <p className="text-gray-600 mb-4">Every Saturday at 2:00 PM - Standard Format</p>
-            <div className="flex gap-2">
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
-                Register
-              </button>
-              <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-50">
-                Add to Calendar
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p className="mt-2 text-gray-600">Loading events...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <p className="text-red-600">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
+              >
+                Try Again
               </button>
             </div>
-          </div>
-          <div className="text-gray-500 text-center py-8">
-            More events coming soon...
-          </div>
+          ) : events.length > 0 ? (
+            events.map((event) => {
+              const eventType = getEventTypeInfo(event);
+              return (
+                <div key={event.event_id} className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${eventType.color}`}>
+                          {eventType.label}
+                        </span>
+                        <span className="text-sm text-gray-500">{formatDate(event.date)}</span>
+                      </div>
+                      <h3 className="text-lg font-semibold">{event.name}</h3>
+                      {event.store && (
+                        <p className="text-gray-600 mt-1">
+                          {event.store.name} • {event.store.location}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
+                      Register
+                    </button>
+                    <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-50">
+                      Add to Calendar
+                    </button>
+                    <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-50">
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No upcoming events found.</p>
+              <p className="text-sm text-gray-400 mt-1">Check back later for new tournaments and events.</p>
+            </div>
+          )}
         </div>
       )}
 

@@ -3,6 +3,7 @@
   Public landing page ("/").
   - Presents the product value proposition for visitors
   - If logged in, shows quick navigation to protected app pages + sign-out
+  - Displays real data from Supabase for stores and events
 */
 import Link from "next/link";
 import Image from "next/image";
@@ -10,6 +11,8 @@ import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import ProfileDropdown from "@/components/layout/ProfileDropdown";
 import ContactForm from "@/components/ui/ContactForm";
+import { Store } from "@/types/store";
+import { Event } from "@/types/event";
 
 /**
  * Landing page route component.
@@ -20,6 +23,9 @@ import ContactForm from "@/components/ui/ContactForm";
  */
 export default function Home() {
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Auth state bootstrap and live sync:
   // - Check session (fast path), fallback to getUser
@@ -51,6 +57,68 @@ export default function Home() {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  // Fetch stores and events data
+  useEffect(() => {
+    async function fetchData() {
+      const supabase = getSupabaseClient();
+      
+      try {
+        // Fetch stores ordered by avg_players (largest to smallest)
+        const { data: storesData, error: storesError } = await supabase
+          .from('Stores')
+          .select('*')
+          .order('avg_players', { ascending: false });
+
+        if (storesError) {
+          console.error('Error fetching stores:', storesError);
+        } else {
+          setStores(storesData || []);
+        }
+
+        // Fetch events ordered by date (closest to farthest)
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('Events')
+          .select(`
+            *,
+            store:Stores(name, location)
+          `)
+          .gte('date', new Date().toISOString().split('T')[0]) // Only future events
+          .order('date', { ascending: true });
+
+        if (eventsError) {
+          console.error('Error fetching events:', eventsError);
+        } else {
+          setEvents(eventsData || []);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  // Helper function to get event type label
+  const getEventTypeLabel = (event: Event) => {
+    if (event.is_prerelease) return 'Prerelease';
+    if (event.is_cup) return 'Cup';
+    if (event.is_challenge) return 'Challenge';
+    if (event.is_weekly) return 'Weekly';
+    return 'Event';
+  };
 
   // Note: Header UI is unified for authed and unauthed states.
   // When authenticated, we show an extra "Dashboard" tab.
@@ -109,22 +177,74 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Local Stores Section */}
+      <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16">
+        <h2 className="text-2xl font-semibold text-center mb-8">Local Stores</h2>
+        {loading ? (
+          <div className="text-center text-gray-600">Loading stores...</div>
+        ) : stores.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {stores.map((store) => (
+              <div key={store.store_id} className="rounded-lg border bg-white/60 p-6">
+                <h3 className="text-lg font-semibold">{store.name}</h3>
+                <div className="mt-2 text-sm text-gray-700">{store.location}</div>
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Avg Players:</span>
+                  <span className="font-medium">{store.avg_players}</span>
+                </div>
+                {store.has_league && (
+                  <div className="mt-2">
+                    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                      League Available
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-gray-600">No stores found</div>
+        )}
+        <div className="mt-8 text-center">
+          <Link href="/stores" className="inline-flex items-center rounded-md border px-4 py-2 hover:bg-white/50">
+            View all stores
+          </Link>
+        </div>
+      </section>
+
       {/* Upcoming Events */}
       <section id="upcoming-events" className="border-t border-b/50 bg-white/30">
         <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16">
           <h2 className="text-2xl font-semibold text-center">Upcoming Events</h2>
-          <div className="mt-8 grid justify-center gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {[{ date: "Sat, Aug 24", title: "Standard Tournament", location: "Reno, NV" }, { date: "Sun, Sep 08", title: "League Challenge", location: "Sparks, NV" }, { date: "Sat, Sep 21", title: "Casual Play Meetup", location: "Carson City, NV" }].map((evt, idx) => (
-              <div key={idx} className="rounded-lg border bg-white/60 p-6 text-center">
-                <div className="text-sm text-gray-600">{evt.date}</div>
-                <h3 className="mt-1 text-lg font-semibold">{evt.title}</h3>
-                <div className="mt-1 text-sm text-gray-700">{evt.location}</div>
-                <a href="#upcoming-events" className="mt-4 inline-flex items-center text-sm underline">Details</a>
-              </div>
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center text-gray-600 mt-8">Loading events...</div>
+          ) : events.length > 0 ? (
+            <div className="mt-8 grid justify-center gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {events.slice(0, 6).map((event) => (
+                <div key={event.event_id} className="rounded-lg border bg-white/60 p-6">
+                  <div className="text-sm text-gray-600">{formatDate(event.date)}</div>
+                  <h3 className="mt-1 text-lg font-semibold">{event.name}</h3>
+                  <div className="mt-1 text-sm text-gray-700">
+                    {event.store?.name || 'Store TBD'} • {event.store?.location || 'Location TBD'}
+                  </div>
+                  <div className="mt-2">
+                    <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                      {getEventTypeLabel(event)}
+                    </span>
+                  </div>
+                  <Link href="/events" className="mt-4 inline-flex items-center text-sm underline">
+                    Details
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-gray-600 mt-8">No upcoming events found</div>
+          )}
           <div className="mt-8 text-center">
-            <a href="#upcoming-events" className="inline-flex items-center rounded-md border px-4 py-2 hover:bg-white/50">See all events</a>
+            <Link href="/events" className="inline-flex items-center rounded-md border px-4 py-2 hover:bg-white/50">
+              See all events
+            </Link>
           </div>
         </div>
       </section>
@@ -134,7 +254,7 @@ export default function Home() {
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-2xl font-semibold">About Us</h2>
           <p className="mt-4 text-gray-700">
-            We’re a community of Pokémon TCG players and organizers in Northern Nevada. We host
+            We&apos;re a community of Pokémon TCG players and organizers in Northern Nevada. We host
             regular events, support new players with learn-to-play sessions, and connect Trainers
             with local stores and tournaments.
           </p>
