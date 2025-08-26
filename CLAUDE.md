@@ -39,7 +39,7 @@ npm run lint
 
 ### Styling & UI
 - **Tailwind CSS v4**: Configured via PostCSS plugin in `postcss.config.mjs`
-- **Fonts**: Uses Geist and Geist Mono from Google Fonts
+- **Fonts**: Uses Shantell_Sans and Geist Mono from Google Fonts
 - **Global Styles**: `src/app/globals.css` imports Tailwind layers
 
 ### Configuration

@@ -165,7 +165,7 @@ export default function Home() {
       </header>
 
       {/* Welcome section with carousel background */}
-      <section className="relative mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 lg:py-24 mt-8">
+      <section className="relative mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-24 lg:py-36 mt-8">
         {/* Background carousel - made much larger */}
         <div className="absolute inset-0 -z-10 rounded-2xl overflow-hidden">
           <RotatingPictures className="h-full w-full rounded-2xl" />

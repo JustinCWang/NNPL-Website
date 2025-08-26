@@ -9,20 +9,20 @@ interface RotatingPicturesProps {
 
 const pictures = [
   {
-    src: "https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/nnpl_cover_2.jpg",
-    alt: "Pokémon TCG gameplay",
+    src: "https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/carousel/Godpack1.jpg",
+    alt: "Pokémon TCG Godpack 1",
   },
   {
-    src: "https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/nnpl_cover_4.jpg", 
-    alt: "Tournament play",
-  },
-  {
-    src: "https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/nnpl_cover_5.png",
-    alt: "Community event",
-  },
-  {
-    src: "https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/nnpl_cover_6.png",
+    src: "https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/carousel/gameplay1.jpg", 
     alt: "Local store play",
+  },
+  {
+    src: "https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/carousel/Godpack2.jpg",
+    alt: "Pokémon TCG Godpack 2",
+  },
+  {
+    src: "https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/carousel/gameplay1.jpg",
+    alt: "Temp pic for Coffer",
   }
 ];
 
@@ -38,7 +38,7 @@ export default function RotatingPictures({ className = "" }: RotatingPicturesPro
   }, []);
 
   return (
-    <div className={`relative w-full h-full min-h-80 overflow-hidden ${className}`}>
+    <div className={`relative w-full h-full min-h-[500px] overflow-hidden ${className}`}>
       {pictures.map((picture, index) => (
         <div
           key={index}
