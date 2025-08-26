@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import ProfileDropdown from "@/components/layout/ProfileDropdown";
 import ContactForm from "@/components/ui/ContactForm";
+import RotatingPictures from "@/components/ui/RotatingPictures";
 import { Store } from "@/types/store";
 import { Event } from "@/types/event";
 
@@ -163,16 +164,31 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Welcome section */}
-      <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 lg:py-24">
-        <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Welcome to NNPL</h1>
-          <p className="mt-4 text-lg text-gray-700">
+      {/* Welcome section with carousel background */}
+      <section className="relative mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 lg:py-24 mt-8">
+        {/* Background carousel - made much larger */}
+        <div className="absolute inset-0 -z-10 rounded-2xl overflow-hidden">
+          <RotatingPictures className="h-full w-full rounded-2xl" />
+        </div>
+        
+        {/* Transparent overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/40 -z-10 rounded-2xl" />
+        
+        {/* Welcome content overlaid on carousel */}
+        <div className="relative z-10 max-w-2xl mx-auto text-center">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white drop-shadow-lg">
+            Welcome to NNPL
+          </h1>
+          <p className="mt-4 text-lg text-white/90 drop-shadow-md">
             Northern Nevada Pokémon League — events, community, and resources for Trainers of all ages.
           </p>
           <div className="mt-8 flex gap-3 justify-center">
-            <Link href="/signup" className="inline-flex items-center rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800">Get Started</Link>
-            <a href="#upcoming-events" className="inline-flex items-center rounded-md border px-4 py-2 hover:bg-white/50">View Events</a>
+            <Link href="/signup" className="inline-flex items-center rounded-md bg-white px-4 py-2 text-black hover:bg-gray-100 font-medium">
+              Get Started
+            </Link>
+            <a href="#upcoming-events" className="inline-flex items-center rounded-md border border-white px-4 py-2 text-white hover:bg-white/20 backdrop-blur-sm">
+              View Events
+            </a>
           </div>
         </div>
       </section>
