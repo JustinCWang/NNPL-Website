@@ -33,8 +33,9 @@ export interface UserRoleStats {
 // Available user roles
 export const USER_ROLES = [
   { value: 'member', label: 'Member', description: 'Regular member with basic access' },
+  { value: 'competitor', label: 'Competitor', description: 'Competitive player with enhanced access' },
+  { value: 'vendor', label: 'Vendor', description: 'Store vendor with event management access' },
   { value: 'admin', label: 'Admin', description: 'Administrator with full access' },
-  { value: 'moderator', label: 'Moderator', description: 'Moderator with limited admin access' },
 ] as const;
 
 export type UserRole = typeof USER_ROLES[number]['value'];

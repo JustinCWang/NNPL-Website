@@ -11,6 +11,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { Event, EventFormData, CreateEventData, UpdateEventData } from '@/types/event';
 import { Store } from '@/types/store';
+import { User } from '@/types/user';
 import EventForm from './EventForm';
 import EventList from './EventList';
 import EventFilters from './EventFilters';
@@ -22,6 +23,8 @@ export default function EventManagement() {
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [stores, setStores] = useState<Store[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string>('');
   const [currentView, setCurrentView] = useState<ViewMode>('list');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,9 +32,9 @@ export default function EventManagement() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Load events and stores on component mount
+  // Load events, stores, users, and current user on component mount
   useEffect(() => {
-    Promise.all([loadEvents(), loadStores()]);
+    Promise.all([loadEvents(), loadStores(), loadUsers(), getCurrentUser()]);
   }, []);
 
   // Clear messages after 5 seconds
@@ -74,7 +77,8 @@ export default function EventManagement() {
         .from('Events')
         .select(`
           *,
-          store:Stores(name, location)
+          store:Stores(name, location),
+          creator:Users!Events_created_by_fkey(username, email)
         `)
         .order('date', { ascending: true });
 
@@ -88,6 +92,37 @@ export default function EventManagement() {
       setError('Failed to load events. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadUsers = async () => {
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error: fetchError } = await supabase
+        .from('Users')
+        .select('*')
+        .order('username', { ascending: true });
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      setUsers(data || []);
+    } catch (err) {
+      console.error('Error loading users:', err);
+      setError('Failed to load users. Please try again.');
+    }
+  };
+
+  const getCurrentUser = async () => {
+    try {
+      const supabase = getSupabaseClient();
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData.user) {
+        setCurrentUserId(authData.user.id);
+      }
+    } catch (err) {
+      console.error('Error getting current user:', err);
     }
   };
 
@@ -105,6 +140,7 @@ export default function EventManagement() {
         is_challenge: formData.is_challenge,
         is_prerelease: formData.is_prerelease,
         store_id: formData.store_id,
+        created_by: formData.created_by,
       };
 
       const { data, error: insertError } = await supabase
@@ -112,7 +148,8 @@ export default function EventManagement() {
         .insert([createData])
         .select(`
           *,
-          store:Stores(name, location)
+          store:Stores(name, location),
+          creator:Users!Events_created_by_fkey(username, email)
         `)
         .single();
 
@@ -149,6 +186,7 @@ export default function EventManagement() {
         is_challenge: formData.is_challenge,
         is_prerelease: formData.is_prerelease,
         store_id: formData.store_id,
+        created_by: formData.created_by,
       };
 
       const { data, error: updateError } = await supabase
@@ -157,7 +195,8 @@ export default function EventManagement() {
         .eq('event_id', selectedEvent.event_id)
         .select(`
           *,
-          store:Stores(name, location)
+          store:Stores(name, location),
+          creator:Users!Events_created_by_fkey(username, email)
         `)
         .single();
 
@@ -232,6 +271,7 @@ export default function EventManagement() {
         is_challenge: event.is_challenge,
         is_prerelease: event.is_prerelease,
         store_id: event.store_id,
+        created_by: event.created_by,
       };
 
       const { data, error: insertError } = await supabase
@@ -239,7 +279,8 @@ export default function EventManagement() {
         .insert([createData])
         .select(`
           *,
-          store:Stores(name, location)
+          store:Stores(name, location),
+          creator:Users!Events_created_by_fkey(username, email)
         `)
         .single();
 
@@ -383,6 +424,8 @@ export default function EventManagement() {
         <EventForm
           event={selectedEvent}
           stores={stores}
+          users={users}
+          currentUserId={currentUserId}
           onSubmit={handleFormSubmit}
           onCancel={handleCancel}
           isLoading={isSubmitting}

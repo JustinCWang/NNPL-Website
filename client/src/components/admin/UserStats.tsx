@@ -73,8 +73,10 @@ export default function UserStats({ users, isLoading = false }: UserStatsProps) 
     switch (roleValue) {
       case 'admin':
         return 'bg-red-500';
-      case 'moderator':
+      case 'competitor':
         return 'bg-yellow-500';
+      case 'vendor':
+        return 'bg-green-500';
       case 'member':
       default:
         return 'bg-blue-500';

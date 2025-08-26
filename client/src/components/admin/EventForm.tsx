@@ -4,23 +4,27 @@
   - Handles both create and update operations
   - Form validation and error handling
   - Store selection dropdown
+  - User selection dropdown for created_by field
   - Event type checkboxes with descriptions
 */
 
 import { useState, useEffect } from 'react';
 import { Event, EventFormData } from '@/types/event';
 import { Store } from '@/types/store';
+import { User } from '@/types/user';
 import { isDatePast } from '@/lib/dateUtils';
 
 interface EventFormProps {
   event?: Event | null;
   stores: Store[];
+  users: User[];
+  currentUserId?: string;
   onSubmit: (data: EventFormData) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
-export default function EventForm({ event, stores, onSubmit, onCancel, isLoading = false }: EventFormProps) {
+export default function EventForm({ event, stores, users, currentUserId, onSubmit, onCancel, isLoading = false }: EventFormProps) {
   const [formData, setFormData] = useState<EventFormData>({
     date: '',
     name: '',
@@ -29,6 +33,7 @@ export default function EventForm({ event, stores, onSubmit, onCancel, isLoading
     is_challenge: false,
     is_prerelease: false,
     store_id: '',
+    created_by: currentUserId || '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof EventFormData, string>>>({});
 
@@ -43,9 +48,20 @@ export default function EventForm({ event, stores, onSubmit, onCancel, isLoading
         is_challenge: event.is_challenge,
         is_prerelease: event.is_prerelease,
         store_id: event.store_id,
+        created_by: event.created_by,
       });
     }
   }, [event]);
+
+  // Set default created_by to current user when creating new event
+  useEffect(() => {
+    if (!event && currentUserId && !formData.created_by) {
+      setFormData(prev => ({
+        ...prev,
+        created_by: currentUserId
+      }));
+    }
+  }, [currentUserId, event, formData.created_by]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof EventFormData, string>> = {};
@@ -115,6 +131,10 @@ export default function EventForm({ event, stores, onSubmit, onCancel, isLoading
 
   const getSelectedStore = () => {
     return stores.find(store => store.store_id === formData.store_id);
+  };
+
+  const getSelectedUser = () => {
+    return users.find(user => user.user_id === formData.created_by);
   };
 
   return (
@@ -193,6 +213,33 @@ export default function EventForm({ event, stores, onSubmit, onCancel, isLoading
             <p className="text-gray-500 text-sm mt-1">
               Average players: {getSelectedStore()?.avg_players} | 
               League: {getSelectedStore()?.has_league ? 'Yes' : 'No'}
+            </p>
+          )}
+        </div>
+
+        {/* Creator Selection */}
+        <div>
+          <label htmlFor="created_by" className="block text-sm font-medium text-gray-700 mb-1">
+            Event Creator
+          </label>
+          <select
+            id="created_by"
+            value={formData.created_by || ''}
+            onChange={(e) => handleInputChange('created_by', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isLoading}
+          >
+            <option value="">Select event creator</option>
+            {users.map((user) => (
+              <option key={user.user_id} value={user.user_id}>
+                {user.username} ({user.email}) - {user.role}
+              </option>
+            ))}
+          </select>
+          {formData.created_by && getSelectedUser() && (
+            <p className="text-gray-500 text-sm mt-1">
+              Role: {getSelectedUser()?.role} | 
+              Joined: {new Date(getSelectedUser()?.date_joined || '').toLocaleDateString()}
             </p>
           )}
         </div>

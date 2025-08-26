@@ -20,7 +20,7 @@ interface EventListProps {
   showSortIndicator?: boolean;
 }
 
-type SortField = 'name' | 'date' | 'store' | 'type';
+type SortField = 'name' | 'date' | 'store' | 'type' | 'creator';
 type SortDirection = 'asc' | 'desc';
 
 export default function EventList({ events, onEdit, onDelete, onRenew, isLoading = false, showSortIndicator = true }: EventListProps) {
@@ -172,6 +172,11 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
         const typeB = getEventTypeString(b);
         comparison = typeA.localeCompare(typeB);
         break;
+      case 'creator':
+        const creatorA = a.creator?.username || '';
+        const creatorB = b.creator?.username || '';
+        comparison = creatorA.localeCompare(creatorB);
+        break;
     }
     
     return sortDirection === 'asc' ? comparison : -comparison;
@@ -226,6 +231,15 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
               </th>
               <th 
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                onClick={() => handleSort('creator')}
+              >
+                <div className="flex items-center space-x-1">
+                  <span>Created By</span>
+                  {getSortIcon('creator')}
+                </div>
+              </th>
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                 onClick={() => handleSort('type')}
               >
                 <div className="flex items-center space-x-1">
@@ -263,6 +277,14 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
                   </div>
                   <div className="text-sm text-gray-500">
                     {event.store?.location || ''}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {event.creator?.username || 'Unknown User'}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {event.creator?.email || ''}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

@@ -11,6 +11,10 @@ import { getSupabaseClient } from "./supabaseClient";
 interface UseUserRoleReturn {
   userRole: string | null;
   isAdmin: boolean;
+  isVendor: boolean;
+  isCompetitor: boolean;
+  canAccessEventManagement: boolean;
+  canAccessFullAdmin: boolean;
   isLoading: boolean;
 }
 
@@ -61,6 +65,10 @@ export function useUserRole(): UseUserRoleReturn {
   return {
     userRole,
     isAdmin: userRole === 'admin',
+    isVendor: userRole === 'vendor',
+    isCompetitor: userRole === 'competitor',
+    canAccessEventManagement: userRole === 'admin' || userRole === 'vendor',
+    canAccessFullAdmin: userRole === 'admin',
     isLoading,
   };
 }

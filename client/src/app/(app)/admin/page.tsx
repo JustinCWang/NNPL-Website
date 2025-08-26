@@ -22,6 +22,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'dashboard' | 'stores' | 'events' | 'users'>('dashboard');
   const [stats, setStats] = useState<AdminStats>({ totalUsers: 0, activeEvents: 0, totalStores: 0 });
@@ -104,13 +105,14 @@ export default function AdminPage() {
           return;
         }
 
-        // Check if user has admin role
-        if (userData?.role !== 'admin') {
+        // Check if user has admin or vendor role
+        if (userData?.role !== 'admin' && userData?.role !== 'vendor') {
           router.replace("/home");
           return;
         }
 
-        setIsAdmin(true);
+        setIsAdmin(userData?.role === 'admin');
+        setUserRole(userData?.role || null);
         setIsLoading(false);
         
         // Fetch admin statistics after confirming admin access
@@ -124,6 +126,13 @@ export default function AdminPage() {
     checkAdminAccess();
   }, [router]);
 
+  // For vendors, default to events section
+  useEffect(() => {
+    if (userRole === 'vendor' && activeSection === 'dashboard') {
+      setActiveSection('events');
+    }
+  }, [userRole, activeSection]);
+
   if (isLoading) {
     return (
       <main>
@@ -135,42 +144,51 @@ export default function AdminPage() {
     );
   }
 
-  if (!isAdmin) {
+  if (!isAdmin && userRole !== 'vendor') {
     return null; // Component will redirect before showing this
   }
 
   return (
     <main>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          {isAdmin ? 'Admin Dashboard' : 'Event Management'}
+        </h1>
         <p className="text-gray-600 mt-2">
-          Welcome to the admin panel. You have administrative privileges for the NNPL platform.
+          {isAdmin 
+            ? 'Welcome to the admin panel. You have administrative privileges for the NNPL platform.'
+            : 'Welcome to the event management panel. You can create and manage tournament events.'
+          }
         </p>
       </div>
 
       {/* Navigation Tabs */}
       <div className="border-b border-gray-200 mb-8">
         <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveSection('dashboard')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeSection === 'dashboard'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Dashboard Overview
-          </button>
-          <button
-            onClick={() => setActiveSection('stores')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeSection === 'stores'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Store Management
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setActiveSection('dashboard')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeSection === 'dashboard'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Dashboard Overview
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              onClick={() => setActiveSection('stores')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeSection === 'stores'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Store Management
+            </button>
+          )}
           <button
             onClick={() => setActiveSection('events')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
@@ -181,21 +199,23 @@ export default function AdminPage() {
           >
             Event Management
           </button>
-          <button
-            onClick={() => setActiveSection('users')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeSection === 'users'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            User Management
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setActiveSection('users')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeSection === 'users'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              User Management
+            </button>
+          )}
         </nav>
       </div>
 
       {/* Content based on active section */}
-      {activeSection === 'dashboard' && (
+      {activeSection === 'dashboard' && isAdmin && (
         <>
           {/* Admin Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -345,7 +365,7 @@ export default function AdminPage() {
         </>
       )}
 
-      {activeSection === 'stores' && (
+      {activeSection === 'stores' && isAdmin && (
         <StoreManagement />
       )}
 
@@ -353,18 +373,18 @@ export default function AdminPage() {
         <EventManagement />
       )}
 
-      {activeSection === 'users' && (
+      {activeSection === 'users' && isAdmin && (
         <UserManagement />
       )}
 
-      {/* Admin Info */}
+      {/* Session Info */}
       <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-        <h3 className="text-sm font-medium text-blue-900">Admin Session Info</h3>
+        <h3 className="text-sm font-medium text-blue-900">Session Info</h3>
         <p className="text-sm text-blue-700 mt-1">
           Logged in as: {userEmail}
         </p>
         <p className="text-sm text-blue-700">
-          Role: Administrator
+          Role: {userRole === 'admin' ? 'Administrator' : userRole === 'vendor' ? 'Vendor' : userRole}
         </p>
       </div>
     </main>
