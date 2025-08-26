@@ -7,14 +7,14 @@
   - Supports URL query parameters for pre-filtering
 */
 import Link from "next/link";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { Event } from "@/types/event";
 import { Store } from "@/types/store";
 import UserEventFilters from "@/components/ui/UserEventFilters";
 
-export default function EventsPage() {
+function EventsPageContent() {
   const searchParams = useSearchParams();
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
@@ -256,5 +256,30 @@ export default function EventsPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function EventsPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-dvh text-gray-900">
+        <header className="py-4 px-6 lg:px-8 border-b">
+          <div className="mx-auto w-full max-w-screen-2xl flex items-center justify-between">
+            <div className="text-lg font-semibold">← Back to Home</div>
+          </div>
+        </header>
+        <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16">
+          <div className="max-w-6xl mx-auto">
+            <h1 className="text-3xl font-semibold text-center">Events</h1>
+            <div className="mt-12 text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <p className="mt-2 text-gray-600">Loading events...</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    }>
+      <EventsPageContent />
+    </Suspense>
   );
 }
