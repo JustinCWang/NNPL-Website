@@ -74,6 +74,8 @@ export default function StoreManagement() {
         location: formData.location.trim(),
         avg_players: formData.avg_players,
         has_league: formData.has_league,
+        website: formData.website.trim() || undefined,
+        discord: formData.discord.trim() || undefined,
       };
 
       const { data, error: insertError } = await supabase
@@ -112,6 +114,8 @@ export default function StoreManagement() {
         location: formData.location.trim(),
         avg_players: formData.avg_players,
         has_league: formData.has_league,
+        website: formData.website.trim() || undefined,
+        discord: formData.discord.trim() || undefined,
       };
 
       const { data, error: updateError } = await supabase

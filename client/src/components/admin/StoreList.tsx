@@ -79,6 +79,12 @@ export default function StoreList({ stores, onEdit, onDelete, isLoading = false 
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 League
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Website
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Discord
+              </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
@@ -104,6 +110,36 @@ export default function StoreList({ stores, onEdit, onDelete, isLoading = false 
                   }`}>
                     {store.has_league ? 'Yes' : 'No'}
                   </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {store.website ? (
+                    <a 
+                      href={store.website.startsWith('http') ? store.website : `https://${store.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 text-sm truncate block max-w-32"
+                      title={store.website}
+                    >
+                      {store.website.replace(/^https?:\/\//, '')}
+                    </a>
+                  ) : (
+                    <span className="text-gray-400 text-sm">—</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {store.discord ? (
+                    <a 
+                      href={store.discord}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-600 hover:text-indigo-800 text-sm truncate block max-w-32"
+                      title={store.discord}
+                    >
+                      Join Server
+                    </a>
+                  ) : (
+                    <span className="text-gray-400 text-sm">—</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex gap-2 justify-end">

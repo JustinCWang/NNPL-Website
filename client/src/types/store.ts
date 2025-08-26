@@ -1,6 +1,6 @@
 /*
   TypeScript types for Store entity and related operations.
-  Based on the Stores table schema: store_id, location, avg_players, has_league, name
+  Based on the Stores table schema: store_id, location, avg_players, has_league, name, website, discord
 */
 
 export interface Store {
@@ -9,6 +9,8 @@ export interface Store {
   location: string;
   avg_players: number;
   has_league: boolean;
+  website?: string;
+  discord?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -18,6 +20,8 @@ export interface CreateStoreData {
   location: string;
   avg_players: number;
   has_league: boolean;
+  website?: string;
+  discord?: string;
 }
 
 export interface UpdateStoreData extends Partial<CreateStoreData> {
@@ -29,4 +33,6 @@ export interface StoreFormData {
   location: string;
   avg_players: number;
   has_league: boolean;
+  website: string;
+  discord: string;
 }

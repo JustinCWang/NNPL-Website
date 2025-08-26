@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { Store } from "@/types/store";
+import StoreCard from "@/components/ui/StoreCard";
 
 export default function StoresPage() {
   const [stores, setStores] = useState<Store[]>([]);
@@ -70,7 +71,7 @@ export default function StoresPage() {
               <p className="text-red-600">{error}</p>
               <button 
                 onClick={() => window.location.reload()} 
-                className="mt-4 inline-flex items-center rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+                className="mt-4 inline-flex items-center rounded-md bg-black px-4 py-2 text-sm hover:bg-gray-800"
               >
                 Try Again
               </button>
@@ -79,33 +80,7 @@ export default function StoresPage() {
             <div className="mt-12">
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {stores.map((store) => (
-                  <div key={store.store_id} className="rounded-lg border bg-white shadow-sm hover:shadow-md transition-shadow p-6">
-                    <h3 className="text-xl font-semibold text-gray-900">{store.name}</h3>
-                    <div className="mt-3 text-gray-700">
-                      <div className="flex items-center gap-2 mb-2">
-                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span>{store.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                        </svg>
-                        <span className="text-sm text-gray-600">Avg Players:</span>
-                        <span className="font-medium text-gray-900">{store.avg_players}</span>
-                      </div>
-                      {store.has_league && (
-                        <div className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          League Available
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <StoreCard key={store.store_id} store={store} basePath="/events" />
                 ))}
               </div>
               

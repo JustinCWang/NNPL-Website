@@ -2,26 +2,40 @@
   Protected Events page ("/events" - authenticated users).
   - Shows upcoming events and tournaments with real data from Supabase
   - Additional features: event registration, personal calendar, notifications
+  - Event filtering capabilities for better event discovery
+  - Supports URL query parameters for pre-filtering
 */
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { Event } from "@/types/event";
+import { Store } from "@/types/store";
+import UserEventFilters from "@/components/ui/UserEventFilters";
 
 export default function EventsPage() {
+  const searchParams = useSearchParams();
   const [selectedTab, setSelectedTab] = useState<'upcoming' | 'registered' | 'history'>('upcoming');
   const [events, setEvents] = useState<Event[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
+  const [pastEvents, setPastEvents] = useState<Event[]>([]);
+  const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Get initial store filter from URL query parameter
+  const initialStoreId = searchParams.get('store') || '';
+
+  // Fetch events and stores data
   useEffect(() => {
-    async function fetchEvents() {
+    async function fetchData() {
       const supabase = getSupabaseClient();
       
       try {
         setLoading(true);
         setError(null);
         
+        // Fetch upcoming events
         const { data: eventsData, error: eventsError } = await supabase
           .from('Events')
           .select(`
@@ -34,18 +48,53 @@ export default function EventsPage() {
         if (eventsError) {
           console.error('Error fetching events:', eventsError);
           setError('Failed to load events. Please try again later.');
-        } else {
-          setEvents(eventsData || []);
+          return;
         }
+
+        // Fetch past events for history tab
+        const { data: pastEventsData, error: pastEventsError } = await supabase
+          .from('Events')
+          .select(`
+            *,
+            store:Stores(name, location)
+          `)
+          .lt('date', new Date().toISOString().split('T')[0]) // Only past events
+          .order('date', { ascending: false });
+
+        if (pastEventsError) {
+          console.error('Error fetching past events:', pastEventsError);
+          // Don't fail the whole page if past events fail to load
+        }
+
+        // Fetch stores for filtering
+        const { data: storesData, error: storesError } = await supabase
+          .from('Stores')
+          .select('*')
+          .order('name');
+
+        if (storesError) {
+          console.error('Error fetching stores:', storesError);
+          // Don't fail the whole page if stores fail to load
+        }
+
+        setEvents(eventsData || []);
+        setFilteredEvents(eventsData || []);
+        setPastEvents(pastEventsData || []);
+        setStores(storesData || []);
       } catch (error) {
-        console.error('Error fetching events:', error);
+        console.error('Error fetching data:', error);
         setError('An unexpected error occurred. Please try again later.');
       } finally {
         setLoading(false);
       }
     }
 
-    fetchEvents();
+    fetchData();
+  }, []);
+
+  // Handle filtered events from the UserEventFilters component
+  const handleFiltersChange = useCallback((filtered: Event[]) => {
+    setFilteredEvents(filtered);
   }, []);
 
   // Helper function to format date
@@ -69,12 +118,68 @@ export default function EventsPage() {
     return { label: 'Event', color: 'bg-gray-100 text-gray-800' };
   };
 
+  // Render event card component
+  const renderEventCard = (event: Event, showActions: boolean = true) => {
+    const eventType = getEventTypeInfo(event);
+    return (
+      <div key={event.event_id} className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${eventType.color}`}>
+                {eventType.label}
+              </span>
+              <span className="text-sm text-gray-500">{formatDate(event.date)}</span>
+            </div>
+            <h3 className="text-lg font-semibold">{event.name}</h3>
+            {event.store && (
+              <p className="text-gray-600 mt-1">
+                {event.store.name} • {event.store.location}
+              </p>
+            )}
+          </div>
+        </div>
+        {showActions && (
+          <div className="flex gap-2">
+            <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
+              Register
+            </button>
+            <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-50">
+              Add to Calendar
+            </button>
+            <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-50">
+              View Details
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Get store name for display if filtering by store
+  const filteredStore = initialStoreId ? stores.find(s => s.store_id === initialStoreId) : null;
+
   return (
     <main>
       <div className="mb-6">
         <h1 className="text-3xl font-semibold">Events</h1>
         <p className="mt-2 text-gray-600">Manage your tournament participation and stay updated on upcoming events.</p>
       </div>
+
+      {/* Store Filter Notice */}
+      {filteredStore && (
+        <div className="mb-6">
+          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            Showing events for <span className="font-semibold">{filteredStore.name}</span>
+            <a href="/my-events" className="ml-2 text-blue-600 hover:text-blue-800 underline">
+              (View all events)
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Tab Navigation */}
       <div className="border-b border-gray-200 mb-6">
@@ -115,6 +220,14 @@ export default function EventsPage() {
       {/* Tab Content */}
       {selectedTab === 'upcoming' && (
         <div className="space-y-4">
+          {/* Event Filters */}
+          <UserEventFilters
+            events={events}
+            stores={stores}
+            onFiltersChange={handleFiltersChange}
+            initialFilters={{ storeId: initialStoreId }}
+          />
+
           {loading ? (
             <div className="text-center py-8">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -130,45 +243,12 @@ export default function EventsPage() {
                 Try Again
               </button>
             </div>
-          ) : events.length > 0 ? (
-            events.map((event) => {
-              const eventType = getEventTypeInfo(event);
-              return (
-                <div key={event.event_id} className="bg-white border border-gray-200 rounded-lg p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${eventType.color}`}>
-                          {eventType.label}
-                        </span>
-                        <span className="text-sm text-gray-500">{formatDate(event.date)}</span>
-                      </div>
-                      <h3 className="text-lg font-semibold">{event.name}</h3>
-                      {event.store && (
-                        <p className="text-gray-600 mt-1">
-                          {event.store.name} • {event.store.location}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
-                      Register
-                    </button>
-                    <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-50">
-                      Add to Calendar
-                    </button>
-                    <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-50">
-                      View Details
-                    </button>
-                  </div>
-                </div>
-              );
-            })
+          ) : filteredEvents.length > 0 ? (
+            filteredEvents.map((event) => renderEventCard(event, true))
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">No upcoming events found.</p>
-              <p className="text-sm text-gray-400 mt-1">Check back later for new tournaments and events.</p>
+              <p className="text-gray-500">No events found matching your filters.</p>
+              <p className="text-sm text-gray-400 mt-1">Try adjusting your search criteria or check back later for new tournaments and events.</p>
             </div>
           )}
         </div>
@@ -187,8 +267,25 @@ export default function EventsPage() {
       )}
 
       {selectedTab === 'history' && (
-        <div className="text-center py-8">
-          <p className="text-gray-500">No event history yet. Participate in tournaments to see your results here.</p>
+        <div className="space-y-4">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p className="mt-2 text-gray-600">Loading event history...</p>
+            </div>
+          ) : pastEvents.length > 0 ? (
+            <div className="space-y-4">
+              <div className="mb-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Past Events</h3>
+                <p className="text-sm text-gray-600">Events you&apos;ve participated in or missed.</p>
+              </div>
+              {pastEvents.map((event) => renderEventCard(event, false))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No event history yet. Participate in tournaments to see your results here.</p>
+            </div>
+          )}
         </div>
       )}
     </main>

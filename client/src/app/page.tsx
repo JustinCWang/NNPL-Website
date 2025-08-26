@@ -14,6 +14,7 @@ import ContactForm from "@/components/ui/ContactForm";
 import RotatingPictures from "@/components/ui/RotatingPictures";
 import { Store } from "@/types/store";
 import { Event } from "@/types/event";
+import StoreCard from "@/components/ui/StoreCard";
 
 /**
  * Landing page route component.
@@ -201,21 +202,7 @@ export default function Home() {
         ) : stores.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {stores.map((store) => (
-              <div key={store.store_id} className="rounded-lg border bg-white/60 p-6">
-                <h3 className="text-lg font-semibold">{store.name}</h3>
-                <div className="mt-2 text-sm text-gray-700">{store.location}</div>
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="text-sm text-gray-600">Avg Players:</span>
-                  <span className="font-medium">{store.avg_players}</span>
-                </div>
-                {store.has_league && (
-                  <div className="mt-2">
-                    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                      League Available
-                    </span>
-                  </div>
-                )}
-              </div>
+              <StoreCard key={store.store_id} store={store} variant="landing" />
             ))}
           </div>
         ) : (

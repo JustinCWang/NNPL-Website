@@ -22,6 +22,8 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
     location: '',
     avg_players: 0,
     has_league: false,
+    website: '',
+    discord: '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof StoreFormData, string>>>({});
 
@@ -33,6 +35,8 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
         location: store.location,
         avg_players: store.avg_players,
         has_league: store.has_league,
+        website: store.website || '',
+        discord: store.discord || '',
       });
     }
   }, [store]);
@@ -52,8 +56,38 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
       newErrors.avg_players = 'Average players cannot be negative';
     }
 
+    // Validate website URL format if provided
+    if (formData.website.trim() && !isValidUrl(formData.website)) {
+      newErrors.website = 'Please enter a valid website URL';
+    }
+
+    // Validate Discord invite link format if provided
+    if (formData.discord.trim() && !isValidDiscordInvite(formData.discord)) {
+      newErrors.discord = 'Please enter a valid Discord invite link';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const isValidUrl = (url: string): boolean => {
+    try {
+      new URL(url.startsWith('http') ? url : `https://${url}`);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidDiscordInvite = (discord: string): boolean => {
+    // Accept any valid URL format for Discord links
+    // Discord has multiple link formats and sometimes redirect links are used
+    try {
+      new URL(discord.startsWith('http') ? discord : `https://${discord}`);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -172,6 +206,48 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
           <label htmlFor="has_league" className="ml-2 block text-sm text-gray-700">
             Store has an organized league
           </label>
+        </div>
+
+        {/* Website */}
+        <div>
+          <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
+            Website
+          </label>
+          <input
+            type="url"
+            id="website"
+            value={formData.website}
+            onChange={(e) => handleInputChange('website', e.target.value)}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.website ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="https://example.com"
+            disabled={isLoading}
+          />
+          {errors.website && (
+            <p className="text-red-600 text-sm mt-1">{errors.website}</p>
+          )}
+        </div>
+
+        {/* Discord */}
+        <div>
+          <label htmlFor="discord" className="block text-sm font-medium text-gray-700 mb-1">
+            Discord Invite Link
+          </label>
+          <input
+            type="url"
+            id="discord"
+            value={formData.discord}
+            onChange={(e) => handleInputChange('discord', e.target.value)}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.discord ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="https://discord.gg/example"
+            disabled={isLoading}
+          />
+          {errors.discord && (
+            <p className="text-red-600 text-sm mt-1">{errors.discord}</p>
+          )}
         </div>
 
         {/* Form Actions */}
