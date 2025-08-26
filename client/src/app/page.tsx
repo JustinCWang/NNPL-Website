@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import ProfileDropdown from "@/components/layout/ProfileDropdown";
 import ContactForm from "@/components/ui/ContactForm";
+import RotatingPictures from "@/components/ui/RotatingPictures";
 import { Store } from "@/types/store";
 import { Event } from "@/types/event";
 
@@ -175,6 +176,11 @@ export default function Home() {
             <a href="#upcoming-events" className="inline-flex items-center rounded-md border px-4 py-2 hover:bg-white/50">View Events</a>
           </div>
         </div>
+      </section>
+
+      {/* Rotating Pictures Section */}
+      <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 pb-16">
+        <RotatingPictures />
       </section>
 
       {/* Local Stores Section */}
