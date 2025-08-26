@@ -38,7 +38,7 @@ export default function RotatingPictures({ className = "" }: RotatingPicturesPro
   }, []);
 
   return (
-    <div className={`relative w-full h-80 overflow-hidden rounded-xl bg-gray-100 ${className}`}>
+    <div className={`relative w-full h-full min-h-80 overflow-hidden ${className}`}>
       {pictures.map((picture, index) => (
         <div
           key={index}
@@ -57,22 +57,21 @@ export default function RotatingPictures({ className = "" }: RotatingPicturesPro
         </div>
       ))}
       
-      {/* Overlay gradient for better text readability if needed */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-      
-      {/* Dots indicator */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-        {pictures.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`w-2 h-2 rounded-full transition-colors duration-200 ${
-              index === currentIndex ? 'bg-white' : 'bg-white/50'
-            }`}
-            aria-label={`View image ${index + 1}`}
-          />
-        ))}
-      </div>
+      {/* Dots indicator - only show when not used as background */}
+      {!className.includes('h-full') && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {pictures.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={`w-2 h-2 rounded-full transition-colors duration-200 ${
+                index === currentIndex ? 'bg-white' : 'bg-white/50'
+              }`}
+              aria-label={`View image ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
