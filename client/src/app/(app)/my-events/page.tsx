@@ -12,6 +12,7 @@ import { getSupabaseClient } from "@/lib/supabaseClient";
 import { Event } from "@/types/event";
 import { Store } from "@/types/store";
 import UserEventFilters from "@/components/ui/UserEventFilters";
+import EventCard from "@/components/ui/EventCard";
 
 export default function EventsPage() {
   const searchParams = useSearchParams();
@@ -97,62 +98,17 @@ export default function EventsPage() {
     setFilteredEvents(filtered);
   }, []);
 
-  // Helper function to format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
-  // Helper function to get event type label and color
-  const getEventTypeInfo = (event: Event) => {
-    if (event.is_prerelease) return { label: 'Prerelease', color: 'bg-purple-100 text-purple-800' };
-    if (event.is_cup) return { label: 'Cup', color: 'bg-blue-100 text-blue-800' };
-    if (event.is_challenge) return { label: 'Challenge', color: 'bg-green-100 text-green-800' };
-    if (event.is_weekly) return { label: 'Weekly', color: 'bg-orange-100 text-orange-800' };
-    return { label: 'Event', color: 'bg-gray-100 text-gray-800' };
-  };
 
   // Render event card component
   const renderEventCard = (event: Event, showActions: boolean = true) => {
-    const eventType = getEventTypeInfo(event);
     return (
-      <div key={event.event_id} className="bg-white border border-gray-200 rounded-lg p-6">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${eventType.color}`}>
-                {eventType.label}
-              </span>
-              <span className="text-sm text-gray-500">{formatDate(event.date)}</span>
-            </div>
-            <h3 className="text-lg font-semibold">{event.name}</h3>
-            {event.store && (
-              <p className="text-gray-600 mt-1">
-                {event.store.name} • {event.store.location}
-              </p>
-            )}
-          </div>
-        </div>
-        {showActions && (
-          <div className="flex gap-2">
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
-              Register
-            </button>
-            <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-50">
-              Add to Calendar
-            </button>
-            <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-50">
-              View Details
-            </button>
-          </div>
-        )}
-      </div>
+      <EventCard 
+        key={event.event_id} 
+        event={event} 
+        variant="authenticated"
+        showActions={showActions}
+      />
     );
   };
 

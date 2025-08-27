@@ -247,6 +247,9 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
                   {getSortIcon('type')}
                 </div>
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Cost & Prizing
+              </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
@@ -290,6 +293,19 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-wrap gap-1">
                     {getEventTypeBadges(event)}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {event.cost ? `$${event.cost.toFixed(2)}` : 'Free'}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {event.min_prizing && event.max_prizing ? 
+                      `${event.min_prizing} - ${event.max_prizing}` :
+                      event.min_prizing ? `Min: ${event.min_prizing}` :
+                      event.max_prizing ? `Max: ${event.max_prizing}` :
+                      'No prizing info'
+                    }
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

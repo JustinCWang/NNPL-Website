@@ -141,6 +141,9 @@ export default function EventManagement() {
         is_prerelease: formData.is_prerelease,
         store_id: formData.store_id,
         created_by: formData.created_by,
+        cost: formData.cost,
+        min_prizing: formData.min_prizing,
+        max_prizing: formData.max_prizing,
       };
 
       const { data, error: insertError } = await supabase
@@ -187,6 +190,9 @@ export default function EventManagement() {
         is_prerelease: formData.is_prerelease,
         store_id: formData.store_id,
         created_by: formData.created_by,
+        cost: formData.cost,
+        min_prizing: formData.min_prizing,
+        max_prizing: formData.max_prizing,
       };
 
       const { data, error: updateError } = await supabase
@@ -272,6 +278,9 @@ export default function EventManagement() {
         is_prerelease: event.is_prerelease,
         store_id: event.store_id,
         created_by: event.created_by,
+        cost: event.cost,
+        min_prizing: event.min_prizing,
+        max_prizing: event.max_prizing,
       };
 
       const { data, error: insertError } = await supabase

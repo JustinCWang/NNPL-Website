@@ -13,6 +13,7 @@ import { getSupabaseClient } from "@/lib/supabaseClient";
 import { Event } from "@/types/event";
 import { Store } from "@/types/store";
 import UserEventFilters from "@/components/ui/UserEventFilters";
+import EventCard from "@/components/ui/EventCard";
 
 function EventsPageContent() {
   const searchParams = useSearchParams();
@@ -79,25 +80,7 @@ function EventsPageContent() {
     setFilteredEvents(filtered);
   }, []);
 
-  // Helper function to format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric',
-      month: 'long', 
-      day: 'numeric' 
-    });
-  };
 
-  // Helper function to get event type label and color
-  const getEventTypeInfo = (event: Event) => {
-    if (event.is_prerelease) return { label: 'Prerelease', color: 'bg-purple-100 text-purple-800' };
-    if (event.is_cup) return { label: 'Cup', color: 'bg-blue-100 text-blue-800' };
-    if (event.is_challenge) return { label: 'Challenge', color: 'bg-green-100 text-green-800' };
-    if (event.is_weekly) return { label: 'Weekly', color: 'bg-orange-100 text-orange-800' };
-    return { label: 'Event', color: 'bg-gray-100 text-gray-800' };
-  };
 
   // Group events by month
   const groupEventsByMonth = (events: Event[]) => {
@@ -187,45 +170,14 @@ function EventsPageContent() {
                         {month}
                       </h2>
                       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {monthEvents.map((event) => {
-                          const eventType = getEventTypeInfo(event);
-                          return (
-                            <div key={event.event_id} className="rounded-lg border bg-white shadow-sm hover:shadow-md transition-shadow p-6">
-                              <div className="flex items-start justify-between mb-3">
-                                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${eventType.color}`}>
-                                  {eventType.label}
-                                </span>
-                                <div className="text-sm text-gray-500 text-right">
-                                  {formatDate(event.date)}
-                                </div>
-                              </div>
-                              
-                              <h3 className="text-lg font-semibold text-gray-900 mb-3">{event.name}</h3>
-                              
-                              <div className="space-y-2 text-sm text-gray-700">
-                                {event.store ? (
-                                  <>
-                                    <div className="flex items-center gap-2">
-                                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                      </svg>
-                                      <span className="font-medium">{event.store.name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                      </svg>
-                                      <span>{event.store.location}</span>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div className="text-gray-500 italic">Store information not available</div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
+                        {monthEvents.map((event) => (
+                          <EventCard 
+                            key={event.event_id} 
+                            event={event} 
+                            variant="public"
+                            showActions={true}
+                          />
+                        ))}
                       </div>
                     </div>
                   ))}

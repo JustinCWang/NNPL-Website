@@ -15,6 +15,7 @@ import RotatingPictures from "@/components/ui/RotatingPictures";
 import { Store } from "@/types/store";
 import { Event } from "@/types/event";
 import StoreCard from "@/components/ui/StoreCard";
+import EventCard from "@/components/ui/EventCard";
 
 /**
  * Landing page route component.
@@ -103,24 +104,7 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // Helper function to format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
 
-  // Helper function to get event type label
-  const getEventTypeLabel = (event: Event) => {
-    if (event.is_prerelease) return 'Prerelease';
-    if (event.is_cup) return 'Cup';
-    if (event.is_challenge) return 'Challenge';
-    if (event.is_weekly) return 'Weekly';
-    return 'Event';
-  };
 
   // Note: Header UI is unified for authed and unauthed states.
   // When authenticated, we show an extra "Dashboard" tab.
@@ -224,21 +208,12 @@ export default function Home() {
           ) : events.length > 0 ? (
             <div className="mt-8 grid justify-center gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {events.slice(0, 6).map((event) => (
-                <div key={event.event_id} className="rounded-lg border bg-white/60 p-6">
-                  <div className="text-sm text-gray-600">{formatDate(event.date)}</div>
-                  <h3 className="mt-1 text-lg font-semibold">{event.name}</h3>
-                  <div className="mt-1 text-sm text-gray-700">
-                    {event.store?.name || 'Store TBD'} • {event.store?.location || 'Location TBD'}
-                  </div>
-                  <div className="mt-2">
-                    <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-                      {getEventTypeLabel(event)}
-                    </span>
-                  </div>
-                  <Link href="/events" className="mt-4 inline-flex items-center text-sm underline">
-                    Details
-                  </Link>
-                </div>
+                <EventCard 
+                  key={event.event_id} 
+                  event={event} 
+                  variant="public"
+                  showActions={false}
+                />
               ))}
             </div>
           ) : (

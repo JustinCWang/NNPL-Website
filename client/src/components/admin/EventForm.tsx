@@ -34,6 +34,9 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
     is_prerelease: false,
     store_id: '',
     created_by: currentUserId || '',
+    cost: 0,
+    min_prizing: '',
+    max_prizing: '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof EventFormData, string>>>({});
 
@@ -49,6 +52,9 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
         is_prerelease: event.is_prerelease,
         store_id: event.store_id,
         created_by: event.created_by,
+        cost: event.cost || 0,
+        min_prizing: event.min_prizing || '',
+        max_prizing: event.max_prizing || '',
       });
     }
   }, [event]);
@@ -88,6 +94,13 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
       newErrors.is_weekly = 'Please select at least one event type';
     }
 
+    // Validate cost field
+    if (formData.cost !== undefined && formData.cost < 0) {
+      newErrors.cost = 'Cost cannot be negative';
+    }
+
+    // Validate prizing fields (no specific validation needed for strings, they're free-form text)
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -106,7 +119,7 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
     }
   };
 
-  const handleInputChange = (field: keyof EventFormData, value: string | boolean) => {
+  const handleInputChange = (field: keyof EventFormData, value: string | boolean | number) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -215,6 +228,74 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
               League: {getSelectedStore()?.has_league ? 'Yes' : 'No'}
             </p>
           )}
+        </div>
+
+        {/* Event Cost and Prizing */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Event Cost */}
+          <div>
+            <label htmlFor="cost" className="block text-sm font-medium text-gray-700 mb-1">
+              Event Cost ($)
+            </label>
+            <input
+              type="number"
+              id="cost"
+              value={formData.cost || ''}
+              onChange={(e) => handleInputChange('cost', e.target.value === '' ? 0 : Number(e.target.value))}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.cost ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+              disabled={isLoading}
+            />
+            {errors.cost && (
+              <p className="text-red-600 text-sm mt-1">{errors.cost}</p>
+            )}
+          </div>
+
+          {/* Minimum Prizing */}
+          <div>
+            <label htmlFor="min_prizing" className="block text-sm font-medium text-gray-700 mb-1">
+              Min Prizing
+            </label>
+            <input
+              type="text"
+              id="min_prizing"
+              value={formData.min_prizing || ''}
+              onChange={(e) => handleInputChange('min_prizing', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.min_prizing ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="e.g., $50 + booster packs"
+              disabled={isLoading}
+            />
+            {errors.min_prizing && (
+              <p className="text-red-600 text-sm mt-1">{errors.min_prizing}</p>
+            )}
+          </div>
+
+          {/* Maximum Prizing */}
+          <div>
+            <label htmlFor="max_prizing" className="block text-sm font-medium text-gray-700 mb-1">
+              Max Prizing
+            </label>
+            <input
+              type="text"
+              id="max_prizing"
+              value={formData.max_prizing || ''}
+              onChange={(e) => handleInputChange('max_prizing', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.max_prizing ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="e.g., $200 + playmat"
+              disabled={isLoading}
+            />
+            {errors.max_prizing && (
+              <p className="text-red-600 text-sm mt-1">{errors.max_prizing}</p>
+            )}
+          </div>
         </div>
 
         {/* Creator Selection */}
