@@ -6,9 +6,20 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
+import TooltipHover from "@/components/layout/TooltipHover";
 
 export default function GuidePage() {
-  const [selectedTab, setSelectedTab] = useState<'basics' | 'advanced' | 'deckbuilding' | 'progress'>('basics');
+  const [selectedTab, setSelectedTab] = useState<'basics' | 'advanced' | 'deckbuilding' | 'progress'>('basics')
+
+const Energy = ({ type }: { type: string }) => (
+  <Image
+    src={`https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/type_symbols/${type}.png`}
+    alt={`${type} energy`}
+    width={16}
+    height={16}
+    className="inline-block w-[1em] h-[1em]"
+  />
+);
 
   return (
     <main>
@@ -74,9 +85,118 @@ export default function GuidePage() {
                 Each deck consists of 60 cards, made up of 3 main types: Pokémon, Trainer, and Energy.
               </p>
               <div className="flex gap-4 mb-4">
-                <Image src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/dragapult_ex.png" alt="Dragapult ex" width={96} height={134} />
-                <Image src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/arven.png" alt="Arven" width={96} height={134} />
-                <Image src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/basic_fire.png" alt="Fire Energy" width={96} height={134} />
+                {/* Card Images w/ Tooltip */}
+                <TooltipHover content={
+                  <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    Dragapult ex - 320 HP
+                    <br />
+                    Tera Attribute: This Pokémon is immune to damage from any attack while on the bench.
+                    <br />
+                    Type: Dragon <Energy type="dragon" />
+                    <br />
+                    <Energy type="colorless" /> Jet Headbutt (70)
+                    <br />
+                    <Energy type="fire" /> <Energy type="psychic" /> Phantom Dive (200) - Put 6 damage counters on your opponent's Benched Pokémon in any way you like.
+                    <br />
+                    Weakness: None | Resistance: None | Retreat: <Energy type="colorless" />
+                  </div>
+                } >
+                  <Image src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/example_cards/dragapult_ex.png"
+                         alt="Dragapult ex"
+                         width={96}
+                         height={134} />
+                </TooltipHover>
+
+                <TooltipHover content={
+                  <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    Arven
+                    <br />
+                    Trainer - Supporter
+                    <br />
+                    You may play one Supporter card during your turn
+                  </div>
+                } >
+                  <Image src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/example_cards/arven.png"
+                         alt="Arven"
+                         width={96}
+                         height={134} />
+                </TooltipHover>
+
+                <TooltipHover content={
+                  <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    Buddy-Buddy Poffin
+                    <br />
+                    Trainer - Item
+                    <br />
+                    You may play as many Item cards as you like during your turn.
+                  </div>
+                } >
+                  <Image src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/example_cards/buddy-buddy_poffin.png"
+                         alt="Fire Energy"
+                         width={96}
+                         height={134} />
+                </TooltipHover>
+
+                <TooltipHover content={
+                  <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    Air Balloon
+                    <br />
+                    Trainer - Tool
+                    <br />
+                    You may attach any number of Tool cards to your Pokémon during your turn (Only one per Pokémon).
+                    <br />
+                    Tool cards remain attached.
+                  </div>
+                } >
+                  <Image src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/example_cards/air_balloon.png"
+                         alt="Fire Energy"
+                         width={96}
+                         height={134} />
+                </TooltipHover>
+
+                <TooltipHover content={
+                  <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    Jamming Tower
+                    <br />
+                    Trainer - Stadium
+                    <br />
+                    You may play one Stadium card during your turn. Stadium cards remain in play until another Stadium card is played.
+                    <br />
+                    You may not play a Stadium card of the same name as a Stadium card already in play.
+                  </div>
+                } >
+                  <Image src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/example_cards/jamming_tower.png"
+                         alt="Fire Energy"
+                         width={96}
+                         height={134} />
+                </TooltipHover>
+
+                <TooltipHover content={
+                  <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    Basic Fire Energy <Energy type="fire" />
+                    <br />
+                    You may attach one Energy card from your hand to one of your Pokémon per turn.
+                  </div>
+                } >
+                  <Image src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/example_cards/basic_fire.png"
+                         alt="Fire Energy"
+                         width={96}
+                         height={134} />
+                </TooltipHover>
+
+                <TooltipHover content={
+                  <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    Neo Upper Energy
+                    <br />
+                    ACE SPEC - You may only include 1 ACE SPEC card (Item, Tool, Stadium, or Energy) in your deck.
+                  </div>
+                } >
+                  <Image src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/example_cards/neo_upper_energy.png"
+                         alt="Fire Energy"
+                         width={96}
+                         height={134} />
+                </TooltipHover>
+                
               </div>
               <button className="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700">
                 ✓ Mark as Completed
@@ -87,6 +207,9 @@ export default function GuidePage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">Setting Up the Game</h2>
             <div className="bg-white border border-gray-200 rounded-lg p-6">
+              
+              {/* Map with Area elements enclosed in TooltipHover elements will go here */}
+              
               <p className="text-gray-700 mb-4">
                 Each player shuffles their deck, draws 7 cards, and places at least one Basic Pokémon as their Active Pokémon.
                 Set aside 6 Prize cards face-down.
