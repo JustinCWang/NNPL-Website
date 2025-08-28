@@ -96,7 +96,7 @@ const Energy = ({ type }: { type: string }) => (
                     <br />
                     <Energy type="colorless" /> Jet Headbutt (70)
                     <br />
-                    <Energy type="fire" /> <Energy type="psychic" /> Phantom Dive (200) - Put 6 damage counters on your opponent's Benched Pokémon in any way you like.
+                    <Energy type="fire" /> <Energy type="psychic" /> Phantom Dive (200) - Put 6 damage counters on your opponent&apos;s Benched Pokémon in any way you like.
                     <br />
                     Weakness: None | Resistance: None | Retreat: <Energy type="colorless" />
                   </div>
