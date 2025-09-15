@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 type TooltipHoverProps = {
   content: React.ReactNode;
@@ -13,15 +13,6 @@ export default function TooltipHover({ content, children }: TooltipHoverProps) {
     x: null,
     y: null,
   });
-  const [viewport, setViewport] = useState({ w: 0, h: 0 });
-
-  useEffect(() => {
-    const handleResize = () =>
-      setViewport({ w: window.innerWidth, h: window.innerHeight });
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   return (
     <div
