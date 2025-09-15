@@ -8,7 +8,6 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import TooltipHover from "@/components/layout/TooltipHover";
 import PopUpMenu from "@/components/layout/PopUpMenu";
-import Link from "next/link";
 
 export default function GuidePage() {
   const [selectedTab, setSelectedTab] = useState<'basics' | 'advanced' | 'deckbuilding' | 'progress'>('basics')
@@ -23,7 +22,6 @@ export default function GuidePage() {
     function updateScale() {
       if (imgRef.current) {
         const renderedWidth = imgRef.current.clientWidth;
-        const renderedHeight = imgRef.current.clientHeight;
         setScale(renderedWidth / nativeWidth);
       }
     }
@@ -130,7 +128,7 @@ const Energy = ({ type }: { type: string }) => (
                       <br />
                       <Energy type="colorless" /> Jet Headbutt (70)
                       <br />
-                      <Energy type="fire" /> <Energy type="psychic" /> Phantom Dive (200) - Put 6 damage counters on your opponent's Benched Pokémon in any way you like.
+                      <Energy type="fire" /> <Energy type="psychic" /> Phantom Dive (200) - Put 6 damage counters on your opponent&apos;s Benched Pokémon in any way you like.
                       <br />
                       Weakness: None | Resistance: None | Retreat: <Energy type="colorless" />
                     </div>
@@ -305,7 +303,7 @@ const Energy = ({ type }: { type: string }) => (
                 }>
                   <h2 className="text-lg font-semibold mb-2">Prize Cards</h2>
                   <p className="text-gray-700 mb-4">
-                    Set aside 6 Prize cards face-down. You take one face-down card and place it into your hand when you Knock Out an opponent's Pokémon.
+                    Set aside 6 Prize cards face-down. You take one face-down card and place it into your hand when you Knock Out an opponent&apos;s Pokémon.
                   </p>
                 </PopUpMenu>
 
