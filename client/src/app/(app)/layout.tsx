@@ -12,6 +12,8 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import ProfileDropdown from "@/components/layout/ProfileDropdown";
+import ThemeSelector from "@/components/layout/ThemeSelector";
+import { useTheme } from '@/context/ThemeContext';
 
 /**
  * Wraps protected pages and blocks access when not authenticated.
@@ -22,6 +24,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const { selectedTheme } = useTheme();
 
   useEffect(() => {
     const supabase = getSupabaseClient();
@@ -79,7 +82,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
   return (
     <div className="min-h-dvh text-gray-900 flex flex-col">
       <header className="border-b">
-        <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-4 flex items-center justify-between">
+        <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-4 flex items-center justify-between bg-[var(--theme-bg)]" style={{ backgroundColor: selectedTheme.accentColor }}>
           <div className="flex items-center gap-4">
             <Link href="/">
               <Image
@@ -92,7 +95,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
               />
             </Link>
           </div>
-          <nav className="flex items-center gap-5 text-sm">
+          <nav className="flex items-center gap-5 text-sm" style={{ color: selectedTheme.textColor }}>
             {/* Dashboard first */}
             <Link href="/home" className={pathname === "/home" ? "font-semibold" : "hover:underline"}>
               Home
@@ -108,7 +111,10 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
               How to Play
             </Link>
           </nav>
-          <ProfileDropdown variant="protected" />
+          <div className="flex items-center gap-4">
+            <ThemeSelector />
+            <ProfileDropdown variant="protected" />
+          </div>
         </div>
       </header>
       <main className="flex-1 mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-8">{children}</main>

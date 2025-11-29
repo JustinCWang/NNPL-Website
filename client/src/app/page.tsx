@@ -16,6 +16,7 @@ import { Store } from "@/types/store";
 import { Event } from "@/types/event";
 import StoreCard from "@/components/ui/StoreCard";
 import EventCard from "@/components/ui/EventCard";
+import { useTheme } from '@/context/ThemeContext';
 
 /**
  * Landing page route component.
@@ -29,6 +30,7 @@ export default function Home() {
   const [stores, setStores] = useState<Store[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const { selectedTheme } = useTheme();
 
   // Auth state bootstrap and live sync:
   // - Check session (fast path), fallback to getUser
@@ -112,7 +114,7 @@ export default function Home() {
     <main className="min-h-dvh text-gray-900">
       {/* Site header with brand and primary navigation */}
       <header className="py-4 px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-screen-xl bg-gray-50 border-1 border-gray-200 rounded-full shadow-xl px-6 lg:px-8 py-4 grid grid-cols-3 items-center">
+        <div className="mx-auto w-full max-w-screen-xl border-1 border-gray-200 rounded-full shadow-xl px-6 lg:px-8 py-4 grid grid-cols-3 items-center bg-[var(--theme-bg)]" style={{ backgroundColor: selectedTheme.accentColor }}>
           {/* Left: Logo */}
           <div className="justify-self-start">
             <Link href="/">

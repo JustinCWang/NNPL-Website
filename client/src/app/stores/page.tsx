@@ -9,11 +9,13 @@ import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { Store } from "@/types/store";
 import StoreCard from "@/components/ui/StoreCard";
+import { useTheme } from '@/context/ThemeContext';
 
 export default function StoresPage() {
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { selectedTheme } = useTheme();
 
   useEffect(() => {
     async function fetchStores() {
@@ -48,7 +50,7 @@ export default function StoresPage() {
   return (
     <main className="min-h-dvh text-gray-900">
       {/* Simple header for public pages */}
-      <header className="py-4 px-6 lg:px-8 border-b">
+      <header className="py-4 px-6 lg:px-8 border-b" style={{ backgroundColor: selectedTheme.accentColor }}>
         <div className="mx-auto w-full max-w-screen-2xl flex items-center justify-between">
           <Link href="/" className="text-lg font-semibold">← Back to Home</Link>
         </div>

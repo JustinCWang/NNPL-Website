@@ -8,6 +8,7 @@
 import type { Metadata } from "next";
 import { Shantell_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 // Initialize Google fonts and expose them as CSS variables
 const shantellSans = Shantell_Sans({
@@ -46,8 +47,7 @@ export default function RootLayout({
         // Apply font directly and smoothing
         className={`${shantellSans.className} ${geistMono.variable} antialiased`}
       >
-        {/* Render the active route */}
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

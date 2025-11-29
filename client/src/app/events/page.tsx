@@ -14,6 +14,7 @@ import { Event } from "@/types/event";
 import { Store } from "@/types/store";
 import UserEventFilters from "@/components/ui/UserEventFilters";
 import EventCard from "@/components/ui/EventCard";
+import { useTheme } from '@/context/ThemeContext';
 
 function EventsPageContent() {
   const searchParams = useSearchParams();
@@ -22,6 +23,7 @@ function EventsPageContent() {
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { selectedTheme } = useTheme();
 
   // Get initial store filter from URL query parameter
   const initialStoreId = searchParams.get('store') || '';
@@ -107,7 +109,7 @@ function EventsPageContent() {
   return (
     <main className="min-h-dvh text-gray-900">
       {/* Simple header for public pages */}
-      <header className="py-4 px-6 lg:px-8 border-b">
+      <header className="py-4 px-6 lg:px-8 border-b" style={{ backgroundColor: selectedTheme.accentColor }}>
         <div className="mx-auto w-full max-w-screen-2xl flex items-center justify-between">
           <Link href="/" className="text-lg font-semibold">← Back to Home</Link>
         </div>

@@ -257,9 +257,9 @@ const Energy = ({ type }: { type: string }) => (
                 </PopUpMenu>
                 
               </div>
-              <button className="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700">
-                ✓ Mark as Completed
-              </button>
+
+              {/* Completion Button TODO*/}
+
             </div>
           </section>
 
@@ -427,17 +427,17 @@ const Energy = ({ type }: { type: string }) => (
                   <TooltipHover
                     content={
                       <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg text-center">
-                        Active Pokémon Status
+                        Stadium
                         <br />
-                        ----------------------
+                        -------
                         <br />
-                        Turn Pokémon clockwise
+                        Face up
                       </div>
                     }
                   >
                     <area
                       shape="rect"
-                      coords={scaleCoords("5250,225 , 6074,3429")}
+                      coords={scaleCoords("5250,225 , 6074,1350")}
                       href="StadiumLink"
                     />
                   </TooltipHover>

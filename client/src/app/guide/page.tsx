@@ -1,3 +1,5 @@
+'use client';
+
 /*
   Public Guide page ("/guide").
   - Accessible without authentication
@@ -5,12 +7,16 @@
 */
 import Link from "next/link";
 import Image from "next/image";
+import { useTheme } from '@/context/ThemeContext';
 
 export default function GuidePage() {
+
+  const { selectedTheme } = useTheme();
+
   return (
     <main className="min-h-dvh text-gray-900">
       {/* Simple header for public pages */}
-      <header className="py-4 px-6 lg:px-8 border-b">
+      <header className="py-4 px-6 lg:px-8 border-b bg-[var(--theme-bg)]" style={{ backgroundColor: selectedTheme.accentColor }}>
         <div className="mx-auto w-full max-w-screen-2xl flex items-center justify-between">
           <Link href="/" className="text-lg font-semibold">← Back to Home</Link>
         </div>

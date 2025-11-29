@@ -1,20 +1,24 @@
+'use client';
+
 /*
   Public About Us page ("/about-us").
   - Accessible without authentication
   - Information about NNPL and sections for different stakeholders
 */
 import Link from "next/link";
+import { useTheme } from '@/context/ThemeContext';
 
 export default function AboutUsPage() {
+  
+  const { selectedTheme } = useTheme();
+  
   return (
     <main className="min-h-dvh text-gray-900">
-      {/* Simple header for public pages */}
-      <header className="py-4 px-6 lg:px-8 border-b">
+      <header className="py-4 px-6 lg:px-8 border-b bg-[var(--theme-bg)]" style={{ backgroundColor: selectedTheme.accentColor }}>
         <div className="mx-auto w-full max-w-screen-2xl flex items-center justify-between">
           <Link href="/" className="text-lg font-semibold">← Back to Home</Link>
         </div>
       </header>
-      
       <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16">
         <div className="max-w-4xl mx-auto">
           {/* Main About Section */}
