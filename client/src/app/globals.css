@@ -6,19 +6,48 @@
 @import "tailwindcss";
 
 /* Global site background */
-/* @layer base {
+@layer base {
   body {
-    background-image: url("https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/Desert%20Gradient.png");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-color: white;
+    background-image: radial-gradient(circle, #e5e7eb 1px, transparent 1px);
+    background-size: 24px 24px;
     background-attachment: fixed;
   }
-} */
+}
 
 /* Custom utility classes layered on top of Tailwind */
 @layer utilities {
   .text-red {
     color: red;
   }
+
+  /* Pokemon-inspired color utilities */
+  .bg-pokemon-red {
+    background-color: rgba(238, 21, 21, 0.1);
+  }
+
+  .bg-pokemon-blue {
+    background-color: rgba(59, 76, 202, 0.1);
+  }
+
+  .bg-pokemon-yellow {
+    background-color: rgba(255, 203, 5, 0.1);
+  }
+
+  .bg-pokemon-green {
+    background-color: rgba(120, 200, 80, 0.1);
+  }
+
+  .bg-pokemon-purple {
+    background-color: rgba(160, 64, 160, 0.1);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.15s ease-out forwards;
 }

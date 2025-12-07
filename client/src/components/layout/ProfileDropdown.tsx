@@ -156,32 +156,12 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+        <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50">
           <div className="py-1">
             {/* User info */}
-            <div className="px-4 py-2 text-sm text-gray-700 border-b">
+            <div className="py-2 text-sm text-gray-700 border-b text-center">
               {username || 'User'}
-            </div>
             
-            {/* Navigation links */}
-            {variant === 'landing' && (
-              <Link
-                href="/home"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={() => setIsOpen(false)}
-              >
-                Dashboard
-              </Link>
-            )}
-            
-            <Link
-              href="/profile"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              onClick={() => setIsOpen(false)}
-            >
-              Profile
-            </Link>
-
             {/* Admin link - only show for admin users */}
             {userRole === 'admin' && (
               <Link
@@ -193,10 +173,33 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
               </Link>
             )}
             
+            </div>
+            
+
+            
+            {/* Navigation links */}
+            {variant === 'landing' && (
+              <Link
+                href="/home"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-center"
+                onClick={() => setIsOpen(false)}
+              >
+                Dashboard
+              </Link>
+            )}
+            
+            <Link
+              href="/profile"
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-center"
+              onClick={() => setIsOpen(false)}
+            >
+              Profile Settings
+            </Link>
+
             {/* Sign out */}
             <button
               onClick={handleSignOut}
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer text-center"
             >
               Sign out
             </button>

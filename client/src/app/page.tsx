@@ -112,7 +112,7 @@ export default function Home() {
     <main className="min-h-dvh text-gray-900">
       {/* Site header with brand and primary navigation */}
       <header className="py-4 px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-screen-xl bg-gray-50 border-1 border-gray-200 rounded-full shadow-xl px-6 lg:px-8 py-4 grid grid-cols-3 items-center">
+        <div className="mx-auto w-full max-w-screen-xl bg-gradient-to-r from-white via-purple-50 to-pink-50 border-1 border-purple-200 rounded-full shadow-xl px-6 lg:px-8 py-4 grid grid-cols-3 items-center">
           {/* Left: Logo */}
           <div className="justify-self-start">
             <Link href="/">
@@ -140,7 +140,7 @@ export default function Home() {
             ) : (
               <Link
                 href="/login"
-                className="inline-flex items-center rounded-md bg-black text-white px-3 py-1.5 text-sm hover:bg-gray-800"
+                className="inline-flex items-center rounded-md bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1.5 text-sm hover:from-purple-700 hover:to-pink-700 shadow-md transition-all"
               >
                 Log in / Sign up
               </Link>
@@ -168,10 +168,10 @@ export default function Home() {
             Northern Nevada Pokémon League — events, community, and resources for Trainers of all ages.
           </p>
           <div className="mt-8 flex gap-3 justify-center">
-            <Link href="/signup" className="inline-flex items-center rounded-md bg-white px-4 py-2 text-black hover:bg-gray-100 font-medium">
+            <Link href="/signup" className="inline-flex items-center rounded-md bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-2 text-white hover:from-yellow-500 hover:to-orange-600 font-medium shadow-lg transition-all">
               Get Started
             </Link>
-            <a href="#upcoming-events" className="inline-flex items-center rounded-md border border-white px-4 py-2 text-white hover:bg-white/20 backdrop-blur-sm">
+            <a href="#upcoming-events" className="inline-flex items-center rounded-md border-2 border-white px-4 py-2 text-white hover:bg-white hover:text-purple-900 backdrop-blur-sm font-medium transition-all">
               View Events
             </a>
           </div>
@@ -179,8 +179,8 @@ export default function Home() {
       </section>
 
       {/* Local Stores Section */}
-      <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16">
-        <h2 className="text-2xl font-semibold text-center mb-8">Local Stores</h2>
+      <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 mt-16 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg">
+        <h2 className="text-2xl font-semibold text-center mb-8 text-blue-900">Local Stores</h2>
         {loading ? (
           <div className="text-center text-gray-600">Loading stores...</div>
         ) : stores.length > 0 ? (
@@ -193,16 +193,16 @@ export default function Home() {
           <div className="text-center text-gray-600">No stores found</div>
         )}
         <div className="mt-8 text-center">
-          <Link href="/stores" className="inline-flex items-center rounded-md border px-4 py-2 hover:bg-white/50">
+          <Link href="/stores" className="inline-flex items-center rounded-md bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 shadow-md transition-all">
             View all stores
           </Link>
         </div>
       </section>
 
       {/* Upcoming Events */}
-      <section id="upcoming-events" className="border-t border-b/50 bg-white/30">
-        <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16">
-          <h2 className="text-2xl font-semibold text-center">Upcoming Events</h2>
+      <section id="upcoming-events" className="my-8">
+        <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 backdrop-blur-sm rounded-2xl shadow-lg">
+          <h2 className="text-2xl font-semibold text-center text-red-900">Upcoming Events</h2>
           {loading ? (
             <div className="text-center text-gray-600 mt-8">Loading events...</div>
           ) : events.length > 0 ? (
@@ -220,7 +220,7 @@ export default function Home() {
             <div className="text-center text-gray-600 mt-8">No upcoming events found</div>
           )}
           <div className="mt-8 text-center">
-            <Link href="/events" className="inline-flex items-center rounded-md border px-4 py-2 hover:bg-white/50">
+            <Link href="/events" className="inline-flex items-center rounded-md bg-red-600 text-white px-4 py-2 hover:bg-red-700 shadow-md transition-all">
               See all events
             </Link>
           </div>
@@ -228,9 +228,9 @@ export default function Home() {
       </section>
 
       {/* About Us */}
-      <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16">
+      <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 backdrop-blur-sm rounded-2xl shadow-lg">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl font-semibold">About Us</h2>
+          <h2 className="text-2xl font-semibold text-green-900">About Us</h2>
           <p className="mt-4 text-gray-700">
             We&apos;re a community of Pokémon TCG players and organizers in Northern Nevada. We host
             regular events, support new players with learn-to-play sessions, and connect Trainers
@@ -240,8 +240,8 @@ export default function Home() {
       </section>
 
       {/* Contact Us */}
-      <section className="border-t border-b/50 bg-white/30">
-        <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16">
+      <section className="my-8">
+        <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 backdrop-blur-sm rounded-2xl shadow-lg">
           <ContactForm />
         </div>
       </section>
