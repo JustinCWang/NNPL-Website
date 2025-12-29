@@ -107,6 +107,9 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
             <Link href="/my-guide" className={pathname === "/my-guide" ? "font-semibold" : "hover:underline"}>
               How to Play
             </Link>
+            <Link href="/pokemon-cards" className={pathname === "/pokemon-cards" ? "font-semibold" : "hover:underline"}>
+              Pokemon Cards
+            </Link>
           </nav>
           <ProfileDropdown variant="protected" />
         </div>
