@@ -5,13 +5,20 @@
 */
 @import "tailwindcss";
 
-/* Global site background */
+/* Global site background with theme support */
 @layer base {
   body {
+    /* Default fallback */
     background-color: white;
-    background-image: radial-gradient(circle, #e5e7eb 1px, transparent 1px);
-    background-size: 24px 24px;
+    /* Theme gradient with transparency overlay */
+    background-image: 
+      radial-gradient(circle, var(--theme-dot-color, rgba(118, 34, 133, 0.15)) 1px, transparent 1px),
+      var(--theme-gradient, linear-gradient(135deg, rgba(241, 209, 235, 0.3), rgba(200, 155, 207, 0.3), rgba(118, 34, 133, 0.3), rgba(94, 27, 125, 0.3)));
+    background-size: 
+      24px 24px,
+      100% 100%;
     background-attachment: fixed;
+    transition: background-image 0.3s ease, background-color 0.3s ease;
   }
 }
 
@@ -40,6 +47,15 @@
 
   .bg-pokemon-purple {
     background-color: rgba(160, 64, 160, 0.1);
+  }
+
+  /* Theme-based border utilities */
+  .border-theme {
+    border-color: var(--theme-border-color, #c89bcf);
+  }
+
+  .ring-theme {
+    --tw-ring-color: var(--theme-border-color, #c89bcf);
   }
 }
 
