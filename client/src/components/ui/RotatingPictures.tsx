@@ -1,4 +1,7 @@
 "use client";
+/*
+  RotatingPictures component for displaying a rotating carousel of pictures.
+*/
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';

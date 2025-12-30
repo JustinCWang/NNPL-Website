@@ -1,4 +1,13 @@
 "use client";
+/*
+  ProfileForm component for displaying a profile form.
+  - Displays a form for the user to update their profile
+  - Displays a form for the user to update their security
+  - Displays a form for the user to update their avatar
+  - Displays a message when the user submits the form
+  - Displays a message when the user submits the form successfully
+*/
+
 import { useState, useRef, FormEvent } from "react";
 import Image from "next/image";
 import { getSupabaseClient } from "@/lib/supabaseClient";

@@ -3,6 +3,7 @@
  * @param name - The user's full name
  * @returns Initials (1-2 characters)
  */
+
 export function getInitials(name: string): string {
   if (!name) return 'U';
   

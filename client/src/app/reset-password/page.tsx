@@ -1,9 +1,10 @@
+"use client";
 /*
   Password Reset page ("/reset-password").
   - Handles password reset from email link
   - Updates user password via Supabase Auth
 */
-"use client";
+
 import Link from "next/link";
 import { FormEvent, useState, useEffect, Suspense } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";

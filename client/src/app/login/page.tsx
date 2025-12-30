@@ -1,10 +1,11 @@
+"use client";
 /*
   Login page ("/login").
   - Collects user credentials and signs in via Supabase Auth
   - Shows basic loading and error states
   - Redirects to home on success
 */
-"use client";
+
 import Link from "next/link";
 import { FormEvent, useState, useEffect } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";

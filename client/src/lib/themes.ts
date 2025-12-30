@@ -1,3 +1,8 @@
+/*
+  Themes for the application.
+  - Displays the theme name, colors, icon, border color, and text color
+*/
+
 export interface Theme {
   name: string;
   colors: string[]; // Array of colors for gradients

@@ -1,11 +1,12 @@
+"use client";
 /*
-  Protected Events page ("/events" - authenticated users).
+  Protected Events page ("/my-events").
   - Shows upcoming events and tournaments with real data from Supabase
   - Additional features: event registration, personal calendar, notifications
   - Event filtering capabilities for better event discovery
   - Supports URL query parameters for pre-filtering
 */
-"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabaseClient";

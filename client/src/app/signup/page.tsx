@@ -1,10 +1,11 @@
+"use client";
 /*
   Signup page ("/signup").
   - Creates a new user via Supabase Auth
   - Captures name for user profile metadata
   - Shows loading and error states and redirects on success
 */
-"use client";
+
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";

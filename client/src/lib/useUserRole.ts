@@ -1,10 +1,11 @@
+"use client";
 /*
   Custom hook for checking user role and admin status.
   - Fetches user role from the Users table
   - Provides loading state and admin status
   - Can be used across components for role-based UI
 */
-"use client";
+
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "./supabaseClient";
 

@@ -4,6 +4,7 @@
   - Shows comprehensive profile management interface
   - Allows users to update username, email, password, and avatar
 */
+
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import ProfileForm from "@/components/ui/ProfileForm";

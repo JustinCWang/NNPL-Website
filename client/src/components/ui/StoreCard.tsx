@@ -1,4 +1,11 @@
 "use client";
+/*
+  StoreCard component for displaying a store in the stores page.
+  - Displays the store name, location, average players, and league availability
+  - Displays a button to visit the store's website
+  - Displays a button to join the store's discord
+  - Displays a button to view the store's events
+*/
 
 import { Store } from '@/types/store';
 import Link from 'next/link';

@@ -3,6 +3,7 @@
   - Accessible without authentication
   - Information about NNPL and sections for different stakeholders
 */
+
 import Link from "next/link";
 
 export default function AboutUsPage() {

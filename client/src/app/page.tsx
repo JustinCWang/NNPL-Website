@@ -5,11 +5,12 @@
   - If logged in, shows quick navigation to protected app pages + sign-out
   - Displays real data from Supabase for stores and events
 */
+
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
-import ProfileDropdown from "@/components/layout/ProfileDropdown";
+import LandingPillHeader from "@/components/layout/LandingPillHeader";
+import SiteFooter from "@/components/layout/SiteFooter";
 import ContactForm from "@/components/ui/ContactForm";
 import RotatingPictures from "@/components/ui/RotatingPictures";
 import { Store } from "@/types/store";
@@ -20,9 +21,6 @@ import EventCard from "@/components/ui/EventCard";
 /**
  * Landing page route component.
  * @returns Marketing homepage with header, hero, features and footer
- */
-/**
- * Marketing/landing page that adapts header actions based on auth state.
  */
 export default function Home() {
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
@@ -110,44 +108,8 @@ export default function Home() {
   // When authenticated, we show an extra "Dashboard" tab.
   return (
     <main className="min-h-dvh text-gray-900">
-      {/* Site header with brand and primary navigation */}
-      <header className="py-4 px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-screen-xl bg-gradient-to-r from-white via-purple-50 to-pink-50 border-1 border-purple-200 rounded-full shadow-xl px-6 lg:px-8 py-4 grid grid-cols-3 items-center">
-          {/* Left: Logo */}
-          <div className="justify-self-start">
-            <Link href="/">
-              <Image
-                src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/nnpl_logo.svg"
-                alt="NNPL Logo"
-                width={128}
-                height={32}
-                className="h-10 w-auto"
-                priority
-              />
-            </Link>
-          </div>
-          {/* Center: Primary navigation */}
-          <nav className="justify-self-center flex items-center gap-5 text-sm">
-            <Link href="/events" className="hover:underline">Events</Link>
-            <Link href="/stores" className="hover:underline">Local Stores</Link>
-            <Link href="/guide" className="hover:underline">How to Play</Link>
-            <Link href="/about-us" className="hover:underline">About Us</Link>
-          </nav>
-          {/* Right: Auth actions */}
-          <div className="justify-self-end">
-            {isAuthed ? (
-              <ProfileDropdown variant="landing" />
-            ) : (
-              <Link
-                href="/login"
-                className="inline-flex items-center rounded-md bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1.5 text-sm hover:from-purple-700 hover:to-pink-700 shadow-md transition-all"
-              >
-                Log in / Sign up
-              </Link>
-            )}
-          </div>
-        </div>
-      </header>
+      {/* Landing pill header */}
+      <LandingPillHeader isAuthed={isAuthed} />
 
       {/* Welcome section with carousel background */}
       <section className="relative mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-24 lg:py-36 mt-8">
@@ -246,10 +208,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-12 text-sm text-gray-700 text-center">
-        © {new Date().getFullYear()} NNPL. All rights reserved.
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

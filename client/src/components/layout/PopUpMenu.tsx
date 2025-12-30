@@ -1,4 +1,11 @@
 "use client";
+/*
+  PopUpMenu component for displaying a modal with a trigger.
+  - Displays a modal with a trigger
+  - Displays the modal content when the trigger is clicked
+  - Closes the modal when the user clicks outside the modal content
+  - Closes the modal when the user presses the escape key
+*/
 
 import { useState, useRef, useEffect } from "react";
 

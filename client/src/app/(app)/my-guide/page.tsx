@@ -1,9 +1,10 @@
+"use client";
 /*
-  Protected Guide page ("/guide" - authenticated users).
+  Protected Guide page ("/my-guide").
   - Shows how to play Pokémon TCG
   - Additional features: progress tracking, personalized tips, deck builder tools
 */
-"use client";
+
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import TooltipHover from "@/components/layout/TooltipHover";

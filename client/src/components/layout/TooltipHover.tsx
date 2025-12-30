@@ -1,4 +1,8 @@
 "use client";
+/*
+  TooltipHover component for displaying a tooltip on hover.
+  - Displays a tooltip when the user hovers over the child element
+*/
 
 import { useState } from "react";
 

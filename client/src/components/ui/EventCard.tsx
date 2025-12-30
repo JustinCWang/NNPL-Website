@@ -1,4 +1,9 @@
 "use client";
+/*
+  EventCard component for displaying an event in the events page.
+  - Displays the event name, type, date, store, cost, and prizing
+  - Displays a heart icon for the user to favorite the event
+*/
 
 import { Event } from '@/types/event';
 

@@ -6,6 +6,7 @@
   - Event filtering capabilities for better event discovery
   - Supports URL query parameters for pre-filtering
 */
+
 import Link from "next/link";
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";

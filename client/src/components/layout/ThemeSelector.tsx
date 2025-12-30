@@ -1,11 +1,17 @@
-'use client';
+"use client";
+/*
+  Theme selector dropdown.
+  - Shows the current theme icon in the header
+  - Lets the user choose from configured themes (see `src/lib/themes.ts`)
+  - Persists selection via `ThemeContext`
+*/
 
-import React, { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
-import { useTheme } from '@/context/ThemeContext';
-import { themes, type Theme } from '@/lib/themes';
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { useTheme } from "@/context/ThemeContext";
+import { themes, type Theme } from "@/lib/themes";
 
-const ThemeSelector: React.FC = () => {
+export default function ThemeSelector() {
   const { selectedTheme, setSelectedTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -22,9 +28,9 @@ const ThemeSelector: React.FC = () => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -82,8 +88,8 @@ const ThemeSelector: React.FC = () => {
                   tabIndex={-1}
                   onClick={() => handleThemeSelect(theme)}
                   style={{
-                    backgroundColor: 'transparent',
-                    border: 'none',
+                    backgroundColor: "transparent",
+                    border: "none",
                   }}
                   title={theme.name.charAt(0).toUpperCase() + theme.name.slice(1)}
                 >
@@ -102,7 +108,5 @@ const ThemeSelector: React.FC = () => {
       )}
     </div>
   );
-};
-
-export default ThemeSelector;
+}
 

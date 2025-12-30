@@ -4,6 +4,7 @@
   - Persists and auto-refreshes auth sessions in the browser
   - Use getSupabaseClient() from client components to avoid multiple instances
 */
+
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 let client: SupabaseClient | null = null;

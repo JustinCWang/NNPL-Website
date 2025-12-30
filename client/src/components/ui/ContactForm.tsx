@@ -1,4 +1,10 @@
 "use client";
+/*
+  Contact form component for the landing page
+  - Displays a form for the user to contact the website owner
+  - Displays a message when the user submits the form
+*/
+
 import { FormEvent } from "react";
 
 interface ContactFormProps {

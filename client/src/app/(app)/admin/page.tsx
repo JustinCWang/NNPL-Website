@@ -5,6 +5,7 @@
   - Redirects non-admin users to home page
   - Shows admin controls and management interface
 */
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabaseClient";

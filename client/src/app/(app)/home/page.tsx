@@ -2,6 +2,7 @@
   Protected Home page ("/home").
   - Simple placeholder content rendered inside the protected layout
 */
+
 export default function HomePage() {
   return (
     <main>

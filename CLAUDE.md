@@ -50,5 +50,6 @@ npm run lint
 ## Key Patterns
 - Singleton pattern for Supabase client to avoid multiple instances
 - Comprehensive TypeScript comments explaining file purposes with detailed header comment
+- Ensure pages are componentized and modular to keep project as organized and readable as possible. 
 - Environment variable validation with helpful error messages
 - Route grouping to separate authenticated and public pages

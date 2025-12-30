@@ -3,6 +3,7 @@
   - Accessible without authentication
   - Shows how to play Pokémon TCG
 */
+
 import Link from "next/link";
 import Image from "next/image";
 

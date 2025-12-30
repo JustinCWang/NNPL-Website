@@ -1,9 +1,10 @@
+"use client";
 /*
-  Protected Stores page ("/stores" - authenticated users).
+  Protected Stores page ("/my-stores").
   - Shows local game stores and venues with real data from Supabase
   - Additional features: favorites, reviews, check-ins, store events
 */
-"use client";
+
 import { useState, useEffect } from "react";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { Store } from "@/types/store";
