@@ -10,7 +10,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabaseClient";
-import { Event } from "@/types/event";
+import { Event, EventRegistration } from "@/types/event";
 import { Store } from "@/types/store";
 import UserEventFilters from "@/components/ui/UserEventFilters";
 import EventCard from "@/components/ui/EventCard";
@@ -24,6 +24,8 @@ export default function EventsPage() {
   const [stores, setStores] = useState<Store[]>([]);
   const [favoriteEventIds, setFavoriteEventIds] = useState<string[]>([]);
   const [pendingFavoriteIds, setPendingFavoriteIds] = useState<string[]>([]);
+  const [registeredEventIds, setRegisteredEventIds] = useState<string[]>([]);
+  const [pendingRegistrationIds, setPendingRegistrationIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,11 +43,11 @@ export default function EventsPage() {
 
         const { data: authData, error: authError } = await supabase.auth.getUser();
         if (authError || !authData.user) {
-          setError('You must be logged in to view and favorite events.');
+          setError('You must be logged in to manage your events.');
           return;
         }
 
-        const [eventsResponse, pastEventsResponse, storesResponse, favoritesResponse] = await Promise.all([
+        const [eventsResponse, pastEventsResponse, storesResponse, favoritesResponse, registrationsResponse] = await Promise.all([
           supabase
             .from('Events')
             .select(`
@@ -69,6 +71,10 @@ export default function EventsPage() {
           supabase
             .from('FavoriteEvents')
             .select('event_id')
+            .eq('user_id', authData.user.id),
+          supabase
+            .from('EventRegistrations')
+            .select('event_id, created_at')
             .eq('user_id', authData.user.id),
         ]);
 
@@ -96,11 +102,20 @@ export default function EventsPage() {
           return;
         }
 
+        const { data: registrationsData, error: registrationsError } = registrationsResponse;
+        if (registrationsError) {
+          console.error('Error fetching event registrations:', registrationsError);
+          setError('Failed to load your event registrations. Please try again later.');
+          return;
+        }
+
         setEvents(eventsData || []);
         setFilteredEvents(eventsData || []);
         setPastEvents(pastEventsData || []);
         setStores(storesData || []);
         setFavoriteEventIds((favoritesData || []).map((favorite) => favorite.event_id));
+        const registrationRows = (registrationsData || []) as EventRegistration[];
+        setRegisteredEventIds(registrationRows.map((registration) => registration.event_id));
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('An unexpected error occurred. Please try again later.');
@@ -164,8 +179,59 @@ export default function EventsPage() {
     }
   }, [favoriteEventIds]);
 
+  const toggleEventRegistration = useCallback(async (eventId: string) => {
+    const supabase = getSupabaseClient();
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !authData.user) {
+      setError('You must be logged in to register for events.');
+      return;
+    }
+
+    const wasRegistered = registeredEventIds.includes(eventId);
+
+    setPendingRegistrationIds((prev) => [...prev, eventId]);
+    setRegisteredEventIds((prev) =>
+      wasRegistered ? prev.filter((id) => id !== eventId) : [...prev, eventId]
+    );
+
+    try {
+      if (wasRegistered) {
+        const { error: deleteError } = await supabase
+          .from('EventRegistrations')
+          .delete()
+          .eq('user_id', authData.user.id)
+          .eq('event_id', eventId);
+
+        if (deleteError) {
+          throw deleteError;
+        }
+      } else {
+        const { error: insertError } = await supabase
+          .from('EventRegistrations')
+          .insert([{ user_id: authData.user.id, event_id: eventId }]);
+
+        if (insertError) {
+          throw insertError;
+        }
+      }
+
+      setError(null);
+    } catch (registrationError) {
+      console.error('Error updating event registration:', registrationError);
+      setRegisteredEventIds((prev) =>
+        wasRegistered ? [...prev, eventId] : prev.filter((id) => id !== eventId)
+      );
+      setError('Failed to update your event registration. Please try again.');
+    } finally {
+      setPendingRegistrationIds((prev) => prev.filter((id) => id !== eventId));
+    }
+  }, [registeredEventIds]);
+
   const favoriteUpcomingEvents = events.filter((event) => favoriteEventIds.includes(event.event_id));
   const favoritePastEvents = pastEvents.filter((event) => favoriteEventIds.includes(event.event_id));
+  const registeredUpcomingEvents = events.filter((event) => registeredEventIds.includes(event.event_id));
+  const registeredPastEvents = pastEvents.filter((event) => registeredEventIds.includes(event.event_id));
 
   // Render event card component
   const renderEventCard = (event: Event, showActions: boolean = true) => {
@@ -178,6 +244,9 @@ export default function EventsPage() {
         isFavorited={favoriteEventIds.includes(event.event_id)}
         isFavoritePending={pendingFavoriteIds.includes(event.event_id)}
         onToggleFavorite={toggleFavoriteEvent}
+        isRegistered={registeredEventIds.includes(event.event_id)}
+        isRegistrationPending={pendingRegistrationIds.includes(event.event_id)}
+        onToggleRegistration={toggleEventRegistration}
       />
     );
   };
@@ -317,14 +386,44 @@ export default function EventsPage() {
       )}
 
       {selectedTab === 'registered' && (
-        <div className="text-center py-8">
-          <p className="text-theme-muted">You haven&apos;t registered for any events yet.</p>
-          <button 
-            onClick={() => setSelectedTab('upcoming')}
-            className="theme-button-ghost mt-2 rounded-md px-2 py-1"
-          >
-            Browse upcoming events →
-          </button>
+        <div className="space-y-6">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-theme" style={{ borderTopColor: "transparent" }}></div>
+              <p className="mt-2 text-theme-muted">Loading your registrations...</p>
+            </div>
+          ) : registeredUpcomingEvents.length > 0 || registeredPastEvents.length > 0 ? (
+            <>
+              {registeredUpcomingEvents.length > 0 && (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-theme-foreground mb-2">Upcoming Registrations</h3>
+                    <p className="text-sm text-theme-muted">Events you&apos;ve marked that you plan to attend.</p>
+                  </div>
+                  {registeredUpcomingEvents.map((event) => renderEventCard(event, true))}
+                </div>
+              )}
+              {registeredPastEvents.length > 0 && (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-theme-foreground mb-2">Past Registrations</h3>
+                    <p className="text-sm text-theme-muted">Past events you had previously registered interest in.</p>
+                  </div>
+                  {registeredPastEvents.map((event) => renderEventCard(event, false))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-theme-muted">You haven&apos;t registered for any events yet.</p>
+              <button 
+                onClick={() => setSelectedTab('upcoming')}
+                className="theme-button-ghost mt-2 rounded-md px-2 py-1"
+              >
+                Browse upcoming events →
+              </button>
+            </div>
+          )}
         </div>
       )}
 

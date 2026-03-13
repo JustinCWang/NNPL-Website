@@ -15,6 +15,9 @@ interface EventCardProps {
   isFavorited?: boolean;
   onToggleFavorite?: (eventId: string) => void | Promise<void>;
   isFavoritePending?: boolean;
+  isRegistered?: boolean;
+  onToggleRegistration?: (eventId: string) => void | Promise<void>;
+  isRegistrationPending?: boolean;
 }
 
 export default function EventCard({
@@ -24,6 +27,9 @@ export default function EventCard({
   isFavorited = false,
   onToggleFavorite,
   isFavoritePending = false,
+  isRegistered = false,
+  onToggleRegistration,
+  isRegistrationPending = false,
 }: EventCardProps) {
   // Helper function to get event type label and color
   const getEventTypeInfo = (event: Event) => {
@@ -37,7 +43,7 @@ export default function EventCard({
   const eventType = getEventTypeInfo(event);
 
   return (
-    <div className="theme-card theme-card-hover rounded-lg p-6 h-64 flex flex-col">
+    <div className="theme-card theme-card-hover rounded-lg p-6 min-h-[16rem] flex flex-col">
       {/* Event Name and Favorite Heart Row */}
       <div className="flex items-start justify-between mb-3">
         <h3 className="text-lg font-semibold text-theme-foreground truncate flex-1 mr-2" title={event.name}>
@@ -133,10 +139,28 @@ export default function EventCard({
           )}
         </div>
 
-      {/* Actions Row - Only show for authenticated variant without buttons, public variant has no actions */}
+      {/* Actions Row - Public cards stay read-only; authenticated cards can register */}
       {variant === 'authenticated' && showActions && (
-        // Authenticated events page - No action buttons needed (heart is in corner)
-        <div className="mt-auto"></div>
+        <div className="mt-auto pt-4">
+          <button
+            type="button"
+            onClick={() => onToggleRegistration?.(event.event_id)}
+            disabled={!onToggleRegistration || isRegistrationPending}
+            className={`w-full rounded-md px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed ${
+              isRegistrationPending ? 'cursor-wait' : ''
+            } ${
+              isRegistered ? 'theme-button-ghost' : 'theme-button'
+            }`}
+          >
+            {isRegistrationPending
+              ? isRegistered
+                ? 'Canceling registration...'
+                : 'Registering...'
+              : isRegistered
+                ? 'Cancel Registration'
+                : 'Register'}
+          </button>
+        </div>
       )}
     </div>
   );

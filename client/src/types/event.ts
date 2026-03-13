@@ -30,6 +30,12 @@ export interface Event {
   };
 }
 
+export interface EventRegistration {
+  user_id: string;
+  event_id: string;
+  created_at: string;
+}
+
 export interface CreateEventData {
   start_at: string;
   timezone: string;
