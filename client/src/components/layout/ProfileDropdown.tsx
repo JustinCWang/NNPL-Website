@@ -160,15 +160,15 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
       {isOpen && (
         <div className="theme-card pointer-events-auto absolute right-0 z-[70] mt-2 w-48 rounded-md">
           <div className="py-1">
-            {/* User info */}
+            {/* Username */}
             <div className="py-2 px-4 text-sm text-theme-foreground border-b text-center" style={{ borderColor: "var(--theme-border-soft)" }}>
-              {username || 'User'}
-            
+              {username || 'User'}    
+                      
             {/* Admin link - only show for admin users */}
             {userRole === 'admin' && (
               <Link
                 href="/admin"
-                className="theme-button-subtle mt-2 block rounded-md px-4 py-2 text-sm font-medium"
+                className="theme-button-subtle mt-2 block rounded-md px-1 py-2 text-sm font-medium"
                 onClick={() => setIsOpen(false)}
               >
                 Admin Dashboard

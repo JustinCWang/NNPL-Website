@@ -136,7 +136,7 @@ export default function Home() {
             >
               Get Started
             </Link>
-            <a href="#upcoming-events" className="inline-flex items-center rounded-md border-2 border-white px-4 py-2 text-white hover:bg-white hover:text-purple-900 backdrop-blur-sm font-medium transition-all">
+            <a href="#upcoming-events" className="inline-flex items-center rounded-md border-2 border-white px-4 py-2 text-white hover:bg-white hover:text-black backdrop-blur-sm font-medium transition-all">
               View Events
             </a>
           </div>
