@@ -9,7 +9,7 @@
   - Supports initial filter values from URL parameters
 */
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Event } from '@/types/event';
 import { Store } from '@/types/store';
 import { getEventLocalDate, getStartOfWeek, getEndOfWeek, getStartOfMonth, getEndOfMonth } from '@/lib/dateUtils';
@@ -37,36 +37,44 @@ const EVENT_TYPE_OPTIONS = [
 ];
 
 export default function UserEventFilters({ events, stores, onFiltersChange, initialFilters }: UserEventFiltersProps) {
+  const initialStoreId = initialFilters?.storeId || '';
+  const initialEventTypes = initialFilters?.eventTypes || [];
   const [filters, setFilters] = useState<UserEventFilters>(() => ({
     name: '',
     dateFrom: '',
     dateTo: '',
-    storeId: initialFilters?.storeId || '',
-    eventTypes: initialFilters?.eventTypes || [],
+    storeId: initialStoreId,
+    eventTypes: initialEventTypes,
   }));
+  const lastAppliedInitialFiltersRef = useRef({
+    storeId: initialStoreId,
+    eventTypes: initialEventTypes,
+  });
 
   const [showFilters, setShowFilters] = useState(false);
 
   // Update filters when initialFilters change (e.g., from URL params)
   useEffect(() => {
-    if (initialFilters) {
-      setFilters(prev => {
-        // Only update if the values are actually different to prevent unnecessary re-renders
-        const hasChanges = Object.keys(initialFilters).some(key => {
-          const k = key as keyof UserEventFilters;
-          return prev[k] !== initialFilters[k];
-        });
-        
-        if (hasChanges) {
-          return {
-            ...prev,
-            ...initialFilters
-          };
-        }
-        return prev;
-      });
+    const previousInitialFilters = lastAppliedInitialFiltersRef.current;
+    const eventTypesChanged =
+      previousInitialFilters.eventTypes.length !== initialEventTypes.length ||
+      previousInitialFilters.eventTypes.some((type, index) => type !== initialEventTypes[index]);
+
+    if (previousInitialFilters.storeId === initialStoreId && !eventTypesChanged) {
+      return;
     }
-  }, [initialFilters]);
+
+    lastAppliedInitialFiltersRef.current = {
+      storeId: initialStoreId,
+      eventTypes: initialEventTypes,
+    };
+
+    setFilters(prev => ({
+      ...prev,
+      storeId: initialStoreId,
+      eventTypes: initialEventTypes,
+    }));
+  }, [initialStoreId, initialEventTypes]);
 
   const applyFilters = useCallback((eventList: Event[], currentFilters: UserEventFilters): Event[] => {
     return eventList.filter(event => {
