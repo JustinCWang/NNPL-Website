@@ -7,10 +7,16 @@
   - Supports URL query parameters for pre-filtering
 */
 
+import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import {
+  fetchLiveEventOverviews,
+  fetchMyLiveEventHistory,
+} from "@/lib/liveEventApi";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { Event, EventRegistration } from "@/types/event";
+import { LiveEventHistoryItem, LiveEventOverview } from "@/types/liveEvent";
 import { Store } from "@/types/store";
 import UserEventFilters from "@/components/ui/UserEventFilters";
 import EventCard from "@/components/ui/EventCard";
@@ -26,6 +32,9 @@ export default function EventsPage() {
   const [pendingFavoriteIds, setPendingFavoriteIds] = useState<string[]>([]);
   const [registeredEventIds, setRegisteredEventIds] = useState<string[]>([]);
   const [pendingRegistrationIds, setPendingRegistrationIds] = useState<string[]>([]);
+  const [liveEventOverviews, setLiveEventOverviews] = useState<LiveEventOverview[]>([]);
+  const [liveEventHistory, setLiveEventHistory] = useState<LiveEventHistoryItem[]>([]);
+  const [dismissedLiveEventIds, setDismissedLiveEventIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -115,7 +124,16 @@ export default function EventsPage() {
         setStores(storesData || []);
         setFavoriteEventIds((favoritesData || []).map((favorite) => favorite.event_id));
         const registrationRows = (registrationsData || []) as EventRegistration[];
-        setRegisteredEventIds(registrationRows.map((registration) => registration.event_id));
+        const registrationEventIds = registrationRows.map((registration) => registration.event_id);
+        setRegisteredEventIds(registrationEventIds);
+
+        const [liveOverviews, historyItems] = await Promise.all([
+          fetchLiveEventOverviews(registrationEventIds),
+          fetchMyLiveEventHistory(),
+        ]);
+
+        setLiveEventOverviews(liveOverviews);
+        setLiveEventHistory(historyItems);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('An unexpected error occurred. Please try again later.');
@@ -232,6 +250,9 @@ export default function EventsPage() {
   const favoritePastEvents = pastEvents.filter((event) => favoriteEventIds.includes(event.event_id));
   const registeredUpcomingEvents = events.filter((event) => registeredEventIds.includes(event.event_id));
   const registeredPastEvents = pastEvents.filter((event) => registeredEventIds.includes(event.event_id));
+  const liveReadyEvents = liveEventOverviews.filter((overview) => overview.canJoin && !overview.isCompleted);
+  const activePromptEvent =
+    liveReadyEvents.find((overview) => !dismissedLiveEventIds.includes(overview.event.event_id)) ?? null;
 
   // Render event card component
   const renderEventCard = (event: Event, showActions: boolean = true) => {
@@ -392,8 +413,46 @@ export default function EventsPage() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-theme" style={{ borderTopColor: "transparent" }}></div>
               <p className="mt-2 text-theme-muted">Loading your registrations...</p>
             </div>
-          ) : registeredUpcomingEvents.length > 0 || registeredPastEvents.length > 0 ? (
+          ) : liveReadyEvents.length > 0 || registeredUpcomingEvents.length > 0 || registeredPastEvents.length > 0 ? (
             <>
+              {liveReadyEvents.length > 0 && (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-theme-foreground mb-2">Live Right Now</h3>
+                    <p className="text-sm text-theme-muted">These registered events are ready for deck selection, round tracking, and live reporting.</p>
+                  </div>
+                  <div className="grid gap-4">
+                    {liveReadyEvents.map((overview) => (
+                      <div
+                        key={overview.event.event_id}
+                        className="theme-card rounded-lg p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h4 className="text-lg font-semibold text-theme-foreground">{overview.event.name}</h4>
+                            <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
+                              {overview.session?.status === 'active' ? 'Live now' : 'Ready to join'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-theme-muted">
+                            {overview.event.store?.name ? `${overview.event.store.name} · ` : ''}
+                            {overview.session
+                              ? `Round ${overview.session.current_round} of ${overview.session.total_rounds}`
+                              : 'Waiting for the first attendee to join'}
+                          </p>
+                        </div>
+                        <Link
+                          href={`/my-events/${overview.event.event_id}/live`}
+                          className="theme-button inline-flex rounded-md px-4 py-2 text-sm"
+                        >
+                          Enter Live Room
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {registeredUpcomingEvents.length > 0 && (
                 <div className="space-y-4">
                   <div>
@@ -434,19 +493,109 @@ export default function EventsPage() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-theme" style={{ borderTopColor: "transparent" }}></div>
               <p className="mt-2 text-theme-muted">Loading event history...</p>
             </div>
-          ) : pastEvents.length > 0 ? (
-            <div className="space-y-4">
-              <div className="mb-4">
-                <h3 className="text-lg font-medium text-theme-foreground mb-2">Past Events</h3>
-                <p className="text-sm text-theme-muted">Events you&apos;ve participated in or missed.</p>
-              </div>
-              {pastEvents.map((event) => renderEventCard(event, false))}
+          ) : pastEvents.length > 0 || liveEventHistory.length > 0 ? (
+            <div className="space-y-6">
+              {liveEventHistory.length > 0 && (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-theme-foreground mb-2">Tracked Live Event Results</h3>
+                    <p className="text-sm text-theme-muted">Your completed live events, records, and per-event statistics.</p>
+                  </div>
+                  <div className="grid gap-4">
+                    {liveEventHistory.map((item) => (
+                      <div key={item.summary.session_id} className="theme-card rounded-lg p-5">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h4 className="text-lg font-semibold text-theme-foreground">{item.event.name}</h4>
+                              <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800">
+                                {item.summary.final_wins}-{item.summary.final_losses}-{item.summary.final_ties}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-3 text-sm text-theme-muted">
+                              <span>{item.summary.rounds_played} rounds</span>
+                              <span>
+                                Games {item.summary.total_games_won}-{item.summary.total_games_lost}-{item.summary.total_games_tied}
+                              </span>
+                              <span>Went first {item.summary.went_first_count} times</span>
+                              <span>{item.deckName ? `Deck: ${item.deckName}` : 'Deck tracked in session'}</span>
+                            </div>
+                            <p className="text-sm text-theme-muted">
+                              Avg round duration {item.summary.average_round_duration_minutes ?? 'N/A'} min ·
+                              {' '}App opponents {item.summary.app_user_rounds} · Other players {item.summary.other_player_rounds}
+                            </p>
+                          </div>
+                          <Link
+                            href={`/my-events/${item.event.event_id}/live`}
+                            className="theme-button-ghost inline-flex rounded-md px-4 py-2 text-sm"
+                          >
+                            View Live Session
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {pastEvents.length > 0 && (
+                <div className="space-y-4">
+                  <div className="mb-4">
+                    <h3 className="text-lg font-medium text-theme-foreground mb-2">Past Events</h3>
+                    <p className="text-sm text-theme-muted">Events you&apos;ve participated in or missed.</p>
+                  </div>
+                  {pastEvents.map((event) => renderEventCard(event, false))}
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-8">
               <p className="text-theme-muted">No event history yet. Participate in tournaments to see your results here.</p>
             </div>
           )}
+        </div>
+      )}
+
+      {activePromptEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="theme-overlay absolute inset-0"></div>
+          <div className="theme-card relative z-10 w-full max-w-lg rounded-xl p-6">
+            <button
+              type="button"
+              onClick={() =>
+                setDismissedLiveEventIds((prev) => [...prev, activePromptEvent.event.event_id])
+              }
+              className="theme-button-ghost absolute right-3 top-3 rounded-full px-3 py-1 text-sm"
+            >
+              Close
+            </button>
+            <div className="space-y-3">
+              <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-800">
+                Event Starting
+              </span>
+              <h2 className="text-2xl font-semibold text-theme-foreground">{activePromptEvent.event.name}</h2>
+              <p className="text-theme-muted">
+                Your registered event is ready for live tracking. Join the live room to choose your deck, vote on the round timer, and report results round by round.
+              </p>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Link
+                  href={`/my-events/${activePromptEvent.event.event_id}/live`}
+                  className="theme-button inline-flex rounded-md px-4 py-2 text-sm"
+                >
+                  Open Live Room
+                </Link>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDismissedLiveEventIds((prev) => [...prev, activePromptEvent.event.event_id])
+                  }
+                  className="theme-button-ghost rounded-md px-4 py-2 text-sm"
+                >
+                  Remind Me Later
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </main>
