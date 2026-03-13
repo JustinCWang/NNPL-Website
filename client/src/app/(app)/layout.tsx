@@ -113,6 +113,9 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
             <Link href="/my-guide" className={pathname === "/my-guide" ? "font-semibold text-theme" : "text-theme-foreground hover:text-theme transition-colors"}>
               How to Play
             </Link>
+            <Link href="/decklists" className={pathname.startsWith("/decklists") ? "font-semibold text-theme" : "text-theme-foreground hover:text-theme transition-colors"}>
+              Decklists
+            </Link>
             <Link href="/pokemon-cards" className={pathname === "/pokemon-cards" ? "font-semibold text-theme" : "text-theme-foreground hover:text-theme transition-colors"}>
               Pokemon Cards
             </Link>

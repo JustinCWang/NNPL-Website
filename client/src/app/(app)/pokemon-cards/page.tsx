@@ -8,6 +8,7 @@
 */
 
 import { useEffect, useMemo, useState, useCallback } from "react";
+import Link from "next/link";
 import { fetchPokemonCards } from "@/lib/pokemonCardApi";
 import { AVAILABLE_POKEMON_SETS } from "@/lib/pokemonCardSets";
 import type { PokemonCard, PokemonCardFilters } from "@/types/pokemonCard";
@@ -154,9 +155,14 @@ export default function PokemonCardsPage() {
 
   return (
     <main>
-      <div className="mb-6">
-        <h1 className="text-3xl font-semibold text-theme-foreground">Pokemon Cards</h1>
-        <p className="mt-2 text-theme-muted">Browse Pokemon card pricing and details with advanced filtering.</p>
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold text-theme-foreground">Pokemon Cards</h1>
+          <p className="mt-2 text-theme-muted">Browse Pokemon card pricing and details with advanced filtering.</p>
+        </div>
+        <Link href="/decklists/new" className="theme-button inline-flex rounded-md px-4 py-2 text-sm">
+          Open Deck Builder
+        </Link>
       </div>
 
       <PokemonCardFilter
