@@ -130,7 +130,10 @@ export default function Home() {
             Northern Nevada Pokémon League — events, community, and resources for Trainers of all ages.
           </p>
           <div className="mt-8 flex gap-3 justify-center">
-            <Link href="/signup" className="inline-flex items-center rounded-md bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-2 text-white hover:from-yellow-500 hover:to-orange-600 font-medium shadow-lg transition-all">
+            <Link
+              href="/signup"
+              className="theme-button inline-flex items-center rounded-full px-5 py-2.5 font-medium"
+            >
               Get Started
             </Link>
             <a href="#upcoming-events" className="inline-flex items-center rounded-md border-2 border-white px-4 py-2 text-white hover:bg-white hover:text-purple-900 backdrop-blur-sm font-medium transition-all">

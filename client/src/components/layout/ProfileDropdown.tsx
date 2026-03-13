@@ -128,6 +128,7 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
     <div className="relative" ref={dropdownRef}>
       {/* Avatar button */}
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`w-10 h-10 rounded-full text-white text-sm font-medium flex items-center justify-center transition-colors overflow-hidden relative ${
           shouldShowImage 
@@ -157,7 +158,7 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className="theme-card absolute right-0 mt-2 w-48 rounded-md z-50">
+        <div className="theme-card pointer-events-auto absolute right-0 z-[70] mt-2 w-48 rounded-md">
           <div className="py-1">
             {/* User info */}
             <div className="py-2 px-4 text-sm text-theme-foreground border-b text-center" style={{ borderColor: "var(--theme-border-soft)" }}>

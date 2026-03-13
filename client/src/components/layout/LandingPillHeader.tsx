@@ -8,6 +8,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import ProfileDropdown from "@/components/layout/ProfileDropdown";
+import ThemeSelector from "@/components/layout/ThemeSelector";
 
 type LandingPillHeaderProps = {
   isAuthed: boolean | null;
@@ -15,8 +16,8 @@ type LandingPillHeaderProps = {
 
 export default function LandingPillHeader({ isAuthed }: LandingPillHeaderProps) {
   return (
-    <header className="py-4 px-6 lg:px-8">
-      <div className="theme-card mx-auto w-full max-w-screen-xl rounded-full px-6 lg:px-8 py-4 grid grid-cols-3 items-center">
+    <header className="relative z-40 py-4 px-6 lg:px-8">
+      <div className="theme-card relative mx-auto grid w-full max-w-screen-xl grid-cols-3 items-center rounded-full px-6 py-4 lg:px-8">
         {/* Left: Logo */}
         <div className="justify-self-start">
           <Link href="/">
@@ -48,13 +49,14 @@ export default function LandingPillHeader({ isAuthed }: LandingPillHeaderProps) 
         </nav>
 
         {/* Right: Auth actions */}
-        <div className="justify-self-end">
+        <div className="flex items-center justify-self-end gap-3">
+          <ThemeSelector />
           {isAuthed ? (
             <ProfileDropdown variant="landing" />
           ) : (
             <Link
               href="/login"
-              className="theme-button inline-flex items-center rounded-md px-3 py-1.5 text-sm"
+              className="theme-button inline-flex items-center rounded-full px-4 py-2 text-sm font-medium"
             >
               Log in / Sign up
             </Link>
