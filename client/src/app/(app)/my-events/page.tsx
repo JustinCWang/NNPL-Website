@@ -44,8 +44,8 @@ export default function EventsPage() {
             *,
             store:Stores(name, location)
           `)
-          .gte('date', new Date().toISOString().split('T')[0]) // Only future events
-          .order('date', { ascending: true });
+          .gte('start_at', new Date().toISOString())
+          .order('start_at', { ascending: true });
 
         if (eventsError) {
           console.error('Error fetching events:', eventsError);
@@ -60,8 +60,8 @@ export default function EventsPage() {
             *,
             store:Stores(name, location)
           `)
-          .lt('date', new Date().toISOString().split('T')[0]) // Only past events
-          .order('date', { ascending: false });
+          .lt('start_at', new Date().toISOString())
+          .order('start_at', { ascending: false });
 
         if (pastEventsError) {
           console.error('Error fetching past events:', pastEventsError);

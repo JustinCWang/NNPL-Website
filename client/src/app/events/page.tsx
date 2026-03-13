@@ -15,6 +15,7 @@ import { Event } from "@/types/event";
 import { Store } from "@/types/store";
 import UserEventFilters from "@/components/ui/UserEventFilters";
 import EventCard from "@/components/ui/EventCard";
+import { formatMonthYear } from "@/lib/dateUtils";
 
 function EventsPageContent() {
   const searchParams = useSearchParams();
@@ -42,8 +43,8 @@ function EventsPageContent() {
             *,
             store:Stores(name, location)
           `)
-          .gte('date', new Date().toISOString().split('T')[0]) // Only future events
-          .order('date', { ascending: true });
+          .gte('start_at', new Date().toISOString())
+          .order('start_at', { ascending: true });
 
         if (eventsError) {
           console.error('Error fetching events:', eventsError);
@@ -88,8 +89,7 @@ function EventsPageContent() {
     const grouped: { [key: string]: Event[] } = {};
     
     events.forEach(event => {
-      const date = new Date(event.date);
-      const monthKey = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+      const monthKey = formatMonthYear(event.start_at, event.timezone);
       
       if (!grouped[monthKey]) {
         grouped[monthKey] = [];

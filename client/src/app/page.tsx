@@ -77,15 +77,15 @@ export default function Home() {
           setStores(storesData || []);
         }
 
-        // Fetch events ordered by date (closest to farthest)
+        // Fetch upcoming events ordered by start time
         const { data: eventsData, error: eventsError } = await supabase
           .from('Events')
           .select(`
             *,
             store:Stores(name, location)
           `)
-          .gte('date', new Date().toISOString().split('T')[0]) // Only future events
-          .order('date', { ascending: true });
+          .gte('start_at', new Date().toISOString())
+          .order('start_at', { ascending: true });
 
         if (eventsError) {
           console.error('Error fetching events:', eventsError);

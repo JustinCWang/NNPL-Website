@@ -12,7 +12,14 @@ import { useState, useEffect } from 'react';
 import { Event, EventFormData } from '@/types/event';
 import { Store } from '@/types/store';
 import { User } from '@/types/user';
-import { isDatePast } from '@/lib/dateUtils';
+import {
+  DEFAULT_EVENT_TIMEZONE,
+  EVENT_TIMEZONE_OPTIONS,
+  formatDateTimeForInput,
+  formatStartAtForStorage,
+  formatTimeZoneLabel,
+  isEventInputPast,
+} from '@/lib/dateUtils';
 
 interface EventFormProps {
   event?: Event | null;
@@ -26,7 +33,8 @@ interface EventFormProps {
 
 export default function EventForm({ event, stores, users, currentUserId, onSubmit, onCancel, isLoading = false }: EventFormProps) {
   const [formData, setFormData] = useState<EventFormData>({
-    date: '',
+    start_at: '',
+    timezone: DEFAULT_EVENT_TIMEZONE,
     name: '',
     is_weekly: false,
     is_cup: false,
@@ -44,7 +52,8 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
   useEffect(() => {
     if (event) {
       setFormData({
-        date: event.date.split('T')[0], // Convert to YYYY-MM-DD format for input
+        start_at: formatDateTimeForInput(event.start_at, event.timezone || DEFAULT_EVENT_TIMEZONE),
+        timezone: event.timezone || DEFAULT_EVENT_TIMEZONE,
         name: event.name,
         is_weekly: event.is_weekly,
         is_cup: event.is_cup,
@@ -76,12 +85,16 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
       newErrors.name = 'Event name is required';
     }
 
-    if (!formData.date) {
-      newErrors.date = 'Event date is required';
+    if (!formData.start_at) {
+      newErrors.start_at = 'Event start time is required';
     } else {
-      if (isDatePast(formData.date)) {
-        newErrors.date = 'Event date cannot be in the past';
+      if (isEventInputPast(formData.start_at, formData.timezone)) {
+        newErrors.start_at = 'Event start time cannot be in the past';
       }
+    }
+
+    if (!formData.timezone) {
+      newErrors.timezone = 'Event timezone is required';
     }
 
     if (!formData.store_id) {
@@ -113,7 +126,10 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
     }
 
     try {
-      await onSubmit(formData);
+      await onSubmit({
+        ...formData,
+        start_at: formatStartAtForStorage(formData.start_at, formData.timezone),
+      });
     } catch (error) {
       console.error('Error submitting form:', error);
     }
@@ -178,24 +194,52 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
           )}
         </div>
 
-        {/* Event Date */}
+        {/* Event Start Time */}
         <div>
-          <label htmlFor="date" className="block text-sm font-medium text-theme-foreground mb-1">
-            Event Date *
+          <label htmlFor="start_at" className="block text-sm font-medium text-theme-foreground mb-1">
+            Event Start Time *
           </label>
           <input
-            type="date"
-            id="date"
-            value={formData.date}
-            onChange={(e) => handleInputChange('date', e.target.value)}
+            type="datetime-local"
+            id="start_at"
+            value={formData.start_at}
+            onChange={(e) => handleInputChange('start_at', e.target.value)}
             className={`theme-input w-full px-3 py-2 rounded-md ${
-              errors.date ? 'border-red-500' : ''
+              errors.start_at ? 'border-red-500' : ''
             }`}
             disabled={isLoading}
           />
-          {errors.date && (
-            <p className="text-red-600 text-sm mt-1">{errors.date}</p>
+          {errors.start_at && (
+            <p className="text-red-600 text-sm mt-1">{errors.start_at}</p>
           )}
+        </div>
+
+        {/* Event Timezone */}
+        <div>
+          <label htmlFor="timezone" className="block text-sm font-medium text-theme-foreground mb-1">
+            Event Timezone *
+          </label>
+          <select
+            id="timezone"
+            value={formData.timezone}
+            onChange={(e) => handleInputChange('timezone', e.target.value)}
+            className={`theme-input w-full px-3 py-2 rounded-md ${
+              errors.timezone ? 'border-red-500' : ''
+            }`}
+            disabled={isLoading}
+          >
+            {EVENT_TIMEZONE_OPTIONS.map((timezoneOption) => (
+              <option key={timezoneOption.value} value={timezoneOption.value}>
+                {timezoneOption.label} ({timezoneOption.value})
+              </option>
+            ))}
+          </select>
+          {errors.timezone && (
+            <p className="text-red-600 text-sm mt-1">{errors.timezone}</p>
+          )}
+          <p className="text-theme-muted text-sm mt-1">
+            Selected timezone: {formatTimeZoneLabel(formData.timezone)}
+          </p>
         </div>
 
         {/* Store Selection */}

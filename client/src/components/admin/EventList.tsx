@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 import { Event } from '@/types/event';
-import { formatDisplayDate, isDatePast } from '@/lib/dateUtils';
+import { formatDisplayDate, formatDisplayTime, formatTimeZoneLabel, isStartAtPast } from '@/lib/dateUtils';
 
 interface EventListProps {
   events: Event[];
@@ -20,11 +20,11 @@ interface EventListProps {
   showSortIndicator?: boolean;
 }
 
-type SortField = 'name' | 'date' | 'store' | 'type' | 'creator';
+type SortField = 'name' | 'start_at' | 'store' | 'type' | 'creator';
 type SortDirection = 'asc' | 'desc';
 
 export default function EventList({ events, onEdit, onDelete, onRenew, isLoading = false, showSortIndicator = true }: EventListProps) {
-  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortField, setSortField] = useState<SortField>('start_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   if (isLoading) {
     return (
@@ -100,6 +100,10 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
     );
   };
 
+  const getSortFieldLabel = (field: SortField) => {
+    return field === 'start_at' ? 'start time' : field;
+  };
+
   const getEventTypeString = (event: Event) => {
     const types = [];
     if (event.is_weekly) types.push('Weekly');
@@ -108,8 +112,6 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
     if (event.is_prerelease) types.push('Prerelease');
     return types.join(', ') || 'Other';
   };
-
-  // formatDate function removed - now using formatDisplayDate from dateUtils
 
   const getEventTypeBadges = (event: Event) => {
     const badges = [];
@@ -149,8 +151,6 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
     return badges;
   };
 
-  // isEventPast function removed - now using isDatePast from dateUtils
-
   // Sort events based on selected field and direction
   const sortedEvents = [...events].sort((a, b) => {
     let comparison = 0;
@@ -159,8 +159,8 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
       case 'name':
         comparison = a.name.localeCompare(b.name);
         break;
-      case 'date':
-        comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+      case 'start_at':
+        comparison = new Date(a.start_at).getTime() - new Date(b.start_at).getTime();
         break;
       case 'store':
         const storeA = a.store?.name || '';
@@ -191,7 +191,7 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
           </h3>
           {showSortIndicator && (
             <div className="text-sm text-theme-muted">
-              Sorted by: <span className="font-medium capitalize">{sortField}</span> 
+              Sorted by: <span className="font-medium capitalize">{getSortFieldLabel(sortField)}</span> 
               <span className="ml-1">({sortDirection === 'asc' ? 'A-Z' : 'Z-A'})</span>
             </div>
           )}
@@ -213,11 +213,11 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
               </th>
               <th 
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                onClick={() => handleSort('date')}
+                onClick={() => handleSort('start_at')}
               >
                 <div className="flex items-center space-x-1">
-                  <span>Date</span>
-                  {getSortIcon('date')}
+                  <span>Start</span>
+                  {getSortIcon('start_at')}
                 </div>
               </th>
               <th 
@@ -259,21 +259,23 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
             {sortedEvents.map((event) => (
               <tr 
                 key={event.event_id} 
-                className={`theme-table-row ${isDatePast(event.date) ? 'opacity-60' : ''}`}
+                className={`theme-table-row ${isStartAtPast(event.start_at) ? 'opacity-60' : ''}`}
                 style={{ boxShadow: "inset 0 -1px 0 var(--theme-border-soft)" }}
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div>
                       <div className="text-sm font-medium text-theme-foreground">{event.name}</div>
-                      {isDatePast(event.date) && (
+                      {isStartAtPast(event.start_at) && (
                         <div className="text-xs text-theme-muted">Past Event</div>
                       )}
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-theme-muted">{formatDisplayDate(event.date)}</div>
+                  <div className="text-sm text-theme-muted">{formatDisplayDate(event.start_at, event.timezone)}</div>
+                  <div className="text-xs text-theme-muted">{formatDisplayTime(event.start_at, event.timezone)}</div>
+                  <div className="text-xs text-theme-muted">{formatTimeZoneLabel(event.timezone)}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-theme-foreground">

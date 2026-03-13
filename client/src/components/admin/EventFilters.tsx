@@ -10,7 +10,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Event } from '@/types/event';
 import { Store } from '@/types/store';
-import { getStartOfWeek, getEndOfWeek, getStartOfMonth, getEndOfMonth } from '@/lib/dateUtils';
+import { getEventLocalDate, getStartOfWeek, getEndOfWeek, getStartOfMonth, getEndOfMonth } from '@/lib/dateUtils';
 
 export interface EventFilters {
   name: string;
@@ -65,18 +65,16 @@ export default function EventFilters({ events, stores, onFiltersChange, onFilter
       }
 
       // Date range filter
+      const eventLocalDate = getEventLocalDate(event.start_at, event.timezone);
+
       if (currentFilters.dateFrom) {
-        const eventDate = new Date(event.date);
-        const fromDate = new Date(currentFilters.dateFrom);
-        if (eventDate < fromDate) {
+        if (eventLocalDate < currentFilters.dateFrom) {
           return false;
         }
       }
 
       if (currentFilters.dateTo) {
-        const eventDate = new Date(event.date);
-        const toDate = new Date(currentFilters.dateTo);
-        if (eventDate > toDate) {
+        if (eventLocalDate > currentFilters.dateTo) {
           return false;
         }
       }
@@ -326,12 +324,12 @@ export default function EventFilters({ events, stores, onFiltersChange, onFilter
                 )}
                 {filters.dateFrom && (
                   <span className="theme-chip inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
-                    From: {new Date(filters.dateFrom).toLocaleDateString()}
+                    From: {filters.dateFrom}
                   </span>
                 )}
                 {filters.dateTo && (
                   <span className="theme-chip inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
-                    To: {new Date(filters.dateTo).toLocaleDateString()}
+                    To: {filters.dateTo}
                   </span>
                 )}
                 {filters.storeId && (

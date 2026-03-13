@@ -51,15 +51,13 @@ export default function AdminPage() {
         console.error('Error fetching stores count:', storesError);
       }
 
-      // Fetch active events count (events that are not yesterday's date)
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayString = yesterday.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+      // Fetch active events count (events whose start time has not passed yet)
+      const nowIso = new Date().toISOString();
 
       const { count: activeEvents, error: eventsError } = await supabase
         .from('Events')
         .select('*', { count: 'exact', head: true })
-        .gt('date', yesterdayString);
+        .gte('start_at', nowIso);
 
       if (eventsError) {
         console.error('Error fetching events count:', eventsError);

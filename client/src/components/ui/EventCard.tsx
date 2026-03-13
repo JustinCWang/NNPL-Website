@@ -6,6 +6,7 @@
 */
 
 import { Event } from '@/types/event';
+import { formatDisplayDate, formatDisplayTime, formatTimeZoneLabel } from '@/lib/dateUtils';
 
 interface EventCardProps {
   event: Event;
@@ -21,32 +22,6 @@ export default function EventCard({ event, variant = 'public', showActions = tru
     if (event.is_challenge) return { label: 'Challenge', color: 'bg-green-100 text-green-800' };
     if (event.is_weekly) return { label: 'Weekly', color: 'bg-orange-100 text-orange-800' };
     return { label: 'Event', color: 'bg-gray-100 text-gray-800' };
-  };
-
-  // Helper function to format date
-  const formatDate = (dateString: string) => {
-    // Handle both YYYY-MM-DD and ISO string formats
-    let date: Date;
-    
-    if (dateString.includes('T')) {
-      // Full ISO string
-      date = new Date(dateString);
-    } else {
-      // YYYY-MM-DD format - add time to ensure proper parsing
-      date = new Date(dateString + 'T00:00:00');
-    }
-    
-    // Check if date is valid
-    if (isNaN(date.getTime())) {
-      console.error('Invalid date:', dateString);
-      return 'Invalid Date';
-    }
-    
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric'
-    });
   };
 
   const eventType = getEventTypeInfo(event);
@@ -73,7 +48,9 @@ export default function EventCard({ event, variant = 'public', showActions = tru
           {eventType.label}
         </span>
         <div className="text-sm text-theme-muted text-right">
-          {formatDate(event.date)}
+          <div>{formatDisplayDate(event.start_at, event.timezone)}</div>
+          <div className="text-xs">{formatDisplayTime(event.start_at, event.timezone)}</div>
+          <div className="text-[11px]">{formatTimeZoneLabel(event.timezone)}</div>
         </div>
       </div>
       

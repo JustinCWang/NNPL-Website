@@ -15,7 +15,7 @@ import { User } from '@/types/user';
 import EventForm from './EventForm';
 import EventList from './EventList';
 import EventFilters from './EventFilters';
-import { addDaysToDate } from '@/lib/dateUtils';
+import { addDaysToStartAt, formatDisplayDate, formatDisplayTime } from '@/lib/dateUtils';
 
 type ViewMode = 'list' | 'add' | 'edit';
 
@@ -80,7 +80,7 @@ export default function EventManagement() {
           store:Stores(name, location),
           creator:Users!Events_created_by_fkey(username, email)
         `)
-        .order('date', { ascending: true });
+        .order('start_at', { ascending: true });
 
       if (fetchError) {
         throw fetchError;
@@ -134,7 +134,8 @@ export default function EventManagement() {
       const supabase = getSupabaseClient();
       const createData: CreateEventData = {
         name: formData.name.trim(),
-        date: formData.date,
+        start_at: formData.start_at,
+        timezone: formData.timezone,
         is_weekly: formData.is_weekly,
         is_cup: formData.is_cup,
         is_challenge: formData.is_challenge,
@@ -183,7 +184,8 @@ export default function EventManagement() {
       const updateData: UpdateEventData = {
         event_id: selectedEvent.event_id,
         name: formData.name.trim(),
-        date: formData.date,
+        start_at: formData.start_at,
+        timezone: formData.timezone,
         is_weekly: formData.is_weekly,
         is_cup: formData.is_cup,
         is_challenge: formData.is_challenge,
@@ -255,23 +257,24 @@ export default function EventManagement() {
     try {
       setError(null);
       
-      // Calculate the date one week from the original event using our date utility
-      const newDateString = addDaysToDate(event.date, 7);
+      // Preserve the original event's start time when creating the next weekly occurrence.
+      const newStartAt = addDaysToStartAt(event.start_at, 7, event.timezone);
       const existingEvent = events.find(e => 
-        e.date === newDateString && 
+        e.start_at === newStartAt &&
         e.store_id === event.store_id &&
         e.name === event.name
       );
       
       if (existingEvent) {
-        setError(`An event with the same name already exists on ${new Date(newDateString).toLocaleDateString()} at this store.`);
+        setError(`An event with the same name already exists on ${formatDisplayDate(newStartAt, event.timezone)} at ${formatDisplayTime(newStartAt, event.timezone)} for this store.`);
         return;
       }
 
       const supabase = getSupabaseClient();
       const createData: CreateEventData = {
         name: event.name,
-        date: newDateString,
+        start_at: newStartAt,
+        timezone: event.timezone,
         is_weekly: event.is_weekly,
         is_cup: event.is_cup,
         is_challenge: event.is_challenge,
@@ -299,7 +302,7 @@ export default function EventManagement() {
 
       // Add the new event to the list
       setEvents(prev => [...prev, data]);
-      setSuccessMessage(`Weekly event "${event.name}" has been renewed for ${newDateString}.`);
+      setSuccessMessage(`Weekly event "${event.name}" has been renewed for ${formatDisplayDate(newStartAt, event.timezone)} at ${formatDisplayTime(newStartAt, event.timezone)}.`);
     } catch (err) {
       console.error('Error renewing event:', err);
       setError('Failed to renew event. Please try again.');

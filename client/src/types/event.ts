@@ -1,12 +1,13 @@
 /*
   TypeScript types for Event entity and related operations.
-  Based on the Events table schema: event_id, created_at, date, name, is_weekly, is_cup, is_challenge, is_prerelease, store_id, created_by, cost, min_prizing, max_prizing
+  Based on the Events table schema: event_id, created_at, start_at, timezone, name, is_weekly, is_cup, is_challenge, is_prerelease, store_id, created_by, cost, min_prizing, max_prizing
 */
 
 export interface Event {
   event_id: string;
   created_at: string;
-  date: string;
+  start_at: string;
+  timezone: string;
   name: string;
   is_weekly: boolean;
   is_cup: boolean;
@@ -30,7 +31,8 @@ export interface Event {
 }
 
 export interface CreateEventData {
-  date: string;
+  start_at: string;
+  timezone: string;
   name: string;
   is_weekly: boolean;
   is_cup: boolean;
@@ -48,7 +50,8 @@ export interface UpdateEventData extends Partial<CreateEventData> {
 }
 
 export interface EventFormData {
-  date: string;
+  start_at: string;
+  timezone: string;
   name: string;
   is_weekly: boolean;
   is_cup: boolean;
