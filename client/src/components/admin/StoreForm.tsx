@@ -120,15 +120,15 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+    <div className="theme-card p-6 rounded-lg">
+      <h3 className="text-lg font-semibold text-theme-foreground mb-4">
         {store ? 'Edit Store' : 'Add New Store'}
       </h3>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Store Name */}
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="name" className="block text-sm font-medium text-theme-foreground mb-1">
             Store Name *
           </label>
           <input
@@ -136,8 +136,8 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
             id="name"
             value={formData.name}
             onChange={(e) => handleInputChange('name', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.name ? 'border-red-500' : 'border-gray-300'
+            className={`theme-input w-full px-3 py-2 rounded-md ${
+              errors.name ? 'border-red-500' : ''
             }`}
             placeholder="Enter store name"
             disabled={isLoading}
@@ -149,7 +149,7 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
 
         {/* Location */}
         <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="location" className="block text-sm font-medium text-theme-foreground mb-1">
             Location *
           </label>
           <input
@@ -157,8 +157,8 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
             id="location"
             value={formData.location}
             onChange={(e) => handleInputChange('location', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.location ? 'border-red-500' : 'border-gray-300'
+            className={`theme-input w-full px-3 py-2 rounded-md ${
+              errors.location ? 'border-red-500' : ''
             }`}
             placeholder="Enter store address or location"
             disabled={isLoading}
@@ -170,7 +170,7 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
 
         {/* Average Players */}
         <div>
-          <label htmlFor="avg_players" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="avg_players" className="block text-sm font-medium text-theme-foreground mb-1">
             Average Players
           </label>
           <input
@@ -179,8 +179,8 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
             min="0"
             value={formData.avg_players}
             onChange={(e) => handleInputChange('avg_players', parseInt(e.target.value) || 0)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.avg_players ? 'border-red-500' : 'border-gray-300'
+            className={`theme-input w-full px-3 py-2 rounded-md ${
+              errors.avg_players ? 'border-red-500' : ''
             }`}
             placeholder="0"
             disabled={isLoading}
@@ -188,7 +188,7 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
           {errors.avg_players && (
             <p className="text-red-600 text-sm mt-1">{errors.avg_players}</p>
           )}
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-theme-muted text-sm mt-1">
             Typical number of players that attend events at this store
           </p>
         </div>
@@ -200,17 +200,18 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
             id="has_league"
             checked={formData.has_league}
             onChange={(e) => handleInputChange('has_league', e.target.checked)}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            className="h-4 w-4 rounded"
+            style={{ accentColor: "var(--theme-border-color)" }}
             disabled={isLoading}
           />
-          <label htmlFor="has_league" className="ml-2 block text-sm text-gray-700">
+          <label htmlFor="has_league" className="ml-2 block text-sm text-theme-foreground">
             Store has an organized league
           </label>
         </div>
 
         {/* Website */}
         <div>
-          <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="website" className="block text-sm font-medium text-theme-foreground mb-1">
             Website
           </label>
           <input
@@ -218,8 +219,8 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
             id="website"
             value={formData.website}
             onChange={(e) => handleInputChange('website', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.website ? 'border-red-500' : 'border-gray-300'
+            className={`theme-input w-full px-3 py-2 rounded-md ${
+              errors.website ? 'border-red-500' : ''
             }`}
             placeholder="https://example.com"
             disabled={isLoading}
@@ -231,7 +232,7 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
 
         {/* Discord */}
         <div>
-          <label htmlFor="discord" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="discord" className="block text-sm font-medium text-theme-foreground mb-1">
             Discord Invite Link
           </label>
           <input
@@ -239,8 +240,8 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
             id="discord"
             value={formData.discord}
             onChange={(e) => handleInputChange('discord', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.discord ? 'border-red-500' : 'border-gray-300'
+            className={`theme-input w-full px-3 py-2 rounded-md ${
+              errors.discord ? 'border-red-500' : ''
             }`}
             placeholder="https://discord.gg/example"
             disabled={isLoading}
@@ -255,7 +256,7 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
           <button
             type="submit"
             disabled={isLoading}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="theme-button px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Saving...' : store ? 'Update Store' : 'Add Store'}
           </button>
@@ -263,7 +264,7 @@ export default function StoreForm({ store, onSubmit, onCancel, isLoading = false
             type="button"
             onClick={onCancel}
             disabled={isLoading}
-            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="theme-button-subtle px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>

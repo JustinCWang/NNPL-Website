@@ -176,8 +176,8 @@ export default function UserManagement() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
-        <p className="text-gray-600 mt-1">
+        <h2 className="text-2xl font-bold text-theme-foreground">User Management</h2>
+        <p className="text-theme-muted mt-1">
           Manage user accounts, roles, and permissions across the platform
         </p>
       </div>

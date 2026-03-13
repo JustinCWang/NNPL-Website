@@ -132,7 +132,7 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
         className={`w-10 h-10 rounded-full text-white text-sm font-medium flex items-center justify-center transition-colors overflow-hidden relative ${
           shouldShowImage 
             ? 'bg-transparent hover:bg-black/10' 
-            : 'bg-gray-600 hover:bg-gray-700'
+            : 'theme-button'
         }`}
         aria-label="Profile menu"
       >
@@ -157,17 +157,17 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+        <div className="theme-card absolute right-0 mt-2 w-48 rounded-md z-50">
           <div className="py-1">
             {/* User info */}
-            <div className="py-2 text-sm text-gray-700 border-b text-center">
+            <div className="py-2 px-4 text-sm text-theme-foreground border-b text-center" style={{ borderColor: "var(--theme-border-soft)" }}>
               {username || 'User'}
             
             {/* Admin link - only show for admin users */}
             {userRole === 'admin' && (
               <Link
                 href="/admin"
-                className="block px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 font-medium"
+                className="theme-button-subtle mt-2 block rounded-md px-4 py-2 text-sm font-medium"
                 onClick={() => setIsOpen(false)}
               >
                 Admin Dashboard
@@ -182,7 +182,7 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
             {variant === 'landing' && (
               <Link
                 href="/home"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-center"
+                className="mx-1 block rounded-md px-4 py-2 text-sm text-theme-foreground text-center transition-colors hover:bg-[var(--theme-chip-bg)]"
                 onClick={() => setIsOpen(false)}
               >
                 Dashboard
@@ -191,7 +191,7 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
             
             <Link
               href="/profile"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-center"
+              className="mx-1 block rounded-md px-4 py-2 text-sm text-theme-foreground text-center transition-colors hover:bg-[var(--theme-chip-bg)]"
               onClick={() => setIsOpen(false)}
             >
               Profile Settings
@@ -200,7 +200,7 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
             {/* Sign out */}
             <button
               onClick={handleSignOut}
-              className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer text-center"
+              className="mx-1 block w-[calc(100%-0.5rem)] rounded-md px-4 py-2 text-sm text-theme-foreground cursor-pointer text-center transition-colors hover:bg-[var(--theme-chip-bg)]"
             >
               Sign out
             </button>

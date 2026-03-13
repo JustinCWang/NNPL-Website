@@ -7,9 +7,34 @@
 
 /* Global site background with theme support */
 @layer base {
+  :root {
+    --theme-background-base: #ffffff;
+    --theme-surface-solid: rgba(255, 255, 255, 0.72);
+    --theme-surface-gradient: linear-gradient(160deg, rgba(255, 255, 255, 0.88), rgba(215, 223, 233, 0.36), rgba(150, 159, 168, 0.16));
+    --theme-surface-strong: rgba(255, 255, 255, 0.84);
+    --theme-input-bg: rgba(255, 255, 255, 0.82);
+    --theme-border-soft: rgba(150, 159, 168, 0.38);
+    --theme-border-strong: rgba(150, 159, 168, 0.56);
+    --theme-focus-ring: rgba(150, 159, 168, 0.24);
+    --theme-shadow-color: rgba(59, 59, 59, 0.16);
+    --theme-surface-text: #111827;
+    --theme-surface-muted: rgba(17, 24, 39, 0.72);
+    --theme-placeholder-color: rgba(17, 24, 39, 0.46);
+    --theme-button-gradient: linear-gradient(135deg, #969fa8, #3b3b3b);
+    --theme-button-gradient-hover: linear-gradient(135deg, #d7dfe9, #3b3b3b);
+    --theme-button-text: #111827;
+    --theme-chip-bg: rgba(215, 223, 233, 0.2);
+    --theme-chip-strong: rgba(215, 223, 233, 0.3);
+    --theme-overlay-color: rgba(59, 59, 59, 0.62);
+    --theme-table-header: rgba(150, 159, 168, 0.1);
+    --theme-table-row: #f3f6f8;
+    --theme-table-row-hover: rgba(150, 159, 168, 0.08);
+  }
+
   body {
     /* Default fallback */
-    background-color: white;
+    background-color: var(--theme-background-base, white);
+    color: var(--theme-surface-text, #111827);
     /* Theme gradient with transparency overlay */
     background-image: 
       radial-gradient(circle, var(--theme-dot-color, rgba(118, 34, 133, 0.15)) 1px, transparent 1px),
@@ -56,6 +81,209 @@
 
   .ring-theme {
     --tw-ring-color: var(--theme-border-color, #c89bcf);
+  }
+
+  .text-theme {
+    color: var(--theme-text-color, #5e1b7d);
+  }
+
+  .text-theme-foreground {
+    color: var(--theme-surface-text, #111827);
+  }
+
+  .text-theme-muted {
+    color: var(--theme-surface-muted, rgba(17, 24, 39, 0.72));
+  }
+
+  .theme-card {
+    background-color: var(--theme-surface-solid, rgba(255, 255, 255, 0.72));
+    background-image: var(--theme-surface-gradient, linear-gradient(160deg, rgba(255, 255, 255, 0.88), rgba(215, 223, 233, 0.36), rgba(150, 159, 168, 0.16)));
+    border: 1px solid var(--theme-border-soft, rgba(150, 159, 168, 0.38));
+    box-shadow: 0 16px 40px var(--theme-shadow-color, rgba(59, 59, 59, 0.16));
+    backdrop-filter: blur(16px);
+    color: var(--theme-surface-text, #111827);
+  }
+
+  .theme-card-hover {
+    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .theme-card-hover:hover {
+    border-color: var(--theme-border-strong, rgba(150, 159, 168, 0.56));
+    box-shadow: 0 18px 44px var(--theme-shadow-color, rgba(59, 59, 59, 0.22));
+    transform: translateY(-1px);
+  }
+
+  .theme-card .text-gray-900 {
+    color: var(--theme-surface-text, #111827);
+  }
+
+  .theme-card .text-gray-600,
+  .theme-card .text-gray-500,
+  .theme-card .text-gray-400 {
+    color: var(--theme-surface-muted, rgba(17, 24, 39, 0.72));
+  }
+
+  .theme-panel {
+    background-color: var(--theme-surface-strong, rgba(255, 255, 255, 0.84));
+    border: 1px solid var(--theme-border-soft, rgba(150, 159, 168, 0.38));
+    backdrop-filter: blur(14px);
+  }
+
+  .theme-input {
+    background-color: var(--theme-input-bg, rgba(255, 255, 255, 0.82));
+    border: 1px solid var(--theme-border-soft, rgba(150, 159, 168, 0.38));
+    color: var(--theme-surface-text, #111827);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  }
+
+  .theme-input::placeholder {
+    color: var(--theme-placeholder-color, rgba(17, 24, 39, 0.46));
+  }
+
+  .theme-input:focus {
+    border-color: var(--theme-border-color, #c89bcf);
+    box-shadow: 0 0 0 3px var(--theme-focus-ring, rgba(200, 155, 207, 0.24));
+    outline: none;
+  }
+
+  .theme-button {
+    background-image: var(--theme-button-gradient, linear-gradient(135deg, #969fa8, #3b3b3b));
+    color: var(--theme-button-text, #ffffff);
+    border: 1px solid var(--theme-border-strong, rgba(150, 159, 168, 0.56));
+    box-shadow: 0 12px 28px var(--theme-shadow-color, rgba(59, 59, 59, 0.16));
+    transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .theme-button:hover {
+    background-image: var(--theme-button-gradient-hover, linear-gradient(135deg, #d7dfe9, #3b3b3b));
+    box-shadow: 0 14px 30px var(--theme-shadow-color, rgba(59, 59, 59, 0.2));
+    transform: translateY(-1px);
+  }
+
+  .theme-button:disabled {
+    box-shadow: none;
+    filter: saturate(0.7);
+  }
+
+  .theme-button-subtle {
+    background-color: var(--theme-chip-strong, rgba(215, 223, 233, 0.3));
+    color: var(--theme-surface-text, #111827);
+    border: 1px solid var(--theme-border-soft, rgba(150, 159, 168, 0.38));
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .theme-button-subtle:hover {
+    background-color: var(--theme-chip-bg, rgba(215, 223, 233, 0.2));
+    border-color: var(--theme-border-strong, rgba(150, 159, 168, 0.56));
+  }
+
+  .theme-button-ghost {
+    color: var(--theme-text-color, #5e1b7d);
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .theme-button-ghost:hover {
+    background-color: var(--theme-chip-bg, rgba(215, 223, 233, 0.2));
+  }
+
+  .theme-chip {
+    background-color: var(--theme-chip-bg, rgba(215, 223, 233, 0.2));
+    border: 1px solid var(--theme-border-soft, rgba(150, 159, 168, 0.38));
+    color: var(--theme-text-color, #5e1b7d);
+  }
+
+  .theme-overlay {
+    background-color: var(--theme-overlay-color, rgba(59, 59, 59, 0.62));
+  }
+
+  .theme-tooltip {
+    background-color: color-mix(in srgb, var(--theme-surface-strong, rgba(255, 255, 255, 0.84)) 92%, white 8%);
+    border: 1px solid var(--theme-border-soft, rgba(150, 159, 168, 0.38));
+    box-shadow: 0 14px 32px var(--theme-shadow-color, rgba(59, 59, 59, 0.2));
+    backdrop-filter: blur(16px);
+    color: var(--theme-surface-text, #111827);
+  }
+
+  .theme-table-shell {
+    background-color: var(--theme-surface-solid, #f3f6f8);
+    border: 1px solid var(--theme-border-soft, rgba(150, 159, 168, 0.38));
+    box-shadow: 0 16px 40px var(--theme-shadow-color, rgba(59, 59, 59, 0.16));
+    backdrop-filter: blur(16px);
+  }
+
+  .theme-table-head {
+    background-color: var(--theme-table-header, rgba(150, 159, 168, 0.1));
+    color: var(--theme-surface-muted, rgba(17, 24, 39, 0.72));
+  }
+
+  .theme-table-head th {
+    color: var(--theme-surface-muted, rgba(17, 24, 39, 0.72));
+  }
+
+  .theme-table-row {
+    background-color: var(--theme-table-row, #f3f6f8);
+    color: var(--theme-surface-text, #111827);
+    transition: background-color 0.15s ease;
+  }
+
+  .theme-table-row:hover {
+    background-color: var(--theme-table-row-hover, rgba(150, 159, 168, 0.08));
+  }
+
+  .theme-table-row .text-gray-900 {
+    color: var(--theme-surface-text, #111827);
+  }
+
+  .theme-table-row .text-gray-600,
+  .theme-table-row .text-gray-500,
+  .theme-table-row .text-gray-400 {
+    color: var(--theme-surface-muted, rgba(17, 24, 39, 0.72));
+  }
+
+  .theme-tab {
+    border-bottom: 2px solid transparent;
+    color: var(--theme-surface-muted, rgba(17, 24, 39, 0.72));
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .theme-tab:hover {
+    border-color: var(--theme-border-soft, rgba(150, 159, 168, 0.38));
+    color: var(--theme-text-color, #5e1b7d);
+  }
+
+  .theme-tab-active {
+    border-bottom: 2px solid var(--theme-border-color, #c89bcf);
+    color: var(--theme-text-color, #5e1b7d);
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+  }
+
+  :root[data-theme="dark"] .text-black,
+  :root[data-theme="dark"] .text-gray-900,
+  :root[data-theme="dark"] .text-gray-800,
+  :root[data-theme="dark"] .text-gray-700 {
+    color: var(--theme-surface-text, #f3f7fb);
+  }
+
+  :root[data-theme="dark"] .text-gray-600,
+  :root[data-theme="dark"] .text-gray-500,
+  :root[data-theme="dark"] .text-gray-400 {
+    color: var(--theme-surface-muted, #c1ccd7);
+  }
+
+  :root[data-theme="dark"] .border-gray-200,
+  :root[data-theme="dark"] .border-gray-300,
+  :root[data-theme="dark"] .border-gray-100 {
+    border-color: var(--theme-border-soft, rgba(143, 162, 182, 0.28));
+  }
+
+  :root[data-theme="dark"] .bg-white,
+  :root[data-theme="dark"] .bg-gray-50,
+  :root[data-theme="dark"] .bg-gray-100 {
+    background-color: var(--theme-surface-strong, #242d37);
   }
 }
 

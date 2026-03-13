@@ -37,7 +37,7 @@ export default function Pagination({ currentPage, totalPages, onChange }: Pagina
       <button
         onClick={() => onChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="px-2 py-1 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+        className="theme-button-subtle px-2 py-1 rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Prev
       </button>
@@ -56,8 +56,8 @@ export default function Pagination({ currentPage, totalPages, onChange }: Pagina
             <button
               key={item}
               onClick={() => onChange(item)}
-              className={`px-2 py-1 min-w-[28px] border rounded text-xs font-medium transition-colors ${
-                currentPage === item ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+              className={`px-2 py-1 min-w-[28px] rounded text-xs font-medium ${
+                currentPage === item ? "theme-button" : "theme-button-subtle"
               }`}
             >
               {item}
@@ -69,7 +69,7 @@ export default function Pagination({ currentPage, totalPages, onChange }: Pagina
       <button
         onClick={() => onChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="px-2 py-1 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+        className="theme-button-subtle px-2 py-1 rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Next
       </button>

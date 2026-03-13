@@ -193,8 +193,8 @@ export default function StoreManagement() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Store Management</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-2xl font-bold text-theme-foreground">Store Management</h2>
+          <p className="text-theme-muted mt-1">
             Manage game stores and their information
           </p>
         </div>
@@ -202,7 +202,7 @@ export default function StoreManagement() {
         {currentView === 'list' && (
           <button
             onClick={() => setCurrentView('add')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            className="theme-button px-4 py-2 rounded-md"
           >
             Add New Store
           </button>

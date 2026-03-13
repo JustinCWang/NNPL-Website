@@ -138,8 +138,8 @@ export default function AdminPage() {
     return (
       <main>
         <div className="text-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verifying admin access...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-theme mx-auto mb-4" style={{ borderTopColor: "transparent" }}></div>
+          <p className="text-theme-muted">Verifying admin access...</p>
         </div>
       </main>
     );
@@ -152,10 +152,10 @@ export default function AdminPage() {
   return (
     <main>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-theme-foreground">
           {isAdmin ? 'Admin Dashboard' : 'Event Management'}
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-theme-muted mt-2">
           {isAdmin 
             ? 'Welcome to the admin panel. You have administrative privileges for the NNPL platform.'
             : 'Welcome to the event management panel. You can create and manage tournament events.'
@@ -164,15 +164,15 @@ export default function AdminPage() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="border-b border-gray-200 mb-8">
+      <div className="border-b mb-8" style={{ borderColor: "var(--theme-border-soft)" }}>
         <nav className="-mb-px flex space-x-8">
           {isAdmin && (
             <button
               onClick={() => setActiveSection('dashboard')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-1 font-medium text-sm ${
                 activeSection === 'dashboard'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'theme-tab-active'
+                  : 'theme-tab'
               }`}
             >
               Dashboard Overview
@@ -181,10 +181,10 @@ export default function AdminPage() {
           {isAdmin && (
             <button
               onClick={() => setActiveSection('stores')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-1 font-medium text-sm ${
                 activeSection === 'stores'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'theme-tab-active'
+                  : 'theme-tab'
               }`}
             >
               Store Management
@@ -192,10 +192,10 @@ export default function AdminPage() {
           )}
           <button
             onClick={() => setActiveSection('events')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`py-2 px-1 font-medium text-sm ${
               activeSection === 'events'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'theme-tab-active'
+                : 'theme-tab'
             }`}
           >
             Event Management
@@ -203,10 +203,10 @@ export default function AdminPage() {
           {isAdmin && (
             <button
               onClick={() => setActiveSection('users')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-1 font-medium text-sm ${
                 activeSection === 'users'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'theme-tab-active'
+                  : 'theme-tab'
               }`}
             >
               User Management
@@ -220,86 +220,86 @@ export default function AdminPage() {
         <>
           {/* Admin Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <div className="theme-card rounded-lg p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="theme-chip w-8 h-8 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-theme" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                     </svg>
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Total Users</h3>
+                  <h3 className="text-sm font-medium text-theme-muted uppercase tracking-wide">Total Users</h3>
                   {statsLoading ? (
                     <div className="animate-pulse">
                       <div className="h-8 bg-gray-200 rounded w-16 mt-2"></div>
                     </div>
                   ) : (
-                    <p className="text-2xl font-bold text-gray-900 mt-2">{stats.totalUsers.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-theme-foreground mt-2">{stats.totalUsers.toLocaleString()}</p>
                   )}
                 </div>
               </div>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <div className="theme-card rounded-lg p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="theme-chip w-8 h-8 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-theme" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Active Events</h3>
+                  <h3 className="text-sm font-medium text-theme-muted uppercase tracking-wide">Active Events</h3>
                   {statsLoading ? (
                     <div className="animate-pulse">
                       <div className="h-8 bg-gray-200 rounded w-16 mt-2"></div>
                     </div>
                   ) : (
-                    <p className="text-2xl font-bold text-gray-900 mt-2">{stats.activeEvents.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-theme-foreground mt-2">{stats.activeEvents.toLocaleString()}</p>
                   )}
-                  <p className="text-xs text-gray-500 mt-1">Today and future events</p>
+                  <p className="text-xs text-theme-muted mt-1">Today and future events</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <div className="theme-card rounded-lg p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="theme-chip w-8 h-8 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-theme" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Stores</h3>
+                  <h3 className="text-sm font-medium text-theme-muted uppercase tracking-wide">Stores</h3>
                   {statsLoading ? (
                     <div className="animate-pulse">
                       <div className="h-8 bg-gray-200 rounded w-16 mt-2"></div>
                     </div>
                   ) : (
-                    <p className="text-2xl font-bold text-gray-900 mt-2">{stats.totalStores.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-theme-foreground mt-2">{stats.totalStores.toLocaleString()}</p>
                   )}
                 </div>
               </div>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <div className="theme-card rounded-lg p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="theme-chip w-8 h-8 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-theme" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2 2z" />
                     </svg>
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Reports</h3>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">-</p>
-                  <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+                  <h3 className="text-sm font-medium text-theme-muted uppercase tracking-wide">Reports</h3>
+                  <p className="text-2xl font-bold text-theme-foreground mt-2">-</p>
+                  <p className="text-xs text-theme-muted mt-1">Coming soon</p>
                 </div>
               </div>
             </div>
@@ -308,55 +308,55 @@ export default function AdminPage() {
           {/* Admin Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* User Management */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">User Management</h2>
-              <p className="text-gray-600 mb-4">
+            <div className="theme-card rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-theme-foreground mb-4">User Management</h2>
+              <p className="text-theme-muted mb-4">
                 Manage user accounts, roles, and permissions across the platform.
               </p>
               <button 
                 onClick={() => setActiveSection('users')}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                className="theme-button px-4 py-2 rounded-md"
               >
                 Manage Users
               </button>
             </div>
 
             {/* Event Management */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Event Management</h2>
-              <p className="text-gray-600 mb-4">
+            <div className="theme-card rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-theme-foreground mb-4">Event Management</h2>
+              <p className="text-theme-muted mb-4">
                 Create, edit, and manage tournaments and events for the league.
               </p>
               <button 
                 onClick={() => setActiveSection('events')}
-                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                className="theme-button px-4 py-2 rounded-md"
               >
                 Manage Events
               </button>
             </div>
 
             {/* Store Management */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Store Management</h2>
-              <p className="text-gray-600 mb-4">
+            <div className="theme-card rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-theme-foreground mb-4">Store Management</h2>
+              <p className="text-theme-muted mb-4">
                 Add and manage local game stores and their information.
               </p>
               <button 
                 onClick={() => setActiveSection('stores')}
-                className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
+                className="theme-button px-4 py-2 rounded-md"
               >
                 Manage Stores
               </button>
             </div>
 
             {/* System Settings */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">System Settings</h2>
-              <p className="text-gray-600 mb-4">
+            <div className="theme-card rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-theme-foreground mb-4">System Settings</h2>
+              <p className="text-theme-muted mb-4">
                 Configure platform settings, notifications, and system preferences.
               </p>
               <button 
-                className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
+                className="theme-button-subtle px-4 py-2 rounded-md disabled:opacity-60"
                 disabled
               >
                 System Settings (Coming Soon)
@@ -379,12 +379,12 @@ export default function AdminPage() {
       )}
 
       {/* Session Info */}
-      <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-        <h3 className="text-sm font-medium text-blue-900">Session Info</h3>
-        <p className="text-sm text-blue-700 mt-1">
+      <div className="theme-card mt-8 p-4 rounded-lg">
+        <h3 className="text-sm font-medium text-theme-foreground">Session Info</h3>
+        <p className="text-sm text-theme-muted mt-1">
           Logged in as: {userEmail}
         </p>
-        <p className="text-sm text-blue-700">
+        <p className="text-sm text-theme-muted">
           Role: {userRole === 'admin' ? 'Administrator' : userRole === 'vendor' ? 'Vendor' : userRole}
         </p>
       </div>

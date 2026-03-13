@@ -31,7 +31,7 @@ export default function UserList({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border">
+      <div className="theme-card rounded-lg">
         <div className="p-6">
           <div className="animate-pulse">
             <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -48,15 +48,15 @@ export default function UserList({
 
   if (users.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border">
+      <div className="theme-card rounded-lg">
         <div className="p-6 text-center">
-          <div className="text-gray-400 mb-2">
+          <div className="text-theme-muted mb-2">
             <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No users found</h3>
-          <p className="text-gray-600">No users match your current filters.</p>
+          <h3 className="text-lg font-medium text-theme-foreground mb-1">No users found</h3>
+          <p className="text-theme-muted">No users match your current filters.</p>
         </div>
       </div>
     );
@@ -162,16 +162,16 @@ export default function UserList({
   });
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">
+    <div className="theme-table-shell rounded-lg overflow-hidden">
+      <div className="px-6 py-4 border-b" style={{ borderColor: "var(--theme-border-soft)" }}>
+        <h3 className="text-lg font-semibold text-theme-foreground">
           All Users ({users.length})
         </h3>
       </div>
       
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full" style={{ borderCollapse: "separate", borderSpacing: 0 }}>
+          <thead className="theme-table-head">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 User
@@ -190,24 +190,24 @@ export default function UserList({
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody>
             {sortedUsers.map((user) => (
-              <tr key={user.user_id} className="hover:bg-gray-50">
+              <tr key={user.user_id} className="theme-table-row" style={{ boxShadow: "inset 0 -1px 0 var(--theme-border-soft)" }}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     {getAvatarDisplay(user)}
                     <div className="ml-3">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-theme-foreground">
                         {user.username}
                         {user.user_id === currentUserId && (
-                          <span className="ml-2 text-xs text-blue-600">(You)</span>
+                          <span className="ml-2 text-xs text-theme">(You)</span>
                         )}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-600">{user.email}</div>
+                  <div className="text-sm text-theme-muted">{user.email}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-2">
@@ -217,7 +217,7 @@ export default function UserList({
                         value={user.role}
                         onChange={(e) => handleRoleChange(user.user_id, e.target.value)}
                         disabled={roleChanging === user.user_id}
-                        className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                        className="theme-input text-xs rounded px-2 py-1 disabled:opacity-50"
                         title="Change user role"
                       >
                         {USER_ROLES.map((role) => (
@@ -228,12 +228,12 @@ export default function UserList({
                       </select>
                     )}
                     {roleChanging === user.user_id && (
-                      <div className="text-xs text-blue-600">Updating...</div>
+                      <div className="text-xs text-theme">Updating...</div>
                     )}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-600">{formatDate(user.date_joined)}</div>
+                  <div className="text-sm text-theme-muted">{formatDate(user.date_joined)}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   {user.user_id !== currentUserId && (

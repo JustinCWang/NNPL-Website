@@ -55,13 +55,13 @@ export default function UserSearch({
   const hasActiveFilters = localFilters.username || localFilters.role || localFilters.dateFrom || localFilters.dateTo;
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border">
+    <div className="theme-card p-6 rounded-lg">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Search & Filter Users</h3>
+        <h3 className="text-lg font-semibold text-theme-foreground">Search & Filter Users</h3>
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+            className="theme-button-ghost text-sm rounded-md px-2 py-1"
           >
             Clear all filters
           </button>
@@ -71,7 +71,7 @@ export default function UserSearch({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         {/* Username Search */}
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="username" className="block text-sm font-medium text-theme-foreground mb-1">
             Username
           </label>
           <div className="relative">
@@ -80,11 +80,11 @@ export default function UserSearch({
               id="username"
               value={localFilters.username}
               onChange={(e) => handleFilterChange('username', e.target.value)}
-              className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="theme-input w-full px-3 py-2 pl-10 rounded-md"
               placeholder="Search by username..."
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4 text-theme-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -93,14 +93,14 @@ export default function UserSearch({
 
         {/* Role Filter */}
         <div>
-          <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="role" className="block text-sm font-medium text-theme-foreground mb-1">
             Role
           </label>
           <select
             id="role"
             value={localFilters.role}
             onChange={(e) => handleFilterChange('role', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="theme-input w-full px-3 py-2 rounded-md"
           >
             <option value="">All roles</option>
             {USER_ROLES.map((role) => (
@@ -113,7 +113,7 @@ export default function UserSearch({
 
         {/* Date From */}
         <div>
-          <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="dateFrom" className="block text-sm font-medium text-theme-foreground mb-1">
             Joined From
           </label>
           <input
@@ -121,13 +121,13 @@ export default function UserSearch({
             id="dateFrom"
             value={localFilters.dateFrom}
             onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="theme-input w-full px-3 py-2 rounded-md"
           />
         </div>
 
         {/* Date To */}
         <div>
-          <label htmlFor="dateTo" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="dateTo" className="block text-sm font-medium text-theme-foreground mb-1">
             Joined To
           </label>
           <input
@@ -135,13 +135,13 @@ export default function UserSearch({
             id="dateTo"
             value={localFilters.dateTo}
             onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="theme-input w-full px-3 py-2 rounded-md"
           />
         </div>
       </div>
 
       {/* Results Summary */}
-      <div className="flex items-center justify-between text-sm text-gray-600 border-t pt-4">
+      <div className="flex items-center justify-between text-sm text-theme-muted border-t pt-4" style={{ borderColor: "var(--theme-border-soft)" }}>
         <div>
           {hasActiveFilters ? (
             <span>
@@ -162,22 +162,22 @@ export default function UserSearch({
             <span className="text-xs">Active filters:</span>
             <div className="flex gap-1">
               {localFilters.username && (
-                <span className="inline-flex px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+                <span className="theme-chip inline-flex px-2 py-1 text-xs rounded">
                   Username: {localFilters.username}
                 </span>
               )}
               {localFilters.role && (
-                <span className="inline-flex px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
+                <span className="theme-chip inline-flex px-2 py-1 text-xs rounded">
                   Role: {USER_ROLES.find(r => r.value === localFilters.role)?.label}
                 </span>
               )}
               {localFilters.dateFrom && (
-                <span className="inline-flex px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">
+                <span className="theme-chip inline-flex px-2 py-1 text-xs rounded">
                   From: {localFilters.dateFrom}
                 </span>
               )}
               {localFilters.dateTo && (
-                <span className="inline-flex px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">
+                <span className="theme-chip inline-flex px-2 py-1 text-xs rounded">
                   To: {localFilters.dateTo}
                 </span>
               )}

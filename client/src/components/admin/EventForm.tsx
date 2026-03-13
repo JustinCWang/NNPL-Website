@@ -151,15 +151,15 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+    <div className="theme-card p-6 rounded-lg">
+      <h3 className="text-lg font-semibold text-theme-foreground mb-4">
         {event ? 'Edit Event' : 'Add New Event'}
       </h3>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Event Name */}
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="name" className="block text-sm font-medium text-theme-foreground mb-1">
             Event Name *
           </label>
           <input
@@ -167,8 +167,8 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
             id="name"
             value={formData.name}
             onChange={(e) => handleInputChange('name', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.name ? 'border-red-500' : 'border-gray-300'
+            className={`theme-input w-full px-3 py-2 rounded-md ${
+              errors.name ? 'border-red-500' : ''
             }`}
             placeholder="Enter event name"
             disabled={isLoading}
@@ -180,7 +180,7 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
 
         {/* Event Date */}
         <div>
-          <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="date" className="block text-sm font-medium text-theme-foreground mb-1">
             Event Date *
           </label>
           <input
@@ -188,8 +188,8 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
             id="date"
             value={formData.date}
             onChange={(e) => handleInputChange('date', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.date ? 'border-red-500' : 'border-gray-300'
+            className={`theme-input w-full px-3 py-2 rounded-md ${
+              errors.date ? 'border-red-500' : ''
             }`}
             disabled={isLoading}
           />
@@ -200,15 +200,15 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
 
         {/* Store Selection */}
         <div>
-          <label htmlFor="store_id" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="store_id" className="block text-sm font-medium text-theme-foreground mb-1">
             Store Location *
           </label>
           <select
             id="store_id"
             value={formData.store_id}
             onChange={(e) => handleInputChange('store_id', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.store_id ? 'border-red-500' : 'border-gray-300'
+            className={`theme-input w-full px-3 py-2 rounded-md ${
+              errors.store_id ? 'border-red-500' : ''
             }`}
             disabled={isLoading}
           >
@@ -223,7 +223,7 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
             <p className="text-red-600 text-sm mt-1">{errors.store_id}</p>
           )}
           {formData.store_id && getSelectedStore() && (
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="text-theme-muted text-sm mt-1">
               Average players: {getSelectedStore()?.avg_players} | 
               League: {getSelectedStore()?.has_league ? 'Yes' : 'No'}
             </p>
@@ -234,7 +234,7 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Event Cost */}
           <div>
-            <label htmlFor="cost" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="cost" className="block text-sm font-medium text-theme-foreground mb-1">
               Event Cost ($)
             </label>
             <input
@@ -242,8 +242,8 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
               id="cost"
               value={formData.cost || ''}
               onChange={(e) => handleInputChange('cost', e.target.value === '' ? 0 : Number(e.target.value))}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.cost ? 'border-red-500' : 'border-gray-300'
+              className={`theme-input w-full px-3 py-2 rounded-md ${
+                errors.cost ? 'border-red-500' : ''
               }`}
               placeholder="0.00"
               min="0"
@@ -257,7 +257,7 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
 
           {/* Minimum Prizing */}
           <div>
-            <label htmlFor="min_prizing" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="min_prizing" className="block text-sm font-medium text-theme-foreground mb-1">
               Min Prizing
             </label>
             <input
@@ -265,8 +265,8 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
               id="min_prizing"
               value={formData.min_prizing || ''}
               onChange={(e) => handleInputChange('min_prizing', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.min_prizing ? 'border-red-500' : 'border-gray-300'
+              className={`theme-input w-full px-3 py-2 rounded-md ${
+                errors.min_prizing ? 'border-red-500' : ''
               }`}
               placeholder="e.g., $50 + booster packs"
               disabled={isLoading}
@@ -278,7 +278,7 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
 
           {/* Maximum Prizing */}
           <div>
-            <label htmlFor="max_prizing" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="max_prizing" className="block text-sm font-medium text-theme-foreground mb-1">
               Max Prizing
             </label>
             <input
@@ -286,8 +286,8 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
               id="max_prizing"
               value={formData.max_prizing || ''}
               onChange={(e) => handleInputChange('max_prizing', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.max_prizing ? 'border-red-500' : 'border-gray-300'
+              className={`theme-input w-full px-3 py-2 rounded-md ${
+                errors.max_prizing ? 'border-red-500' : ''
               }`}
               placeholder="e.g., $200 + playmat"
               disabled={isLoading}
@@ -300,14 +300,14 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
 
         {/* Creator Selection */}
         <div>
-          <label htmlFor="created_by" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="created_by" className="block text-sm font-medium text-theme-foreground mb-1">
             Event Creator
           </label>
           <select
             id="created_by"
             value={formData.created_by || ''}
             onChange={(e) => handleInputChange('created_by', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="theme-input w-full px-3 py-2 rounded-md"
             disabled={isLoading}
           >
             <option value="">Select event creator</option>
@@ -318,7 +318,7 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
             ))}
           </select>
           {formData.created_by && getSelectedUser() && (
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="text-theme-muted text-sm mt-1">
               Role: {getSelectedUser()?.role} | 
               Joined: {new Date(getSelectedUser()?.date_joined || '').toLocaleDateString()}
             </p>
@@ -328,7 +328,7 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
         {/* Event Types */}
         <div>
           <fieldset>
-            <legend className="text-sm font-medium text-gray-700 mb-3">
+            <legend className="text-sm font-medium text-theme-foreground mb-3">
               Event Type * (select at least one)
             </legend>
             <div className="space-y-3">
@@ -339,14 +339,15 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
                   id="is_weekly"
                   checked={formData.is_weekly}
                   onChange={(e) => handleInputChange('is_weekly', e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                  className="h-4 w-4 rounded mt-1"
+                  style={{ accentColor: "var(--theme-border-color)" }}
                   disabled={isLoading}
                 />
                 <div className="ml-3">
-                  <label htmlFor="is_weekly" className="text-sm font-medium text-gray-700">
+                  <label htmlFor="is_weekly" className="text-sm font-medium text-theme-foreground">
                     Weekly Event
                   </label>
-                  <p className="text-sm text-gray-500">Regular weekly tournament or league play</p>
+                  <p className="text-sm text-theme-muted">Regular weekly tournament or league play</p>
                 </div>
               </div>
 
@@ -357,11 +358,12 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
                   id="is_cup"
                   checked={formData.is_cup}
                   onChange={(e) => handleInputChange('is_cup', e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                  className="h-4 w-4 rounded mt-1"
+                  style={{ accentColor: "var(--theme-border-color)" }}
                   disabled={isLoading}
                 />
                 <div className="ml-3">
-                  <label htmlFor="is_cup" className="text-sm font-medium text-gray-700">
+                  <label htmlFor="is_cup" className="text-sm font-medium text-theme-foreground">
                     League Cup Tournament
                   </label>
                   <p className="text-sm text-gray-500">Official Pokémon League tournament with CP points + Playmat</p>
@@ -375,11 +377,12 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
                   id="is_challenge"
                   checked={formData.is_challenge}
                   onChange={(e) => handleInputChange('is_challenge', e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                  className="h-4 w-4 rounded mt-1"
+                  style={{ accentColor: "var(--theme-border-color)" }}
                   disabled={isLoading}
                 />
                 <div className="ml-3">
-                  <label htmlFor="is_challenge" className="text-sm font-medium text-gray-700">
+                  <label htmlFor="is_challenge" className="text-sm font-medium text-theme-foreground">
                     League Challenge Tournament
                   </label>
                   <p className="text-sm text-gray-500">Official Pokémon League tournament with CP points</p>
@@ -393,11 +396,12 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
                   id="is_prerelease"
                   checked={formData.is_prerelease}
                   onChange={(e) => handleInputChange('is_prerelease', e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                  className="h-4 w-4 rounded mt-1"
+                  style={{ accentColor: "var(--theme-border-color)" }}
                   disabled={isLoading}
                 />
                 <div className="ml-3">
-                  <label htmlFor="is_prerelease" className="text-sm font-medium text-gray-700">
+                  <label htmlFor="is_prerelease" className="text-sm font-medium text-theme-foreground">
                     Prerelease Tournament
                   </label>
                   <p className="text-sm text-gray-500">Official Pokémon tournament with the newest set</p>
@@ -415,7 +419,7 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
           <button
             type="submit"
             disabled={isLoading}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="theme-button px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Saving...' : event ? 'Update Event' : 'Add Event'}
           </button>
@@ -423,7 +427,7 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
             type="button"
             onClick={onCancel}
             disabled={isLoading}
-            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="theme-button-subtle px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>

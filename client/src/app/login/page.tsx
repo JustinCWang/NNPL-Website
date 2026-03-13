@@ -105,17 +105,17 @@ export default function LoginPage() {
   return (
     <div className="min-h-dvh text-gray-900 flex flex-col">
       <main className="flex-1 grid place-items-center">
-        <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/40 backdrop-blur-md p-8 shadow-lg">
+        <div className="theme-card w-full max-w-md rounded-2xl p-8">
         <h1 className="text-2xl font-semibold text-center">Log in</h1>
-        <p className="mt-2 text-sm text-gray-700 text-center">
+        <p className="mt-2 text-sm text-theme-muted text-center">
           {showNewUserMessage 
             ? "Welcome! Please check your email and verify your account before logging in." 
             : "Access your account to manage events and your profile."
           }
         </p>
         {showNewUserMessage && (
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-            <p className="text-sm text-blue-800">
+          <div className="theme-chip mt-3 p-3 rounded-md">
+            <p className="text-sm">
               📧 Account created successfully! Please check your email and click the verification link before logging in.
             </p>
           </div>
@@ -130,7 +130,7 @@ export default function LoginPage() {
               required
               placeholder="you@example.com"
               defaultValue={prefillEmail}
-              className="mt-1 w-full rounded-md border border-white/50 bg-white/80 px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+              className="theme-input mt-1 w-full rounded-md px-3 py-2"
             />
           </div>
           <div>
@@ -140,7 +140,7 @@ export default function LoginPage() {
               type="password"
               required
               placeholder="••••••••"
-              className="mt-1 w-full rounded-md border border-white/50 bg-white/80 px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+              className="theme-input mt-1 w-full rounded-md px-3 py-2"
             />
           </div>
           
@@ -149,7 +149,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setShowForgotPassword(true)}
-              className="text-sm text-gray-600 hover:text-gray-800 hover:underline"
+              className="theme-button-ghost rounded-md px-1 py-0.5 text-sm hover:underline"
             >
               Forgot password?
             </button>
@@ -165,20 +165,20 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-60 cursor-pointer"
+            className="theme-button w-full rounded-md px-4 py-2 disabled:opacity-60 cursor-pointer"
           >
             {isSubmitting ? "Signing in..." : "Continue"}
           </button>
         </form>
         {/* Cross-link to signup */}
-        <p className="mt-4 text-sm text-gray-700 text-center">
+        <p className="mt-4 text-sm text-theme-muted text-center">
           Don’t have an account?{" "}
           <Link href="/signup" className="underline">
             Sign up
           </Link>
         </p>
         {/* Back to home */}
-        <p className="mt-6 text-center text-xs text-gray-600">
+        <p className="mt-6 text-center text-xs text-theme-muted">
           <Link href="/" className="hover:underline">
             Back to home
           </Link>
@@ -188,13 +188,13 @@ export default function LoginPage() {
       
       {/* Forgot Password Modal */}
       {showForgotPassword && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="theme-overlay fixed inset-0 flex items-center justify-center p-4 z-50">
+          <div className="theme-card rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Reset Password</h2>
               <button
                 onClick={resetForgotPasswordModal}
-                className="text-gray-400 hover:text-gray-600"
+                className="theme-button-ghost rounded-full"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -210,20 +210,20 @@ export default function LoginPage() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Check Your Email</h3>
-                <p className="text-gray-600 mb-6">
+                <p className="text-theme-muted mb-6">
                   We&apos;ve sent a password reset link to <strong>{resetEmail}</strong>. 
                   Click the link in the email to reset your password.
                 </p>
                 <button
                   onClick={resetForgotPasswordModal}
-                  className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800"
+                  className="theme-button px-4 py-2 rounded-md"
                 >
                   Done
                 </button>
               </div>
             ) : (
               <form onSubmit={handleForgotPassword}>
-                <p className="text-gray-600 mb-4">
+                <p className="text-theme-muted mb-4">
                   Enter your email address and we&apos;ll send you a link to reset your password.
                 </p>
                 <div className="mb-4">
@@ -234,7 +234,7 @@ export default function LoginPage() {
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+                    className="theme-input w-full rounded-md px-3 py-2"
                   />
                 </div>
                 
@@ -248,14 +248,14 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={resetForgotPasswordModal}
-                    className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50"
+                    className="theme-button-subtle flex-1 px-4 py-2 rounded-md"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isResetting}
-                    className="flex-1 bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 disabled:opacity-60"
+                    className="theme-button flex-1 px-4 py-2 rounded-md disabled:opacity-60"
                   >
                     {isResetting ? "Sending..." : "Send Reset Link"}
                   </button>

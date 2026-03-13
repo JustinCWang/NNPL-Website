@@ -59,8 +59,8 @@ export default function ProfilePage() {
     return (
       <main>
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Profile Settings</h1>
-          <p className="text-gray-600">Loading your profile information...</p>
+          <h1 className="text-3xl font-bold text-theme-foreground">Profile Settings</h1>
+          <p className="text-theme-muted">Loading your profile information...</p>
         </div>
         <div className="animate-pulse">
           <div className="h-32 bg-gray-200 rounded-lg mb-6"></div>
@@ -72,9 +72,9 @@ export default function ProfilePage() {
 
   return (
     <main>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Profile Settings</h1>
-        <p className="text-gray-600">Manage your account information and preferences</p>
+        <div className="mb-8">
+        <h1 className="text-3xl font-bold text-theme-foreground">Profile Settings</h1>
+        <p className="text-theme-muted">Manage your account information and preferences</p>
       </div>
       
       {userData ? (
@@ -84,7 +84,7 @@ export default function ProfilePage() {
         />
       ) : (
         <div className="text-center py-12">
-          <p className="text-gray-500">Unable to load profile data. Please try refreshing the page.</p>
+          <p className="text-theme-muted">Unable to load profile data. Please try refreshing the page.</p>
         </div>
       )}
     </main>

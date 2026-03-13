@@ -5,9 +5,9 @@
 
 export default function HomePage() {
   return (
-    <main>
-      <h1 className="text-2xl font-semibold">Home</h1>
-      <p className="mt-2 text-gray-600">Welcome to your dashboard.</p>
+    <main className="text-theme-foreground">
+      <h1 className="text-2xl font-semibold text-theme-foreground">Home</h1>
+      <p className="mt-2 text-theme-muted">Welcome to your dashboard.</p>
     </main>
   );
 }

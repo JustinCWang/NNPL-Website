@@ -55,50 +55,34 @@ const Energy = ({ type }: { type: string }) => (
   return (
     <main>
       <div className="mb-6">
-        <h1 className="text-3xl font-semibold">How to Play</h1>
-        <p className="mt-2 text-gray-600">Master the Pokémon TCG with personalized guidance and track your learning progress.</p>
+        <h1 className="text-3xl font-semibold text-theme-foreground">How to Play</h1>
+        <p className="mt-2 text-theme-muted">Master the Pokémon TCG with personalized guidance and track your learning progress.</p>
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-6">
+      <div className="border-b mb-6" style={{ borderColor: "var(--theme-border-soft)" }}>
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setSelectedTab('basics')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              selectedTab === 'basics'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
+            className={`py-2 px-1 font-medium text-sm ${selectedTab === 'basics' ? 'theme-tab-active' : 'theme-tab'}`}
           >
             Basics
           </button>
           <button
             onClick={() => setSelectedTab('advanced')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              selectedTab === 'advanced'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
+            className={`py-2 px-1 font-medium text-sm ${selectedTab === 'advanced' ? 'theme-tab-active' : 'theme-tab'}`}
           >
             Advanced
           </button>
           <button
             onClick={() => setSelectedTab('deckbuilding')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              selectedTab === 'deckbuilding'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
+            className={`py-2 px-1 font-medium text-sm ${selectedTab === 'deckbuilding' ? 'theme-tab-active' : 'theme-tab'}`}
           >
             Deck Building
           </button>
           <button
             onClick={() => setSelectedTab('progress')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              selectedTab === 'progress'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
+            className={`py-2 px-1 font-medium text-sm ${selectedTab === 'progress' ? 'theme-tab-active' : 'theme-tab'}`}
           >
             My Progress
           </button>
@@ -110,8 +94,8 @@ const Energy = ({ type }: { type: string }) => (
         <div className="space-y-6">
           <section>
             <h2 className="text-2xl font-semibold mb-4">Getting Started</h2>
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <p className="text-gray-700 mb-4">
+            <div className="theme-card rounded-lg p-6">
+              <p className="text-theme-muted mb-4">
                 To start playing Pokémon TCG, you need a deck of cards.
                 Each deck consists of 60 cards, made up of 3 main types: Pokémon, Trainer, and Energy.
               </p>
@@ -120,7 +104,7 @@ const Energy = ({ type }: { type: string }) => (
 
                 <PopUpMenu trigger={
                   <TooltipHover content={
-                    <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg" >
                       Dragapult ex - 320 HP
                       <br />
                       Tera Attribute: This Pokémon is immune to damage from any attack while on the bench.
@@ -145,7 +129,7 @@ const Energy = ({ type }: { type: string }) => (
 
                 <PopUpMenu trigger={
                   <TooltipHover content={
-                    <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg" >
                       Arven
                       <br />
                       Trainer - Supporter
@@ -164,7 +148,7 @@ const Energy = ({ type }: { type: string }) => (
 
                 <PopUpMenu trigger={
                   <TooltipHover content={
-                    <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg" >
                       Buddy-Buddy Poffin
                       <br />
                       Trainer - Item
@@ -183,7 +167,7 @@ const Energy = ({ type }: { type: string }) => (
 
                 <PopUpMenu trigger={
                   <TooltipHover content={
-                    <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg" >
                       Air Balloon
                       <br />
                       Trainer - Tool
@@ -204,7 +188,7 @@ const Energy = ({ type }: { type: string }) => (
 
                 <PopUpMenu trigger={
                   <TooltipHover content={
-                    <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg" >
                       Jamming Tower
                       <br />
                       Trainer - Stadium
@@ -225,7 +209,7 @@ const Energy = ({ type }: { type: string }) => (
 
                 <PopUpMenu trigger={
                   <TooltipHover content={
-                    <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg" >
                       Basic Fire Energy <Energy type="fire" />
                       <br />
                       You may attach one Energy card from your hand to one of your Pokémon per turn.
@@ -242,7 +226,7 @@ const Energy = ({ type }: { type: string }) => (
 
                 <PopUpMenu trigger={
                   <TooltipHover content={
-                    <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg" >
+                    <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg" >
                       Neo Upper Energy
                       <br />
                       ACE SPEC - You may only include 1 ACE SPEC card (Item, Tool, Stadium, or Energy) in your deck.
@@ -258,7 +242,7 @@ const Energy = ({ type }: { type: string }) => (
                 </PopUpMenu>
                 
               </div>
-              <button className="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700">
+              <button className="theme-button px-4 py-2 rounded-md text-sm">
                 ✓ Mark as Completed
               </button>
             </div>
@@ -266,7 +250,7 @@ const Energy = ({ type }: { type: string }) => (
 
           <section>
             <h2 className="text-2xl font-semibold mb-4">Setting Up the Game</h2>
-            <div className="bg-white border border-gray-200 rounded-lg p-6 grid">
+            <div className="theme-card rounded-lg p-6 grid">
               
               {/* Map with Area elements enclosed in TooltipHover elements will go here */}
               <Image
@@ -286,7 +270,7 @@ const Energy = ({ type }: { type: string }) => (
                 <PopUpMenu trigger={
                   <TooltipHover
                     content={
-                      <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg text-center">
+                      <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg text-center">
                         Prize Cards
                         <br />
                         -----------
@@ -303,7 +287,7 @@ const Energy = ({ type }: { type: string }) => (
                   </TooltipHover>
                 }>
                   <h2 className="text-lg font-semibold mb-2">Prize Cards</h2>
-                  <p className="text-gray-700 mb-4">
+                  <p className="text-theme-muted mb-4">
                     Set aside 6 Prize cards face-down. You take one face-down card and place it into your hand when you Knock Out an opponent&apos;s Pokémon.
                   </p>
                 </PopUpMenu>
@@ -312,7 +296,7 @@ const Energy = ({ type }: { type: string }) => (
                 <PopUpMenu trigger={
                   <TooltipHover
                     content={
-                      <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg text-center">
+                      <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg text-center">
                         Active Pokémon
                         <br />
                         --------------
@@ -335,7 +319,7 @@ const Energy = ({ type }: { type: string }) => (
                 <PopUpMenu trigger={
                   <TooltipHover
                     content={
-                      <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg text-center">
+                      <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg text-center">
                         Benched Pokémon
                         <br />
                         ----------------
@@ -358,7 +342,7 @@ const Energy = ({ type }: { type: string }) => (
                 <PopUpMenu trigger={
                   <TooltipHover
                     content={
-                      <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg text-center">
+                      <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg text-center">
                         Active Pokémon Status
                         <br />
                         ------------------------------
@@ -381,7 +365,7 @@ const Energy = ({ type }: { type: string }) => (
                 <PopUpMenu trigger={
                   <TooltipHover
                     content={
-                      <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg text-center">
+                      <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg text-center">
                         Active Pokémon Status
                         <br />
                         ------------------------
@@ -404,7 +388,7 @@ const Energy = ({ type }: { type: string }) => (
                 <PopUpMenu trigger={
                   <TooltipHover
                     content={
-                      <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg text-center">
+                      <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg text-center">
                         Active Pokémon Status
                         <br />
                         ----------------------
@@ -427,7 +411,7 @@ const Energy = ({ type }: { type: string }) => (
                 <PopUpMenu trigger={
                   <TooltipHover
                     content={
-                      <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg text-center">
+                      <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg text-center">
                         Active Pokémon Status
                         <br />
                         ----------------------
@@ -450,7 +434,7 @@ const Energy = ({ type }: { type: string }) => (
                 <PopUpMenu trigger={
                   <TooltipHover
                     content={
-                      <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg text-center">
+                      <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg text-center">
                         Your Deck
                         <br />
                         ---------
@@ -473,7 +457,7 @@ const Energy = ({ type }: { type: string }) => (
                 <PopUpMenu trigger={
                   <TooltipHover
                     content={
-                      <div className="absolute w-max pointer-events-none px-3 py-1 bg-black text-white text-sm rounded-lg shadow-lg text-center">
+                      <div className="theme-tooltip absolute w-max pointer-events-none px-3 py-1 text-sm rounded-lg text-center">
                         Your Discard
                         <br />
                         ------------
@@ -494,11 +478,11 @@ const Energy = ({ type }: { type: string }) => (
 
               </map>
               
-              <p className="text-gray-700 mb-4">
+              <p className="text-theme-muted mb-4">
                 Each player shuffles their deck, draws 7 cards, and places at least one Basic Pokémon as their Active Pokémon.
                 Set aside 6 Prize cards face-down.
               </p>
-              <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-50">
+              <button className="theme-button-subtle px-4 py-2 rounded-md text-sm">
                 Mark as Completed
               </button>
             </div>
@@ -510,11 +494,11 @@ const Energy = ({ type }: { type: string }) => (
         <div className="space-y-6">
           <section>
             <h2 className="text-2xl font-semibold mb-4">Advanced Strategies</h2>
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <p className="text-gray-700 mb-4">
+            <div className="theme-card rounded-lg p-6">
+              <p className="text-theme-muted mb-4">
                 Learn advanced techniques like prize mapping, resource management, and meta game analysis.
               </p>
-              <p className="text-gray-500">Content coming soon...</p>
+              <p className="text-theme-muted">Content coming soon...</p>
             </div>
           </section>
         </div>
@@ -524,11 +508,11 @@ const Energy = ({ type }: { type: string }) => (
         <div className="space-y-6">
           <section>
             <h2 className="text-2xl font-semibold mb-4">Deck Building Tools</h2>
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <p className="text-gray-700 mb-4">
+            <div className="theme-card rounded-lg p-6">
+              <p className="text-theme-muted mb-4">
                 Build and test your decks with our integrated deck builder and simulator.
               </p>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
+              <button className="theme-button px-4 py-2 rounded-md text-sm">
                 Open Deck Builder
               </button>
             </div>
@@ -540,14 +524,14 @@ const Energy = ({ type }: { type: string }) => (
         <div className="space-y-6">
           <section>
             <h2 className="text-2xl font-semibold mb-4">Learning Progress</h2>
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <div className="theme-card rounded-lg p-6">
               <div className="mb-4">
                 <div className="flex justify-between text-sm mb-1">
                   <span>Basic Rules</span>
                   <span>0/5 completed</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{width: '0%'}}></div>
+                  <div className="h-2 rounded-full" style={{ width: '0%', backgroundColor: "var(--theme-border-color)" }}></div>
                 </div>
               </div>
               <div className="mb-4">
@@ -556,10 +540,10 @@ const Energy = ({ type }: { type: string }) => (
                   <span>0/8 completed</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{width: '0%'}}></div>
+                  <div className="h-2 rounded-full" style={{ width: '0%', backgroundColor: "var(--theme-border-color)" }}></div>
                 </div>
               </div>
-              <p className="text-gray-500 text-sm">Start completing lessons to track your progress!</p>
+              <p className="text-theme-muted text-sm">Start completing lessons to track your progress!</p>
             </div>
           </section>
         </div>

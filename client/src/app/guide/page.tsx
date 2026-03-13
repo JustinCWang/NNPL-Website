@@ -1,7 +1,7 @@
 /*
   Public Guide page ("/guide").
   - Accessible without authentication
-  - Shows how to play Pokémon TCG
+  - Shows how to play Pokemon TCG
 */
 
 import Link from "next/link";
@@ -9,73 +9,99 @@ import Image from "next/image";
 
 export default function GuidePage() {
   return (
-    <main className="min-h-dvh text-gray-900">
+    <main className="min-h-dvh text-theme-foreground">
       {/* Simple header for public pages */}
       <header className="py-4 px-6 lg:px-8 border-b">
         <div className="mx-auto w-full max-w-screen-2xl flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold">← Back to Home</Link>
+          <Link href="/" className="text-lg font-semibold">Back to Home</Link>
         </div>
       </header>
-      
+
       <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 pt-4 pb-16">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-semibold text-center">How to Play</h1>
         </div>
-        
-        <section id="beginner">
-          <div className="px-8 grid">
-            <h2 className="mt-8 text-2xl font-semibold col-span-4">Getting Started</h2>
-            <p className="mt-2 mr-4 text-gray-700 text-justify">
-              To start playing Pokémon TCG, you need a deck of cards.
-              Each deck consists of 60 cards, made up of 3 main types: Pokémon, Trainer, and Energy.
-              Each deck contains up to 4 copies of any card except basic Energy cards, which have no hard limits.
-              You can build your own deck or use one from{" "}
+
+        <section id="beginner" className="mt-10 space-y-8">
+          <div className="theme-card rounded-2xl px-8 py-8 grid gap-6">
+            <h2 className="text-2xl font-semibold">Getting Started</h2>
+            <p className="text-theme-muted text-justify">
+              To start playing Pokemon TCG, you need a deck of cards. Each deck consists of 60 cards,
+              made up of 3 main types: Pokemon, Trainer, and Energy. Each deck contains up to 4 copies
+              of any card except basic Energy cards, which have no hard limits. You can build your own
+              deck or use one from{" "}
               <a
                 href="https://limitlesstcg.com/"
-                className="text-blue-600 underline hover:text-blue-800"
+                className="text-theme underline hover:opacity-80"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 Limitless TCG
               </a>
-              , a site that provides a wide range of deck lists from various tournaments.
-              You can purchase these cards online at{" "}
+              , a site that provides a wide range of deck lists from various tournaments. You can
+              purchase these cards online at{" "}
               <a
                 href="https://www.tcgplayer.com/"
-                className="text-blue-600 underline hover:text-blue-800"
+                className="text-theme underline hover:opacity-80"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                TCG&nbsp;Player
+                TCG Player
               </a>
-              , or from various local vendors.
-              A great place to start is{" "}
+              , or from various local vendors. A great place to start is{" "}
               <a
                 href="https://tcg.pokemon.com/en-us/tcgl/"
-                className="text-blue-600 underline hover:text-blue-800"
+                className="text-theme underline hover:opacity-80"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Pokémon&nbsp;TCG&nbsp;Live
+                Pokemon TCG Live
               </a>
-              , an online version of the TCG which lets you
-              practice with pre-made decks or create new decks and try them out.
+              , an online version of the TCG which lets you practice with pre-made decks or create new
+              decks and try them out.
             </p>
-            <Image src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/dragapult_ex.png" alt="Dragapult ex Pokémon card" width={160} height={224} className="px-2" />
-            <Image src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/arven.png" alt="Arven Trainer card" width={160} height={224} className="px-2" />
-            <Image src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/basic_fire.png" alt="Basic Fire Energy card" width={160} height={224} className="px-2" />
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="theme-panel rounded-2xl p-3 flex justify-center">
+                <Image
+                  src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/dragapult_ex.png"
+                  alt="Dragapult ex Pokemon card"
+                  width={160}
+                  height={224}
+                  className="px-2"
+                />
+              </div>
+              <div className="theme-panel rounded-2xl p-3 flex justify-center">
+                <Image
+                  src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/arven.png"
+                  alt="Arven Trainer card"
+                  width={160}
+                  height={224}
+                  className="px-2"
+                />
+              </div>
+              <div className="theme-panel rounded-2xl p-3 flex justify-center">
+                <Image
+                  src="https://riqqtffbmifrtuwtvqil.supabase.co/storage/v1/object/public/content/basic_fire.png"
+                  alt="Basic Fire Energy card"
+                  width={160}
+                  height={224}
+                  className="px-2"
+                />
+              </div>
+            </div>
           </div>
-          <div className="px-8 grid">
-            <h2 className="mt-8 text-2xl font-semibold col-span-2" id="Setting Up">Setting Up</h2>
-            <p className="mt-2 ml-4 text-gray-700 text-justify self-end">
-              At the start of each game, each player shuffles their deck and offers for their opponent to cut it.
-              One player rolls a dice to determine who goes first, with heads being even and tails being odd.
-              The other player must call heads or tails before the dice is rolled.
-              The player who wins the roll chooses whether to go first or second.
-              Each player then draws 7 cards from their deck. Each player must place at least one Basic Pokémon card
-              (denoted in the top left of a card) from their hand into the Active spot face-down.
-              They may place down up to 5 additional Basic Pokémon on their Bench, also face-down.
-              After placing a basic Pokémon in the Active spot, players must place 6 Prize cards face-down from their deck.
+
+          <div className="theme-card rounded-2xl px-8 py-8 grid gap-6">
+            <h2 className="text-2xl font-semibold" id="Setting Up">Setting Up</h2>
+            <p className="text-theme-muted text-justify">
+              At the start of each game, each player shuffles their deck and offers for their opponent
+              to cut it. One player rolls a die to determine who goes first, with heads being even and
+              tails being odd. The other player must call heads or tails before the die is rolled. The
+              player who wins the roll chooses whether to go first or second. Each player then draws 7
+              cards from their deck. Each player must place at least one Basic Pokemon card from their
+              hand into the Active spot face-down. They may place up to 5 additional Basic Pokemon on
+              their Bench, also face-down. After placing a Basic Pokemon in the Active spot, players
+              place 6 Prize cards face-down from their deck.
             </p>
           </div>
         </section>

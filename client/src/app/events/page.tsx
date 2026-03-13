@@ -106,7 +106,7 @@ function EventsPageContent() {
   const filteredStore = initialStoreId ? stores.find(s => s.store_id === initialStoreId) : null;
 
   return (
-    <main className="min-h-dvh text-gray-900">
+    <main className="min-h-dvh text-theme-foreground">
       {/* Simple header for public pages */}
       <header className="py-4 px-6 lg:px-8 border-b">
         <div className="mx-auto w-full max-w-screen-2xl flex items-center justify-between">
@@ -117,19 +117,19 @@ function EventsPageContent() {
       <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl font-semibold text-center">Events</h1>
-          <p className="mt-4 text-gray-700 text-center max-w-3xl mx-auto">
+          <p className="mt-4 text-theme-muted text-center max-w-3xl mx-auto">
             Stay up to date with upcoming tournaments and events in the NNPL community.
           </p>
           
           {/* Store Filter Notice */}
           {filteredStore && (
             <div className="mt-6 text-center">
-              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+              <div className="theme-chip inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
                 Showing events for <span className="font-semibold">{filteredStore.name}</span>
-                <Link href="/events" className="ml-2 text-blue-600 hover:text-blue-800 underline">
+                <Link href="/events" className="ml-2 text-theme underline hover:opacity-80">
                   (View all events)
                 </Link>
               </div>
@@ -138,15 +138,15 @@ function EventsPageContent() {
           
           {loading ? (
             <div className="mt-12 text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-              <p className="mt-2 text-gray-600">Loading events...</p>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-theme border-t-transparent"></div>
+              <p className="mt-2 text-theme-muted">Loading events...</p>
             </div>
           ) : error ? (
             <div className="mt-12 text-center">
               <p className="text-red-600">{error}</p>
               <button 
                 onClick={() => window.location.reload()} 
-                className="mt-4 inline-flex items-center rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+                className="theme-button mt-4 inline-flex items-center rounded-md px-4 py-2"
               >
                 Try Again
               </button>
@@ -167,7 +167,7 @@ function EventsPageContent() {
                 <>
                   {Object.entries(groupedEvents).map(([month, monthEvents]) => (
                     <div key={month} className="mb-12">
-                      <h2 className="text-2xl font-semibold text-gray-900 mb-6 border-b pb-2">
+                      <h2 className="text-2xl font-semibold text-theme-foreground mb-6 border-b pb-2" style={{ borderColor: "var(--theme-border-soft)" }}>
                         {month}
                       </h2>
                       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -184,26 +184,26 @@ function EventsPageContent() {
                   ))}
                   
                   <div className="mt-12 text-center">
-                    <p className="text-gray-600 mb-4">
+                    <p className="text-theme-muted mb-4">
                       {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''} found
                       {filteredEvents.length !== events.length && ` (filtered from ${events.length} total)`}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-theme-muted">
                       Events are sorted by date from closest to farthest. Check back regularly for new events!
                     </p>
                   </div>
                 </>
               ) : (
                 <div className="mt-12 text-center">
-                  <p className="text-gray-600">No events found matching your filters.</p>
-                  <p className="text-sm text-gray-500 mt-2">Try adjusting your search criteria or check back later for new events and tournaments.</p>
+                  <p className="text-theme-muted">No events found matching your filters.</p>
+                  <p className="text-sm text-theme-muted mt-2">Try adjusting your search criteria or check back later for new events and tournaments.</p>
                 </div>
               )}
             </div>
           ) : (
             <div className="mt-12 text-center">
-              <p className="text-gray-600">No upcoming events found.</p>
-              <p className="text-sm text-gray-500 mt-2">Check back later for new events and tournaments.</p>
+              <p className="text-theme-muted">No upcoming events found.</p>
+              <p className="text-sm text-theme-muted mt-2">Check back later for new events and tournaments.</p>
             </div>
           )}
         </div>
@@ -215,7 +215,7 @@ function EventsPageContent() {
 export default function EventsPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-dvh text-gray-900">
+      <main className="min-h-dvh text-theme-foreground">
         <header className="py-4 px-6 lg:px-8 border-b">
           <div className="mx-auto w-full max-w-screen-2xl flex items-center justify-between">
             <div className="text-lg font-semibold">← Back to Home</div>
@@ -225,8 +225,8 @@ export default function EventsPage() {
           <div className="max-w-6xl mx-auto">
             <h1 className="text-3xl font-semibold text-center">Events</h1>
             <div className="mt-12 text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-              <p className="mt-2 text-gray-600">Loading events...</p>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-theme border-t-transparent"></div>
+              <p className="mt-2 text-theme-muted">Loading events...</p>
             </div>
           </div>
         </section>

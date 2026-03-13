@@ -119,19 +119,19 @@ export default function EventsPage() {
   return (
     <main>
       <div className="mb-6">
-        <h1 className="text-3xl font-semibold">Events</h1>
-        <p className="mt-2 text-gray-600">Manage your tournament participation and stay updated on upcoming events.</p>
+        <h1 className="text-3xl font-semibold text-theme-foreground">Events</h1>
+        <p className="mt-2 text-theme-muted">Manage your tournament participation and stay updated on upcoming events.</p>
       </div>
 
       {/* Store Filter Notice */}
       {filteredStore && (
         <div className="mb-6">
-          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+          <div className="theme-chip inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
             Showing events for <span className="font-semibold">{filteredStore.name}</span>
-            <a href="/my-events" className="ml-2 text-blue-600 hover:text-blue-800 underline">
+            <a href="/my-events" className="ml-2 text-theme underline hover:opacity-80">
               (View all events)
             </a>
           </div>
@@ -139,35 +139,23 @@ export default function EventsPage() {
       )}
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-6">
+      <div className="border-b mb-6" style={{ borderColor: "var(--theme-border-soft)" }}>
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setSelectedTab('upcoming')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              selectedTab === 'upcoming'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
+            className={`py-2 px-1 font-medium text-sm ${selectedTab === 'upcoming' ? 'theme-tab-active' : 'theme-tab'}`}
           >
             Upcoming Events
           </button>
           <button
             onClick={() => setSelectedTab('registered')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              selectedTab === 'registered'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
+            className={`py-2 px-1 font-medium text-sm ${selectedTab === 'registered' ? 'theme-tab-active' : 'theme-tab'}`}
           >
             My Registrations
           </button>
           <button
             onClick={() => setSelectedTab('history')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              selectedTab === 'history'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
+            className={`py-2 px-1 font-medium text-sm ${selectedTab === 'history' ? 'theme-tab-active' : 'theme-tab'}`}
           >
             Event History
           </button>
@@ -187,15 +175,15 @@ export default function EventsPage() {
 
           {loading ? (
             <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="mt-2 text-gray-600">Loading events...</p>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-theme" style={{ borderTopColor: "transparent" }}></div>
+              <p className="mt-2 text-theme-muted">Loading events...</p>
             </div>
           ) : error ? (
             <div className="text-center py-8">
               <p className="text-red-600">{error}</p>
               <button 
                 onClick={() => window.location.reload()} 
-                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
+                className="theme-button mt-4 px-4 py-2 rounded-md text-sm"
               >
                 Try Again
               </button>
@@ -204,8 +192,8 @@ export default function EventsPage() {
             filteredEvents.map((event) => renderEventCard(event, true))
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">No events found matching your filters.</p>
-              <p className="text-sm text-gray-400 mt-1">Try adjusting your search criteria or check back later for new tournaments and events.</p>
+              <p className="text-theme-muted">No events found matching your filters.</p>
+              <p className="text-sm text-theme-muted mt-1">Try adjusting your search criteria or check back later for new tournaments and events.</p>
             </div>
           )}
         </div>
@@ -213,10 +201,10 @@ export default function EventsPage() {
 
       {selectedTab === 'registered' && (
         <div className="text-center py-8">
-          <p className="text-gray-500">You haven&apos;t registered for any events yet.</p>
+          <p className="text-theme-muted">You haven&apos;t registered for any events yet.</p>
           <button 
             onClick={() => setSelectedTab('upcoming')}
-            className="mt-2 text-blue-600 hover:text-blue-700"
+            className="theme-button-ghost mt-2 rounded-md px-2 py-1"
           >
             Browse upcoming events →
           </button>
@@ -227,20 +215,20 @@ export default function EventsPage() {
         <div className="space-y-4">
           {loading ? (
             <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="mt-2 text-gray-600">Loading event history...</p>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-theme" style={{ borderTopColor: "transparent" }}></div>
+              <p className="mt-2 text-theme-muted">Loading event history...</p>
             </div>
           ) : pastEvents.length > 0 ? (
             <div className="space-y-4">
               <div className="mb-4">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Past Events</h3>
-                <p className="text-sm text-gray-600">Events you&apos;ve participated in or missed.</p>
+                <h3 className="text-lg font-medium text-theme-foreground mb-2">Past Events</h3>
+                <p className="text-sm text-theme-muted">Events you&apos;ve participated in or missed.</p>
               </div>
               {pastEvents.map((event) => renderEventCard(event, false))}
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">No event history yet. Participate in tournaments to see your results here.</p>
+              <p className="text-theme-muted">No event history yet. Participate in tournaments to see your results here.</p>
             </div>
           )}
         </div>

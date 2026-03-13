@@ -31,40 +31,40 @@ export default function ContactForm({ className = "" }: ContactFormProps) {
   }
 
   return (
-    <div className={`max-w-xl mx-auto ${className}`}>
-      <h2 className="text-2xl font-semibold text-center">Contact Us</h2>
+    <div className={`theme-card max-w-xl mx-auto rounded-2xl p-8 ${className}`}>
+      <h2 className="text-2xl font-semibold text-center text-theme-foreground">Contact Us</h2>
       <form onSubmit={handleContactSubmit} className="mt-8 grid gap-4">
         <div>
-          <label className="block text-sm font-medium">Name</label>
+          <label className="block text-sm font-medium text-theme-foreground">Name</label>
           <input 
             name="name" 
             type="text" 
             required 
-            className="mt-1 w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-black" 
+            className="theme-input mt-1 w-full rounded-md px-3 py-2" 
           />
         </div>
         <div>
-          <label className="block text-sm font-medium">Email</label>
+          <label className="block text-sm font-medium text-theme-foreground">Email</label>
           <input 
             name="email" 
             type="email" 
             required 
-            className="mt-1 w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-black" 
+            className="theme-input mt-1 w-full rounded-md px-3 py-2" 
           />
         </div>
         <div>
-          <label className="block text-sm font-medium">Message</label>
+          <label className="block text-sm font-medium text-theme-foreground">Message</label>
           <textarea 
             name="message" 
             rows={5} 
             required 
-            className="mt-1 w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-black" 
+            className="theme-input mt-1 w-full rounded-md px-3 py-2" 
           />
         </div>
         <div>
           <button 
             type="submit" 
-            className="inline-flex items-center rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800 cursor-pointer"
+            className="theme-button inline-flex items-center rounded-md px-4 py-2 cursor-pointer"
           >
             Send
           </button>

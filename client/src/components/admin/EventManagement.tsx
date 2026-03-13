@@ -336,8 +336,8 @@ export default function EventManagement() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Event Management</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-2xl font-bold text-theme-foreground">Event Management</h2>
+          <p className="text-theme-muted mt-1">
             Manage events and tournaments across all stores
           </p>
         </div>
@@ -346,7 +346,7 @@ export default function EventManagement() {
           <button
             onClick={() => setCurrentView('add')}
             disabled={!hasStores}
-            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="theme-button px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
             title={!hasStores ? 'Please add stores first before creating events' : ''}
           >
             Add New Event

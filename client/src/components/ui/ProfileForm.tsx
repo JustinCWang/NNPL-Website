@@ -288,24 +288,24 @@ export default function ProfileForm({ initialData, onUpdate }: ProfileFormProps)
       )}
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-6">
+      <div className="border-b mb-6" style={{ borderColor: "var(--theme-border-soft)" }}>
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`py-2 px-1 font-medium text-sm ${
               activeTab === 'profile'
-                ? 'border-black text-black'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'theme-tab-active'
+                : 'theme-tab'
             }`}
           >
             Profile
           </button>
           <button
             onClick={() => setActiveTab('security')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`py-2 px-1 font-medium text-sm ${
               activeTab === 'security'
-                ? 'border-black text-black'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'theme-tab-active'
+                : 'theme-tab'
             }`}
           >
             Security
@@ -317,10 +317,10 @@ export default function ProfileForm({ initialData, onUpdate }: ProfileFormProps)
       {activeTab === 'profile' && (
         <div className="space-y-8">
           {/* Avatar Section */}
-          <div className="bg-white p-6 rounded-lg border">
+          <div className="theme-card p-6 rounded-lg">
             <h3 className="text-lg font-medium mb-4">Profile Picture</h3>
             <div className="flex items-center space-x-4">
-              <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden relative">
+              <div className="w-20 h-20 rounded-full theme-panel flex items-center justify-center overflow-hidden relative">
                 {avatarPreview ? (
                   <Image src={avatarPreview} alt="Avatar" fill className="object-cover" />
                 ) : (
@@ -340,33 +340,33 @@ export default function ProfileForm({ initialData, onUpdate }: ProfileFormProps)
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
+                  className="theme-button px-4 py-2 rounded-md disabled:opacity-50"
                 >
                   {isLoading ? 'Uploading...' : 'Change Avatar'}
                 </button>
-                <p className="text-sm text-gray-500 mt-1">JPG, PNG up to 5MB</p>
+                <p className="text-sm text-theme-muted mt-1">JPG, PNG up to 5MB</p>
               </div>
             </div>
           </div>
 
           {/* Username Section */}
-          <div className="bg-white p-6 rounded-lg border">
+          <div className="theme-card p-6 rounded-lg">
             <h3 className="text-lg font-medium mb-4">Username</h3>
             <form onSubmit={handleUsernameUpdate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Username</label>
+                <label className="block text-sm font-medium text-theme-foreground">Username</label>
                 <input
                   name="username"
                   type="text"
                   defaultValue={initialData?.username}
                   required
-                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                  className="theme-input mt-1 w-full rounded-md px-3 py-2"
                 />
               </div>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
+                className="theme-button px-4 py-2 rounded-md disabled:opacity-50"
               >
                 {isLoading ? 'Updating...' : 'Update Username'}
               </button>
@@ -379,26 +379,26 @@ export default function ProfileForm({ initialData, onUpdate }: ProfileFormProps)
       {activeTab === 'security' && (
         <div className="space-y-8">
           {/* Email Section */}
-          <div className="bg-white p-6 rounded-lg border">
+          <div className="theme-card p-6 rounded-lg">
             <h3 className="text-lg font-medium mb-4">Email Address</h3>
             <form onSubmit={handleEmailUpdate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <label className="block text-sm font-medium text-theme-foreground">Email</label>
                 <input
                   name="email"
                   type="email"
                   defaultValue={initialData?.email}
                   required
-                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                  className="theme-input mt-1 w-full rounded-md px-3 py-2"
                 />
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-theme-muted mt-1">
                   Changing your email will require verification of the new address.
                 </p>
               </div>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
+                className="theme-button px-4 py-2 rounded-md disabled:opacity-50"
               >
                 {isLoading ? 'Updating...' : 'Update Email'}
               </button>
@@ -406,42 +406,42 @@ export default function ProfileForm({ initialData, onUpdate }: ProfileFormProps)
           </div>
 
           {/* Password Section */}
-          <div className="bg-white p-6 rounded-lg border">
+          <div className="theme-card p-6 rounded-lg">
             <h3 className="text-lg font-medium mb-4">Change Password</h3>
             <form onSubmit={handlePasswordUpdate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Current Password</label>
+                <label className="block text-sm font-medium text-theme-foreground">Current Password</label>
                 <input
                   name="currentPassword"
                   type="password"
                   required
-                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                  className="theme-input mt-1 w-full rounded-md px-3 py-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">New Password</label>
+                <label className="block text-sm font-medium text-theme-foreground">New Password</label>
                 <input
                   name="password"
                   type="password"
                   required
                   minLength={6}
-                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                  className="theme-input mt-1 w-full rounded-md px-3 py-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                <label className="block text-sm font-medium text-theme-foreground">Confirm New Password</label>
                 <input
                   name="confirmPassword"
                   type="password"
                   required
                   minLength={6}
-                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                  className="theme-input mt-1 w-full rounded-md px-3 py-2"
                 />
               </div>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
+                className="theme-button px-4 py-2 rounded-md disabled:opacity-50"
               >
                 {isLoading ? 'Updating...' : 'Update Password'}
               </button>

@@ -188,12 +188,12 @@ export default function UserEventFilters({ events, stores, onFiltersChange, init
   }, []);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border mb-6">
-      <div className="px-6 py-4 border-b border-gray-200">
+    <div className="theme-card rounded-lg mb-6">
+      <div className="px-6 py-4 border-b" style={{ borderColor: "var(--theme-border-soft)" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <h3 className="text-lg font-semibold text-gray-900">Filter Events</h3>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <h3 className="text-lg font-semibold text-theme-foreground">Filter Events</h3>
+            <span className="theme-chip inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
               {filteredEvents.length} of {events.length} events
             </span>
           </div>
@@ -201,14 +201,14 @@ export default function UserEventFilters({ events, stores, onFiltersChange, init
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                className="theme-button-ghost rounded-md px-2 py-1 text-sm"
               >
                 Clear All
               </button>
             )}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 transition-colors"
+              className="theme-button-ghost flex items-center space-x-1 rounded-md px-2 py-1"
             >
               <span className="text-sm font-medium">
                 {showFilters ? 'Hide Filters' : 'Show Filters'}
@@ -230,40 +230,36 @@ export default function UserEventFilters({ events, stores, onFiltersChange, init
         <div className="px-6 py-4 space-y-6">
           {/* Event Name Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Event Name
-            </label>
+            <label className="block text-sm font-medium text-theme-foreground mb-2">Event Name</label>
             <input
               type="text"
               value={filters.name}
               onChange={(e) => handleFilterChange('name', e.target.value)}
               placeholder="Search by event name..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="theme-input w-full px-3 py-2 rounded-md"
             />
           </div>
 
           {/* Date Range */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date Range
-            </label>
+            <label className="block text-sm font-medium text-theme-foreground mb-2">Date Range</label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">From Date</label>
+                <label className="block text-xs text-theme-muted mb-1">From Date</label>
                 <input
                   type="date"
                   value={filters.dateFrom}
                   onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="theme-input w-full px-3 py-2 rounded-md"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">To Date</label>
+                <label className="block text-xs text-theme-muted mb-1">To Date</label>
                 <input
                   type="date"
                   value={filters.dateTo}
                   onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="theme-input w-full px-3 py-2 rounded-md"
                 />
               </div>
             </div>
@@ -272,19 +268,19 @@ export default function UserEventFilters({ events, stores, onFiltersChange, init
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => getQuickDateRange('week')}
-                className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+                className="theme-button-subtle px-3 py-1 text-xs rounded-md"
               >
                 This Week
               </button>
               <button
                 onClick={() => getQuickDateRange('month')}
-                className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+                className="theme-button-subtle px-3 py-1 text-xs rounded-md"
               >
                 This Month
               </button>
               <button
                 onClick={() => getQuickDateRange('quarter')}
-                className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+                className="theme-button-subtle px-3 py-1 text-xs rounded-md"
               >
                 This Quarter
               </button>
@@ -293,13 +289,11 @@ export default function UserEventFilters({ events, stores, onFiltersChange, init
 
           {/* Store Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Store
-            </label>
+            <label className="block text-sm font-medium text-theme-foreground mb-2">Store</label>
             <select
               value={filters.storeId}
               onChange={(e) => handleFilterChange('storeId', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="theme-input w-full px-3 py-2 rounded-md"
             >
               <option value="">All Stores</option>
               {stores.map(store => (
@@ -312,9 +306,7 @@ export default function UserEventFilters({ events, stores, onFiltersChange, init
 
           {/* Event Types */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Event Types
-            </label>
+            <label className="block text-sm font-medium text-theme-foreground mb-2">Event Types</label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {EVENT_TYPE_OPTIONS.map(type => (
                 <label key={type.id} className="flex items-center space-x-2 cursor-pointer">
@@ -322,9 +314,10 @@ export default function UserEventFilters({ events, stores, onFiltersChange, init
                     type="checkbox"
                     checked={filters.eventTypes.includes(type.id)}
                     onChange={() => handleEventTypeToggle(type.id)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 rounded"
+                    style={{ accentColor: "var(--theme-border-color)" }}
                   />
-                  <span className="text-sm text-gray-700">{type.label}</span>
+                  <span className="text-sm text-theme-muted">{type.label}</span>
                 </label>
               ))}
             </div>
@@ -332,33 +325,33 @@ export default function UserEventFilters({ events, stores, onFiltersChange, init
 
           {/* Active Filters Summary */}
           {hasActiveFilters && (
-            <div className="pt-4 border-t border-gray-200">
+            <div className="pt-4 border-t" style={{ borderColor: "var(--theme-border-soft)" }}>
               <div className="flex flex-wrap gap-2">
-                <span className="text-sm font-medium text-gray-700">Active filters:</span>
+                <span className="text-sm font-medium text-theme-foreground">Active filters:</span>
                 {filters.name && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <span className="theme-chip inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
                     Name: {filters.name}
                   </span>
                 )}
                 {filters.dateFrom && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <span className="theme-chip inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
                     From: {new Date(filters.dateFrom).toLocaleDateString()}
                   </span>
                 )}
                 {filters.dateTo && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <span className="theme-chip inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
                     To: {new Date(filters.dateTo).toLocaleDateString()}
                   </span>
                 )}
                 {filters.storeId && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                  <span className="theme-chip inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
                     Store: {stores.find(s => s.store_id === filters.storeId)?.name}
                   </span>
                 )}
                 {filters.eventTypes.map(typeId => {
                   const type = EVENT_TYPE_OPTIONS.find(t => t.id === typeId);
                   return type ? (
-                    <span key={typeId} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                    <span key={typeId} className="theme-chip inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
                       {type.label}
                     </span>
                   ) : null;

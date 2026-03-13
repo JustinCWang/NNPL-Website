@@ -61,17 +61,17 @@ export default function PopUpMenu({ trigger, children }: PopUpMenuProps) {
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Grey overlay */}
-          <div className="absolute inset-0 bg-black opacity-50"></div>
+          <div className="theme-overlay absolute inset-0"></div>
 
           {/* Centered modal content */}
           <div
             ref={modalRef}
-            className="relative bg-white rounded-lg shadow-xl max-w-7xl m-12 w-full p-6 z-10 animate-fadeIn"
+            className="theme-card relative rounded-lg max-w-7xl m-12 w-full p-6 z-10 animate-fadeIn"
           >
             {/* Close button (top-right corner) */}
             <button
               onClick={() => setOpen(false)}
-              className="absolute top-2 right-2 h-8 w-8 text-gray-600 hover:text-black cursor-pointer text-2xl font-bold"
+              className="theme-button-ghost absolute top-2 right-2 h-8 w-8 cursor-pointer text-2xl font-bold rounded-full"
             >
               ✕
             </button>

@@ -35,16 +35,16 @@ export default function StoreCard({ store, variant = 'default', basePath = '/eve
   };
 
   return (
-    <div className={`rounded-lg border ${isLanding ? 'bg-white/60' : 'bg-white'} shadow-sm hover:shadow-md transition-shadow p-6 h-60 flex flex-col`}>
+    <div className="theme-card theme-card-hover rounded-lg p-6 h-60 flex flex-col">
       {/* Store Name - Truncated */}
-      <h3 className={`font-semibold ${isLanding ? 'text-lg' : 'text-xl text-gray-900'} truncate`} title={store.name}>
+      <h3 className={`font-semibold text-theme-foreground ${isLanding ? 'text-lg' : 'text-xl'} truncate`} title={store.name}>
         {store.name}
       </h3>
       
-      <div className={`mt-3 flex-1 flex flex-col ${isLanding ? 'text-sm text-gray-700' : 'text-gray-700'}`}>
+      <div className={`mt-3 flex-1 flex flex-col text-theme-muted ${isLanding ? 'text-sm' : ''}`}>
         {/* Location - Truncated */}
         <div className="flex items-center gap-2 mb-2">
-          <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-theme-muted flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
@@ -53,16 +53,16 @@ export default function StoreCard({ store, variant = 'default', basePath = '/eve
         
         {/* Average Players */}
         <div className="flex items-center gap-2 mb-3">
-          <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-theme-muted flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
           </svg>
-          <span className={`${isLanding ? 'text-sm' : ''} text-gray-600`}>Avg Players:</span>
-          <span className={`font-medium ${isLanding ? '' : 'text-gray-900'}`}>{store.avg_players}</span>
+          <span className={`${isLanding ? 'text-sm' : ''} text-theme-muted`}>Avg Players:</span>
+          <span className="font-medium text-theme-foreground">{store.avg_players}</span>
         </div>
         
         {/* League Badge */}
         {store.has_league && (
-          <div className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800 mb-3">
+          <div className="theme-chip inline-flex items-center rounded-full px-3 py-1 text-sm font-medium mb-3 w-fit">
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -78,7 +78,7 @@ export default function StoreCard({ store, variant = 'default', basePath = '/eve
           {/* Events Button */}
           <Link
             href={`${basePath}?store=${store.store_id}`}
-            className={`inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors justify-center ${
+            className={`theme-button inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium justify-center ${
               !store.website && !store.discord ? 'flex-1' : 'flex-1'
             }`}
           >
@@ -92,7 +92,7 @@ export default function StoreCard({ store, variant = 'default', basePath = '/eve
           {store.website && (
             <button
               onClick={handleWebsiteClick}
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors p-2 rounded-md hover:bg-blue-50"
+              className="theme-button-subtle flex items-center gap-2 p-2 rounded-md"
               title="Visit website"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +105,7 @@ export default function StoreCard({ store, variant = 'default', basePath = '/eve
           {store.discord && (
             <button
               onClick={handleDiscordClick}
-              className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-colors p-2 rounded-md hover:bg-indigo-50"
+              className="theme-button-subtle flex items-center gap-2 p-2 rounded-md"
               title="Join Discord"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

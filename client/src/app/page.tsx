@@ -107,7 +107,7 @@ export default function Home() {
   // Note: Header UI is unified for authed and unauthed states.
   // When authenticated, we show an extra "Dashboard" tab.
   return (
-    <main className="min-h-dvh text-gray-900">
+    <main className="min-h-dvh text-theme-foreground">
       {/* Landing pill header */}
       <LandingPillHeader isAuthed={isAuthed} />
 
@@ -141,10 +141,10 @@ export default function Home() {
       </section>
 
       {/* Local Stores Section */}
-      <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 mt-16 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg">
-        <h2 className="text-2xl font-semibold text-center mb-8 text-blue-900">Local Stores</h2>
+      <section className="theme-card mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 mt-16 rounded-2xl">
+        <h2 className="text-2xl font-semibold text-center mb-8 text-theme-foreground">Local Stores</h2>
         {loading ? (
-          <div className="text-center text-gray-600">Loading stores...</div>
+          <div className="text-center text-theme-muted">Loading stores...</div>
         ) : stores.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {stores.map((store) => (
@@ -152,10 +152,10 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <div className="text-center text-gray-600">No stores found</div>
+          <div className="text-center text-theme-muted">No stores found</div>
         )}
         <div className="mt-8 text-center">
-          <Link href="/stores" className="inline-flex items-center rounded-md bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 shadow-md transition-all">
+          <Link href="/stores" className="theme-button inline-flex items-center rounded-md px-4 py-2">
             View all stores
           </Link>
         </div>
@@ -163,10 +163,10 @@ export default function Home() {
 
       {/* Upcoming Events */}
       <section id="upcoming-events" className="my-8">
-        <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 backdrop-blur-sm rounded-2xl shadow-lg">
-          <h2 className="text-2xl font-semibold text-center text-red-900">Upcoming Events</h2>
+        <div className="theme-card mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 rounded-2xl">
+          <h2 className="text-2xl font-semibold text-center text-theme-foreground">Upcoming Events</h2>
           {loading ? (
-            <div className="text-center text-gray-600 mt-8">Loading events...</div>
+            <div className="text-center text-theme-muted mt-8">Loading events...</div>
           ) : events.length > 0 ? (
             <div className="mt-8 grid justify-center gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {events.slice(0, 6).map((event) => (
@@ -179,10 +179,10 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="text-center text-gray-600 mt-8">No upcoming events found</div>
+            <div className="text-center text-theme-muted mt-8">No upcoming events found</div>
           )}
           <div className="mt-8 text-center">
-            <Link href="/events" className="inline-flex items-center rounded-md bg-red-600 text-white px-4 py-2 hover:bg-red-700 shadow-md transition-all">
+            <Link href="/events" className="theme-button inline-flex items-center rounded-md px-4 py-2">
               See all events
             </Link>
           </div>
@@ -190,10 +190,10 @@ export default function Home() {
       </section>
 
       {/* About Us */}
-      <section className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 backdrop-blur-sm rounded-2xl shadow-lg">
+      <section className="theme-card mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 rounded-2xl">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl font-semibold text-green-900">About Us</h2>
-          <p className="mt-4 text-gray-700">
+          <h2 className="text-2xl font-semibold text-theme-foreground">About Us</h2>
+          <p className="mt-4 text-theme-muted">
             We&apos;re a community of Pokémon TCG players and organizers in Northern Nevada. We host
             regular events, support new players with learn-to-play sessions, and connect Trainers
             with local stores and tournaments.
@@ -203,7 +203,7 @@ export default function Home() {
 
       {/* Contact Us */}
       <section className="my-8">
-        <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16 bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 backdrop-blur-sm rounded-2xl shadow-lg">
+        <div className="mx-auto w-full max-w-screen-2xl px-6 lg:px-8 py-16">
           <ContactForm />
         </div>
       </section>

@@ -155,8 +155,8 @@ export default function PokemonCardsPage() {
   return (
     <main>
       <div className="mb-6">
-        <h1 className="text-3xl font-semibold">Pokemon Cards</h1>
-        <p className="mt-2 text-gray-600">Browse Pokemon card pricing and details with advanced filtering.</p>
+        <h1 className="text-3xl font-semibold text-theme-foreground">Pokemon Cards</h1>
+        <p className="mt-2 text-theme-muted">Browse Pokemon card pricing and details with advanced filtering.</p>
       </div>
 
       <PokemonCardFilter
@@ -172,7 +172,7 @@ export default function PokemonCardsPage() {
         <button
           onClick={handleLoadCards}
           disabled={loading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium transition-colors"
+          className="theme-button px-6 py-2 rounded-md disabled:opacity-60 disabled:cursor-not-allowed font-medium"
         >
           {loading ? "Loading..." : "Search Cards"}
         </button>
@@ -192,7 +192,7 @@ export default function PokemonCardsPage() {
               {allCards.length !== filteredCards.length && ` (of ${allCards.length} total)`}
             </h2>
             {totalPages > 1 && (
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-theme-muted">
                 Page {currentPage} of {totalPages} • Showing {startIndex + 1}-{Math.min(endIndex, filteredCards.length)}{" "}
                 of {filteredCards.length}
               </p>
@@ -206,14 +206,14 @@ export default function PokemonCardsPage() {
       )}
 
       {!loading && filteredCards.length === 0 && allCards.length > 0 && (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-theme-muted">
           <p>No cards match the current filters.</p>
           <p className="text-sm mt-2">Try adjusting your filter criteria.</p>
         </div>
       )}
 
       {!loading && allCards.length === 0 && !error && (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-theme-muted">
           <p>No cards found. Use the filters above and click "Search Cards" to find cards.</p>
         </div>
       )}

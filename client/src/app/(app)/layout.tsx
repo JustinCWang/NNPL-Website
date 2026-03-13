@@ -74,13 +74,13 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
     return (
       <main className="min-h-dvh grid place-items-center">
         {/* Lightweight splash while verifying auth */}
-        <div className="text-sm text-gray-600">Checking authentication…</div>
+        <div className="text-sm text-theme-muted">Checking authentication…</div>
       </main>
     );
   }
 
   return (
-    <div className="min-h-dvh text-gray-900 flex flex-col">
+    <div className="min-h-dvh text-theme-foreground flex flex-col">
       <header 
         className="border-b transition-colors"
         style={{ borderColor: selectedTheme.borderColor + '40' }}
@@ -98,22 +98,22 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
               />
             </Link>
           </div>
-          <nav className="flex items-center gap-5 text-sm">
+          <nav className="flex items-center gap-5 text-sm text-theme-foreground">
             {/* Dashboard first */}
-            <Link href="/home" className={pathname === "/home" ? "font-semibold" : "hover:underline"}>
+            <Link href="/home" className={pathname === "/home" ? "font-semibold text-theme" : "text-theme-foreground hover:text-theme transition-colors"}>
               Home
             </Link>
             {/* Protected versions with enhanced features */}
-            <Link href="/my-events" className={pathname === "/my-events" ? "font-semibold" : "hover:underline"}>
+            <Link href="/my-events" className={pathname === "/my-events" ? "font-semibold text-theme" : "text-theme-foreground hover:text-theme transition-colors"}>
               Events
             </Link>
-            <Link href="/my-stores" className={pathname === "/my-stores" ? "font-semibold" : "hover:underline"}>
+            <Link href="/my-stores" className={pathname === "/my-stores" ? "font-semibold text-theme" : "text-theme-foreground hover:text-theme transition-colors"}>
               Local Stores
             </Link>
-            <Link href="/my-guide" className={pathname === "/my-guide" ? "font-semibold" : "hover:underline"}>
+            <Link href="/my-guide" className={pathname === "/my-guide" ? "font-semibold text-theme" : "text-theme-foreground hover:text-theme transition-colors"}>
               How to Play
             </Link>
-            <Link href="/pokemon-cards" className={pathname === "/pokemon-cards" ? "font-semibold" : "hover:underline"}>
+            <Link href="/pokemon-cards" className={pathname === "/pokemon-cards" ? "font-semibold text-theme" : "text-theme-foreground hover:text-theme transition-colors"}>
               Pokemon Cards
             </Link>
           </nav>

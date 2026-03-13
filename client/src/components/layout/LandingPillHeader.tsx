@@ -16,7 +16,7 @@ type LandingPillHeaderProps = {
 export default function LandingPillHeader({ isAuthed }: LandingPillHeaderProps) {
   return (
     <header className="py-4 px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-screen-xl bg-gradient-to-r from-white via-purple-50 to-pink-50 border-1 border-purple-200 rounded-full shadow-xl px-6 lg:px-8 py-4 grid grid-cols-3 items-center">
+      <div className="theme-card mx-auto w-full max-w-screen-xl rounded-full px-6 lg:px-8 py-4 grid grid-cols-3 items-center">
         {/* Left: Logo */}
         <div className="justify-self-start">
           <Link href="/">
@@ -32,17 +32,17 @@ export default function LandingPillHeader({ isAuthed }: LandingPillHeaderProps) 
         </div>
 
         {/* Center: Primary navigation */}
-        <nav className="justify-self-center flex items-center gap-5 text-sm">
-          <Link href="/events" className="hover:underline">
+        <nav className="justify-self-center flex items-center gap-5 text-sm text-theme-foreground">
+          <Link href="/events" className="text-theme-foreground hover:text-theme transition-colors">
             Events
           </Link>
-          <Link href="/stores" className="hover:underline">
+          <Link href="/stores" className="text-theme-foreground hover:text-theme transition-colors">
             Local Stores
           </Link>
-          <Link href="/guide" className="hover:underline">
+          <Link href="/guide" className="text-theme-foreground hover:text-theme transition-colors">
             How to Play
           </Link>
-          <Link href="/about-us" className="hover:underline">
+          <Link href="/about-us" className="text-theme-foreground hover:text-theme transition-colors">
             About Us
           </Link>
         </nav>
@@ -54,7 +54,7 @@ export default function LandingPillHeader({ isAuthed }: LandingPillHeaderProps) 
           ) : (
             <Link
               href="/login"
-              className="inline-flex items-center rounded-md bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1.5 text-sm hover:from-purple-700 hover:to-pink-700 shadow-md transition-all"
+              className="theme-button inline-flex items-center rounded-md px-3 py-1.5 text-sm"
             >
               Log in / Sign up
             </Link>

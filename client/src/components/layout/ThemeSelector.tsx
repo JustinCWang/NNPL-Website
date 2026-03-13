@@ -45,10 +45,10 @@ export default function ThemeSelector() {
       {/* Button to trigger the dropdown */}
       <button
         type="button"
-        className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-300/70 shadow-sm transition-all hover:shadow-md focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme"
+        className="theme-panel inline-flex items-center justify-center w-10 h-10 rounded-lg shadow-sm transition-all hover:shadow-md focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme"
         style={{
           backgroundImage: buttonGradient,
-          backgroundColor: "rgba(255, 255, 255, 0.6)",
+          backgroundColor: "var(--theme-surface-strong)",
           backgroundBlendMode: "overlay",
         }}
         onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -69,17 +69,17 @@ export default function ThemeSelector() {
       {isMenuOpen && (
         <div
           id="theme-menu"
-          className="absolute right-0 z-50 mt-2 w-48 origin-top-right rounded-lg bg-white shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none animate-fadeIn"
+          className="theme-card absolute right-0 z-50 mt-2 w-48 origin-top-right rounded-lg shadow-xl focus:outline-none animate-fadeIn"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="theme-button"
           tabIndex={-1}
         >
           <div className="p-2">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-1">
+            <div className="text-xs font-semibold text-theme-muted uppercase tracking-wide mb-2 px-1">
               Energy Themes
             </div>
-            <div className="grid grid-cols-5 gap-2" role="none">
+            <div className="grid grid-cols-4 gap-2" role="none">
               {themes.map((theme) => (
                 <button
                   key={theme.name}

@@ -112,8 +112,8 @@ function ResetPasswordContent() {
     return (
       <div className="min-h-dvh text-gray-900 flex flex-col">
         <main className="flex-1 grid place-items-center">
-          <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/40 backdrop-blur-md p-8 shadow-lg text-center">
-            <div className="text-sm text-gray-600">Loading...</div>
+          <div className="theme-card w-full max-w-md rounded-2xl p-8 text-center">
+            <div className="text-sm text-theme-muted">Loading...</div>
           </div>
         </main>
       </div>
@@ -131,15 +131,15 @@ function ResetPasswordContent() {
     return (
       <div className="min-h-dvh text-gray-900 flex flex-col">
         <main className="flex-1 grid place-items-center">
-          <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/40 backdrop-blur-md p-8 shadow-lg text-center">
+          <div className="theme-card w-full max-w-md rounded-2xl p-8 text-center">
             <h1 className="text-2xl font-semibold mb-4">Invalid Reset Link</h1>
-            <p className="text-gray-600 mb-6">
+            <p className="text-theme-muted mb-6">
               This password reset link is invalid or has expired. Please request a new one.
             </p>
             
             {/* Debug info - remove in production */}
             {process.env.NODE_ENV === 'development' && debugInfo && (
-              <div className="text-xs text-left bg-gray-100 p-3 rounded mb-4 overflow-auto">
+              <div className="theme-panel text-xs text-left p-3 rounded mb-4 overflow-auto">
                 <strong>Debug Info:</strong><br/>
                 Hash: {debugInfo.hash}<br/>
                 Search: {debugInfo.search}<br/>
@@ -149,7 +149,7 @@ function ResetPasswordContent() {
             
             <Link 
               href="/login"
-              className="inline-block bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800"
+              className="theme-button inline-block px-4 py-2 rounded-md"
             >
               Back to Login
             </Link>
@@ -163,19 +163,19 @@ function ResetPasswordContent() {
     return (
       <div className="min-h-dvh text-gray-900 flex flex-col">
         <main className="flex-1 grid place-items-center">
-          <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/40 backdrop-blur-md p-8 shadow-lg text-center">
+          <div className="theme-card w-full max-w-md rounded-2xl p-8 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
             <h1 className="text-2xl font-semibold mb-4">Password Updated</h1>
-            <p className="text-gray-600 mb-6">
+            <p className="text-theme-muted mb-6">
               Your password has been successfully updated. You will be redirected to the login page shortly.
             </p>
             <Link 
               href="/login"
-              className="inline-block bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800"
+              className="theme-button inline-block px-4 py-2 rounded-md"
             >
               Continue to Login
             </Link>
@@ -188,9 +188,9 @@ function ResetPasswordContent() {
   return (
     <div className="min-h-dvh text-gray-900 flex flex-col">
       <main className="flex-1 grid place-items-center">
-        <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/40 backdrop-blur-md p-8 shadow-lg">
+        <div className="theme-card w-full max-w-md rounded-2xl p-8">
           <h1 className="text-2xl font-semibold text-center">Reset Password</h1>
-          <p className="mt-2 text-sm text-gray-700 text-center">
+          <p className="mt-2 text-sm text-theme-muted text-center">
             Enter your new password below.
           </p>
           
@@ -202,7 +202,7 @@ function ResetPasswordContent() {
                 type="password"
                 required
                 placeholder="••••••••"
-                className="mt-1 w-full rounded-md border border-white/50 bg-white/80 px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+                className="theme-input mt-1 w-full rounded-md px-3 py-2"
               />
             </div>
             <div>
@@ -212,7 +212,7 @@ function ResetPasswordContent() {
                 type="password"
                 required
                 placeholder="••••••••"
-                className="mt-1 w-full rounded-md border border-white/50 bg-white/80 px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+                className="theme-input mt-1 w-full rounded-md px-3 py-2"
               />
             </div>
             
@@ -225,13 +225,13 @@ function ResetPasswordContent() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-60"
+              className="theme-button w-full rounded-md px-4 py-2 disabled:opacity-60"
             >
               {isSubmitting ? "Updating..." : "Update Password"}
             </button>
           </form>
           
-          <p className="mt-6 text-center text-xs text-gray-600">
+          <p className="mt-6 text-center text-xs text-theme-muted">
             <Link href="/login" className="hover:underline">
               Back to login
             </Link>
@@ -250,8 +250,8 @@ export default function ResetPasswordPage() {
     <Suspense fallback={
       <div className="min-h-dvh text-gray-900 flex flex-col">
         <main className="flex-1 grid place-items-center">
-          <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/40 backdrop-blur-md p-8 shadow-lg text-center">
-            <div className="text-sm text-gray-600">Loading...</div>
+          <div className="theme-card w-full max-w-md rounded-2xl p-8 text-center">
+            <div className="text-sm text-theme-muted">Loading...</div>
           </div>
         </main>
       </div>

@@ -18,7 +18,7 @@ interface StoreListProps {
 export default function StoreList({ stores, onEdit, onDelete, isLoading = false }: StoreListProps) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border">
+      <div className="theme-card rounded-lg">
         <div className="p-6">
           <div className="animate-pulse">
             <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -35,15 +35,15 @@ export default function StoreList({ stores, onEdit, onDelete, isLoading = false 
 
   if (stores.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border">
+      <div className="theme-card rounded-lg">
         <div className="p-6 text-center">
-          <div className="text-gray-400 mb-2">
+          <div className="text-theme-muted mb-2">
             <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No stores found</h3>
-          <p className="text-gray-600">Get started by adding your first store.</p>
+          <h3 className="text-lg font-medium text-theme-foreground mb-1">No stores found</h3>
+          <p className="text-theme-muted">Get started by adding your first store.</p>
         </div>
       </div>
     );
@@ -56,16 +56,16 @@ export default function StoreList({ stores, onEdit, onDelete, isLoading = false 
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">
+    <div className="theme-table-shell rounded-lg overflow-hidden">
+      <div className="px-6 py-4 border-b" style={{ borderColor: "var(--theme-border-soft)" }}>
+        <h3 className="text-lg font-semibold text-theme-foreground">
           All Stores ({stores.length})
         </h3>
       </div>
       
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full" style={{ borderCollapse: "separate", borderSpacing: 0 }}>
+          <thead className="theme-table-head">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Store Name
@@ -90,17 +90,17 @@ export default function StoreList({ stores, onEdit, onDelete, isLoading = false 
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody>
             {stores.map((store) => (
-              <tr key={store.store_id} className="hover:bg-gray-50">
+              <tr key={store.store_id} className="theme-table-row" style={{ boxShadow: "inset 0 -1px 0 var(--theme-border-soft)" }}>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{store.name}</div>
+                  <div className="text-sm font-medium text-theme-foreground">{store.name}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-600">{store.location}</div>
+                  <div className="text-sm text-theme-muted">{store.location}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-600">{store.avg_players}</div>
+                  <div className="text-sm text-theme-muted">{store.avg_players}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -117,7 +117,7 @@ export default function StoreList({ stores, onEdit, onDelete, isLoading = false 
                       href={store.website.startsWith('http') ? store.website : `https://${store.website}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 text-sm truncate block max-w-32"
+                      className="text-theme text-sm truncate block max-w-32"
                       title={store.website}
                     >
                       {store.website.replace(/^https?:\/\//, '')}
@@ -132,7 +132,7 @@ export default function StoreList({ stores, onEdit, onDelete, isLoading = false 
                       href={store.discord}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-indigo-600 hover:text-indigo-800 text-sm truncate block max-w-32"
+                      className="text-theme text-sm truncate block max-w-32"
                       title={store.discord}
                     >
                       Join Server
@@ -145,7 +145,7 @@ export default function StoreList({ stores, onEdit, onDelete, isLoading = false 
                   <div className="flex gap-2 justify-end">
                     <button
                       onClick={() => onEdit(store)}
-                      className="text-blue-600 hover:text-blue-900 transition-colors"
+                      className="text-theme hover:opacity-80 transition-opacity"
                       title="Edit store"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -28,7 +28,7 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border">
+      <div className="theme-card rounded-lg">
         <div className="p-6">
           <div className="animate-pulse">
             <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -45,15 +45,15 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
 
   if (events.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border">
+      <div className="theme-card rounded-lg">
         <div className="p-6 text-center">
-          <div className="text-gray-400 mb-2">
+          <div className="text-theme-muted mb-2">
             <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2h3z" />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No events found</h3>
-          <p className="text-gray-600">Get started by adding your first event.</p>
+          <h3 className="text-lg font-medium text-theme-foreground mb-1">No events found</h3>
+          <p className="text-theme-muted">Get started by adding your first event.</p>
         </div>
       </div>
     );
@@ -183,14 +183,14 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
   });
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200">
+    <div className="theme-table-shell rounded-lg overflow-hidden">
+      <div className="px-6 py-4 border-b" style={{ borderColor: "var(--theme-border-soft)" }}>
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-theme-foreground">
             All Events ({events.length})
           </h3>
           {showSortIndicator && (
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-theme-muted">
               Sorted by: <span className="font-medium capitalize">{sortField}</span> 
               <span className="ml-1">({sortDirection === 'asc' ? 'A-Z' : 'Z-A'})</span>
             </div>
@@ -199,8 +199,8 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
       </div>
       
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full" style={{ borderCollapse: "separate", borderSpacing: 0 }}>
+          <thead className="theme-table-head">
             <tr>
               <th 
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
@@ -255,38 +255,39 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody>
             {sortedEvents.map((event) => (
               <tr 
                 key={event.event_id} 
-                className={`hover:bg-gray-50 ${isDatePast(event.date) ? 'opacity-60' : ''}`}
+                className={`theme-table-row ${isDatePast(event.date) ? 'opacity-60' : ''}`}
+                style={{ boxShadow: "inset 0 -1px 0 var(--theme-border-soft)" }}
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{event.name}</div>
+                      <div className="text-sm font-medium text-theme-foreground">{event.name}</div>
                       {isDatePast(event.date) && (
-                        <div className="text-xs text-gray-500">Past Event</div>
+                        <div className="text-xs text-theme-muted">Past Event</div>
                       )}
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-600">{formatDisplayDate(event.date)}</div>
+                  <div className="text-sm text-theme-muted">{formatDisplayDate(event.date)}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
+                  <div className="text-sm text-theme-foreground">
                     {event.store?.name || 'Unknown Store'}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-theme-muted">
                     {event.store?.location || ''}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
+                  <div className="text-sm text-theme-foreground">
                     {event.creator?.username || 'Unknown User'}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-theme-muted">
                     {event.creator?.email || ''}
                   </div>
                 </td>
@@ -296,10 +297,10 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
+                  <div className="text-sm text-theme-foreground">
                     {event.cost ? `$${event.cost.toFixed(2)}` : 'Free'}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-theme-muted">
                     {event.min_prizing && event.max_prizing ? 
                       `${event.min_prizing} - ${event.max_prizing}` :
                       event.min_prizing ? `Min: ${event.min_prizing}` :
@@ -313,7 +314,7 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
                     {event.is_weekly && onRenew && (
                       <button
                         onClick={() => handleRenewClick(event)}
-                        className="text-green-600 hover:text-green-900 transition-colors"
+                        className="text-theme hover:opacity-80 transition-colors"
                         title="Renew weekly event (create next week)"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,7 +324,7 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
                     )}
                     <button
                       onClick={() => onEdit(event)}
-                      className="text-blue-600 hover:text-blue-900 transition-colors"
+                      className="text-theme hover:opacity-80 transition-colors"
                       title="Edit event"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

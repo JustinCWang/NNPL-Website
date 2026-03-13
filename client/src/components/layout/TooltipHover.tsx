@@ -29,7 +29,7 @@ export default function TooltipHover({ content, children }: TooltipHoverProps) {
 
       {visible && pos.x !== null && pos.y !== null && (
         <div
-          className="fixed bg-gray-800 text-white text-sm rounded-lg shadow-lg pointer-events-none"
+          className="fixed z-50 pointer-events-none"
           style={{
             top: pos.y + 10,
             left: pos.x + 10,
