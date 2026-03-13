@@ -12,9 +12,19 @@ interface EventCardProps {
   event: Event;
   variant?: 'public' | 'authenticated';
   showActions?: boolean;
+  isFavorited?: boolean;
+  onToggleFavorite?: (eventId: string) => void | Promise<void>;
+  isFavoritePending?: boolean;
 }
 
-export default function EventCard({ event, variant = 'public', showActions = true }: EventCardProps) {
+export default function EventCard({
+  event,
+  variant = 'public',
+  showActions = true,
+  isFavorited = false,
+  onToggleFavorite,
+  isFavoritePending = false,
+}: EventCardProps) {
   // Helper function to get event type label and color
   const getEventTypeInfo = (event: Event) => {
     if (event.is_prerelease) return { label: 'Prerelease', color: 'bg-purple-100 text-purple-800' };
@@ -34,9 +44,18 @@ export default function EventCard({ event, variant = 'public', showActions = tru
           {event.name}
         </h3>
         {variant === 'authenticated' && showActions && (
-          <button className="text-red-500 hover:text-red-700 transition-colors flex-shrink-0">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          <button
+            type="button"
+            onClick={() => onToggleFavorite?.(event.event_id)}
+            disabled={isFavoritePending}
+            className={`transition-colors flex-shrink-0 ${
+              isFavorited ? 'text-red-500 hover:text-red-700' : 'text-theme-muted hover:text-red-500'
+            } ${isFavoritePending ? 'opacity-60 cursor-wait' : ''}`}
+            aria-label={isFavorited ? 'Remove event from favorites' : 'Add event to favorites'}
+            title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            <svg className="w-5 h-5" fill={isFavorited ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
           </button>
         )}

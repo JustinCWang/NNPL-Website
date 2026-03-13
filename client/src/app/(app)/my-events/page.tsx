@@ -17,11 +17,13 @@ import EventCard from "@/components/ui/EventCard";
 
 export default function EventsPage() {
   const searchParams = useSearchParams();
-  const [selectedTab, setSelectedTab] = useState<'upcoming' | 'registered' | 'history'>('upcoming');
+  const [selectedTab, setSelectedTab] = useState<'upcoming' | 'favorites' | 'registered' | 'history'>('upcoming');
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [pastEvents, setPastEvents] = useState<Event[]>([]);
   const [stores, setStores] = useState<Store[]>([]);
+  const [favoriteEventIds, setFavoriteEventIds] = useState<string[]>([]);
+  const [pendingFavoriteIds, setPendingFavoriteIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,53 +38,69 @@ export default function EventsPage() {
       try {
         setLoading(true);
         setError(null);
-        
-        // Fetch upcoming events
-        const { data: eventsData, error: eventsError } = await supabase
-          .from('Events')
-          .select(`
-            *,
-            store:Stores(name, location)
-          `)
-          .gte('start_at', new Date().toISOString())
-          .order('start_at', { ascending: true });
 
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError || !authData.user) {
+          setError('You must be logged in to view and favorite events.');
+          return;
+        }
+
+        const [eventsResponse, pastEventsResponse, storesResponse, favoritesResponse] = await Promise.all([
+          supabase
+            .from('Events')
+            .select(`
+              *,
+              store:Stores(name, location)
+            `)
+            .gte('start_at', new Date().toISOString())
+            .order('start_at', { ascending: true }),
+          supabase
+            .from('Events')
+            .select(`
+              *,
+              store:Stores(name, location)
+            `)
+            .lt('start_at', new Date().toISOString())
+            .order('start_at', { ascending: false }),
+          supabase
+            .from('Stores')
+            .select('*')
+            .order('name'),
+          supabase
+            .from('FavoriteEvents')
+            .select('event_id')
+            .eq('user_id', authData.user.id),
+        ]);
+
+        const { data: eventsData, error: eventsError } = eventsResponse;
         if (eventsError) {
           console.error('Error fetching events:', eventsError);
           setError('Failed to load events. Please try again later.');
           return;
         }
 
-        // Fetch past events for history tab
-        const { data: pastEventsData, error: pastEventsError } = await supabase
-          .from('Events')
-          .select(`
-            *,
-            store:Stores(name, location)
-          `)
-          .lt('start_at', new Date().toISOString())
-          .order('start_at', { ascending: false });
-
+        const { data: pastEventsData, error: pastEventsError } = pastEventsResponse;
         if (pastEventsError) {
           console.error('Error fetching past events:', pastEventsError);
-          // Don't fail the whole page if past events fail to load
         }
 
-        // Fetch stores for filtering
-        const { data: storesData, error: storesError } = await supabase
-          .from('Stores')
-          .select('*')
-          .order('name');
-
+        const { data: storesData, error: storesError } = storesResponse;
         if (storesError) {
           console.error('Error fetching stores:', storesError);
-          // Don't fail the whole page if stores fail to load
+        }
+
+        const { data: favoritesData, error: favoritesError } = favoritesResponse;
+        if (favoritesError) {
+          console.error('Error fetching favorite events:', favoritesError);
+          setError('Failed to load favorite events. Please try again later.');
+          return;
         }
 
         setEvents(eventsData || []);
         setFilteredEvents(eventsData || []);
         setPastEvents(pastEventsData || []);
         setStores(storesData || []);
+        setFavoriteEventIds((favoritesData || []).map((favorite) => favorite.event_id));
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('An unexpected error occurred. Please try again later.');
@@ -99,7 +117,55 @@ export default function EventsPage() {
     setFilteredEvents(filtered);
   }, []);
 
+  const toggleFavoriteEvent = useCallback(async (eventId: string) => {
+    const supabase = getSupabaseClient();
+    const { data: authData, error: authError } = await supabase.auth.getUser();
 
+    if (authError || !authData.user) {
+      setError('You must be logged in to favorite events.');
+      return;
+    }
+
+    const wasFavorited = favoriteEventIds.includes(eventId);
+
+    setPendingFavoriteIds((prev) => [...prev, eventId]);
+    setFavoriteEventIds((prev) =>
+      wasFavorited ? prev.filter((id) => id !== eventId) : [...prev, eventId]
+    );
+
+    try {
+      if (wasFavorited) {
+        const { error: deleteError } = await supabase
+          .from('FavoriteEvents')
+          .delete()
+          .eq('user_id', authData.user.id)
+          .eq('event_id', eventId);
+
+        if (deleteError) {
+          throw deleteError;
+        }
+      } else {
+        const { error: insertError } = await supabase
+          .from('FavoriteEvents')
+          .insert([{ user_id: authData.user.id, event_id: eventId }]);
+
+        if (insertError) {
+          throw insertError;
+        }
+      }
+    } catch (favoriteError) {
+      console.error('Error updating favorite event:', favoriteError);
+      setFavoriteEventIds((prev) =>
+        wasFavorited ? [...prev, eventId] : prev.filter((id) => id !== eventId)
+      );
+      setError('Failed to update favorite event. Please try again.');
+    } finally {
+      setPendingFavoriteIds((prev) => prev.filter((id) => id !== eventId));
+    }
+  }, [favoriteEventIds]);
+
+  const favoriteUpcomingEvents = events.filter((event) => favoriteEventIds.includes(event.event_id));
+  const favoritePastEvents = pastEvents.filter((event) => favoriteEventIds.includes(event.event_id));
 
   // Render event card component
   const renderEventCard = (event: Event, showActions: boolean = true) => {
@@ -109,6 +175,9 @@ export default function EventsPage() {
         event={event} 
         variant="authenticated"
         showActions={showActions}
+        isFavorited={favoriteEventIds.includes(event.event_id)}
+        isFavoritePending={pendingFavoriteIds.includes(event.event_id)}
+        onToggleFavorite={toggleFavoriteEvent}
       />
     );
   };
@@ -146,6 +215,12 @@ export default function EventsPage() {
             className={`py-2 px-1 font-medium text-sm ${selectedTab === 'upcoming' ? 'theme-tab-active' : 'theme-tab'}`}
           >
             Upcoming Events
+          </button>
+          <button
+            onClick={() => setSelectedTab('favorites')}
+            className={`py-2 px-1 font-medium text-sm ${selectedTab === 'favorites' ? 'theme-tab-active' : 'theme-tab'}`}
+          >
+            Favorite Events
           </button>
           <button
             onClick={() => setSelectedTab('registered')}
@@ -194,6 +269,48 @@ export default function EventsPage() {
             <div className="text-center py-8">
               <p className="text-theme-muted">No events found matching your filters.</p>
               <p className="text-sm text-theme-muted mt-1">Try adjusting your search criteria or check back later for new tournaments and events.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {selectedTab === 'favorites' && (
+        <div className="space-y-6">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-theme" style={{ borderTopColor: "transparent" }}></div>
+              <p className="mt-2 text-theme-muted">Loading favorite events...</p>
+            </div>
+          ) : favoriteUpcomingEvents.length > 0 || favoritePastEvents.length > 0 ? (
+            <>
+              {favoriteUpcomingEvents.length > 0 && (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-theme-foreground mb-2">Upcoming Favorites</h3>
+                    <p className="text-sm text-theme-muted">Events you have saved for quick access.</p>
+                  </div>
+                  {favoriteUpcomingEvents.map((event) => renderEventCard(event, true))}
+                </div>
+              )}
+              {favoritePastEvents.length > 0 && (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-theme-foreground mb-2">Past Favorites</h3>
+                    <p className="text-sm text-theme-muted">Previously saved events remain here until you remove them.</p>
+                  </div>
+                  {favoritePastEvents.map((event) => renderEventCard(event, true))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-theme-muted">You haven&apos;t favorited any events yet.</p>
+              <button 
+                onClick={() => setSelectedTab('upcoming')}
+                className="theme-button-ghost mt-2 rounded-md px-2 py-1"
+              >
+                Browse upcoming events →
+              </button>
             </div>
           )}
         </div>
