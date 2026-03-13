@@ -118,11 +118,10 @@ export default function UserManagement() {
       // First, get the user info before deletion for the success message
       const userToDelete = users.find(user => user.user_id === userId);
       
-      // Delete the user from the Users table
-      const { error: deleteError } = await supabase
-        .from('Users')
-        .delete()
-        .eq('user_id', userId);
+      // Delete both the auth account and public profile via admin RPC.
+      const { error: deleteError } = await supabase.rpc('admin_delete_user', {
+        target_user_id: userId
+      });
 
       if (deleteError) {
         throw deleteError;

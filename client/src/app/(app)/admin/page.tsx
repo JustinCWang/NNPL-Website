@@ -1,9 +1,9 @@
 "use client";
 /*
   Admin Dashboard page ("/admin").
-  - Only accessible to users with role "admin" in the Users table
-  - Redirects non-admin users to home page
-  - Shows admin controls and management interface
+  - Accessible to admins and vendors in the Users table
+  - Redirects unauthorized users to home page
+  - Shows full admin controls for admins and event management for vendors
 */
 
 import { useEffect, useState } from "react";
@@ -114,8 +114,12 @@ export default function AdminPage() {
         setUserRole(userData?.role || null);
         setIsLoading(false);
         
-        // Fetch admin statistics after confirming admin access
-        fetchAdminStats();
+        // Only admins can read aggregate admin stats under the current RLS model.
+        if (userData?.role === 'admin') {
+          fetchAdminStats();
+        } else {
+          setStatsLoading(false);
+        }
       } catch (error) {
         console.error('Error checking admin access:', error);
         router.replace("/home");
@@ -156,7 +160,7 @@ export default function AdminPage() {
         <p className="text-theme-muted mt-2">
           {isAdmin 
             ? 'Welcome to the admin panel. You have administrative privileges for the NNPL platform.'
-            : 'Welcome to the event management panel. You can create and manage tournament events.'
+            : 'Welcome to the event management panel. You can create and manage the events you own.'
           }
         </p>
       </div>

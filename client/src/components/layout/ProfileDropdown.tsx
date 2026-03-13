@@ -164,14 +164,14 @@ export default function ProfileDropdown({ variant = 'protected' }: ProfileDropdo
             <div className="py-2 px-4 text-sm text-theme-foreground border-b text-center" style={{ borderColor: "var(--theme-border-soft)" }}>
               {username || 'User'}    
                       
-            {/* Admin link - only show for admin users */}
-            {userRole === 'admin' && (
+            {/* Admin/event management link */}
+            {(userRole === 'admin' || userRole === 'vendor') && (
               <Link
                 href="/admin"
                 className="theme-button-subtle mt-2 block rounded-md px-1 py-2 text-sm font-medium"
                 onClick={() => setIsOpen(false)}
               >
-                Admin Dashboard
+                {userRole === 'admin' ? 'Admin Dashboard' : 'Event Management'}
               </Link>
             )}
             

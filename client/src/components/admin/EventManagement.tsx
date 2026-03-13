@@ -18,6 +18,7 @@ import EventFilters from './EventFilters';
 import { addDaysToStartAt, formatDisplayDate, formatDisplayTime } from '@/lib/dateUtils';
 
 type ViewMode = 'list' | 'add' | 'edit';
+type EventManagementRole = 'admin' | 'vendor' | null;
 
 export default function EventManagement() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -25,6 +26,7 @@ export default function EventManagement() {
   const [stores, setStores] = useState<Store[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [currentUserRole, setCurrentUserRole] = useState<EventManagementRole>(null);
   const [currentView, setCurrentView] = useState<ViewMode>('list');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,9 +34,9 @@ export default function EventManagement() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Load events, stores, users, and current user on component mount
+  // Load role-aware event management data on component mount.
   useEffect(() => {
-    Promise.all([loadEvents(), loadStores(), loadUsers(), getCurrentUser()]);
+    initializeEventManagement();
   }, []);
 
   // Clear messages after 5 seconds
@@ -47,6 +49,56 @@ export default function EventManagement() {
       return () => clearTimeout(timer);
     }
   }, [error, successMessage]);
+
+  const initializeEventManagement = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const supabase = getSupabaseClient();
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+
+      if (authError) {
+        throw authError;
+      }
+
+      if (!authData.user) {
+        throw new Error('Please sign in to manage events.');
+      }
+
+      setCurrentUserId(authData.user.id);
+
+      const { data: userData, error: userError } = await supabase
+        .from('Users')
+        .select('role')
+        .eq('user_id', authData.user.id)
+        .single();
+
+      if (userError) {
+        throw userError;
+      }
+
+      const role: EventManagementRole =
+        userData?.role === 'admin' ? 'admin' : userData?.role === 'vendor' ? 'vendor' : null;
+
+      if (!role) {
+        throw new Error('You do not have permission to manage events.');
+      }
+
+      setCurrentUserRole(role);
+
+      await Promise.all([
+        loadStores(),
+        loadEvents(authData.user.id, role),
+        role === 'admin' ? loadUsers() : Promise.resolve(setUsers([])),
+      ]);
+    } catch (err) {
+      console.error('Error initializing event management:', err);
+      setError('Failed to load event management data. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const loadStores = async () => {
     try {
@@ -67,13 +119,10 @@ export default function EventManagement() {
     }
   };
 
-  const loadEvents = async () => {
+  const loadEvents = async (userId: string, role: Exclude<EventManagementRole, null>) => {
     try {
-      setIsLoading(true);
-      setError(null);
-      
       const supabase = getSupabaseClient();
-      const { data, error: fetchError } = await supabase
+      let query = supabase
         .from('Events')
         .select(`
           *,
@@ -81,6 +130,12 @@ export default function EventManagement() {
           creator:Users!Events_created_by_fkey(username, email)
         `)
         .order('start_at', { ascending: true });
+
+      if (role === 'vendor') {
+        query = query.eq('created_by', userId);
+      }
+
+      const { data, error: fetchError } = await query;
 
       if (fetchError) {
         throw fetchError;
@@ -90,8 +145,6 @@ export default function EventManagement() {
     } catch (err) {
       console.error('Error loading events:', err);
       setError('Failed to load events. Please try again.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -111,18 +164,6 @@ export default function EventManagement() {
     } catch (err) {
       console.error('Error loading users:', err);
       setError('Failed to load users. Please try again.');
-    }
-  };
-
-  const getCurrentUser = async () => {
-    try {
-      const supabase = getSupabaseClient();
-      const { data: authData } = await supabase.auth.getUser();
-      if (authData.user) {
-        setCurrentUserId(authData.user.id);
-      }
-    } catch (err) {
-      console.error('Error getting current user:', err);
     }
   };
 
@@ -333,6 +374,7 @@ export default function EventManagement() {
 
   // Check if we have stores available
   const hasStores = stores.length > 0;
+  const isAdmin = currentUserRole === 'admin';
 
   return (
     <div className="space-y-6">
@@ -341,7 +383,9 @@ export default function EventManagement() {
         <div>
           <h2 className="text-2xl font-bold text-theme-foreground">Event Management</h2>
           <p className="text-theme-muted mt-1">
-            Manage events and tournaments across all stores
+            {isAdmin
+              ? 'Manage events and tournaments across all stores'
+              : 'Create and manage the events you own'}
           </p>
         </div>
         
@@ -369,13 +413,19 @@ export default function EventManagement() {
             <div className="ml-3">
               <h3 className="text-sm font-medium text-yellow-800">No stores available</h3>
               <div className="mt-1 text-sm text-yellow-700">
-                You need to add at least one store before you can create events. 
-                <button 
-                  onClick={() => window.location.hash = 'stores'} 
-                  className="font-medium underline ml-1"
-                >
-                  Go to Store Management
-                </button>
+                {isAdmin ? (
+                  <>
+                    You need to add at least one store before you can create events.
+                    <button
+                      onClick={() => window.location.hash = 'stores'}
+                      className="font-medium underline ml-1"
+                    >
+                      Go to Store Management
+                    </button>
+                  </>
+                ) : (
+                  'Ask an administrator to add a store before creating events.'
+                )}
               </div>
             </div>
           </div>
@@ -428,6 +478,8 @@ export default function EventManagement() {
             onRenew={handleRenewEvent}
             isLoading={isLoading}
             showSortIndicator={false}
+            title={isAdmin ? 'All Events' : 'Your Events'}
+            emptyMessage={isAdmin ? 'Get started by adding your first event.' : 'Create your first event to get started.'}
           />
         </>
       )}
@@ -438,6 +490,7 @@ export default function EventManagement() {
           stores={stores}
           users={users}
           currentUserId={currentUserId}
+          isAdmin={isAdmin}
           onSubmit={handleFormSubmit}
           onCancel={handleCancel}
           isLoading={isSubmitting}

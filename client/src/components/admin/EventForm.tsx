@@ -26,12 +26,22 @@ interface EventFormProps {
   stores: Store[];
   users: User[];
   currentUserId?: string;
+  isAdmin?: boolean;
   onSubmit: (data: EventFormData) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
-export default function EventForm({ event, stores, users, currentUserId, onSubmit, onCancel, isLoading = false }: EventFormProps) {
+export default function EventForm({
+  event,
+  stores,
+  users,
+  currentUserId,
+  isAdmin = false,
+  onSubmit,
+  onCancel,
+  isLoading = false,
+}: EventFormProps) {
   const [formData, setFormData] = useState<EventFormData>({
     start_at: '',
     timezone: DEFAULT_EVENT_TIMEZONE,
@@ -128,6 +138,7 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
     try {
       await onSubmit({
         ...formData,
+        created_by: isAdmin ? formData.created_by : (currentUserId || formData.created_by),
         start_at: formatStartAtForStorage(formData.start_at, formData.timezone),
       });
     } catch (error) {
@@ -343,31 +354,45 @@ export default function EventForm({ event, stores, users, currentUserId, onSubmi
         </div>
 
         {/* Creator Selection */}
-        <div>
-          <label htmlFor="created_by" className="block text-sm font-medium text-theme-foreground mb-1">
-            Event Creator
-          </label>
-          <select
-            id="created_by"
-            value={formData.created_by || ''}
-            onChange={(e) => handleInputChange('created_by', e.target.value)}
-            className="theme-input w-full px-3 py-2 rounded-md"
-            disabled={isLoading}
-          >
-            <option value="">Select event creator</option>
-            {users.map((user) => (
-              <option key={user.user_id} value={user.user_id}>
-                {user.username} ({user.email}) - {user.role}
-              </option>
-            ))}
-          </select>
-          {formData.created_by && getSelectedUser() && (
+        {isAdmin ? (
+          <div>
+            <label htmlFor="created_by" className="block text-sm font-medium text-theme-foreground mb-1">
+              Event Creator
+            </label>
+            <select
+              id="created_by"
+              value={formData.created_by || ''}
+              onChange={(e) => handleInputChange('created_by', e.target.value)}
+              className="theme-input w-full px-3 py-2 rounded-md"
+              disabled={isLoading}
+            >
+              <option value="">Select event creator</option>
+              {users.map((user) => (
+                <option key={user.user_id} value={user.user_id}>
+                  {user.username} ({user.email}) - {user.role}
+                </option>
+              ))}
+            </select>
+            {formData.created_by && getSelectedUser() && (
+              <p className="text-theme-muted text-sm mt-1">
+                Role: {getSelectedUser()?.role} |
+                {' '}Joined: {new Date(getSelectedUser()?.date_joined || '').toLocaleDateString()}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div>
+            <label className="block text-sm font-medium text-theme-foreground mb-1">
+              Event Creator
+            </label>
+            <div className="theme-input w-full px-3 py-2 rounded-md opacity-80">
+              You
+            </div>
             <p className="text-theme-muted text-sm mt-1">
-              Role: {getSelectedUser()?.role} | 
-              Joined: {new Date(getSelectedUser()?.date_joined || '').toLocaleDateString()}
+              Vendor-created events are always attributed to your account.
             </p>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Event Types */}
         <div>

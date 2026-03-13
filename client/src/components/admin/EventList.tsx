@@ -18,12 +18,23 @@ interface EventListProps {
   onRenew?: (event: Event) => void;
   isLoading?: boolean;
   showSortIndicator?: boolean;
+  title?: string;
+  emptyMessage?: string;
 }
 
 type SortField = 'name' | 'start_at' | 'store' | 'type' | 'creator';
 type SortDirection = 'asc' | 'desc';
 
-export default function EventList({ events, onEdit, onDelete, onRenew, isLoading = false, showSortIndicator = true }: EventListProps) {
+export default function EventList({
+  events,
+  onEdit,
+  onDelete,
+  onRenew,
+  isLoading = false,
+  showSortIndicator = true,
+  title = 'All Events',
+  emptyMessage = 'Get started by adding your first event.',
+}: EventListProps) {
   const [sortField, setSortField] = useState<SortField>('start_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   if (isLoading) {
@@ -53,7 +64,7 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
             </svg>
           </div>
           <h3 className="text-lg font-medium text-theme-foreground mb-1">No events found</h3>
-          <p className="text-theme-muted">Get started by adding your first event.</p>
+          <p className="text-theme-muted">{emptyMessage}</p>
         </div>
       </div>
     );
@@ -187,7 +198,7 @@ export default function EventList({ events, onEdit, onDelete, onRenew, isLoading
       <div className="px-6 py-4 border-b" style={{ borderColor: "var(--theme-border-soft)" }}>
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-theme-foreground">
-            All Events ({events.length})
+            {title} ({events.length})
           </h3>
           {showSortIndicator && (
             <div className="text-sm text-theme-muted">
