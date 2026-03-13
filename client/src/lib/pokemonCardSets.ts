@@ -24,7 +24,7 @@ export const AVAILABLE_POKEMON_SETS: PokemonSetOption[] = [
   { value: "sv10.5w", label: "Scarlet & Violet—White Flare" },
   { value: "me01", label: "Mega Evolution Base Set" },
   { value: "me02", label: "Mega Evolution—Phantasmal Flames" },
-  // { value: "me02.5", label: "Mega Evolution—Ascended Heroes" },
+  { value: "me02.5", label: "Mega Evolution—Ascended Heroes" },
 ];
 
 
