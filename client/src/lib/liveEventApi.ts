@@ -20,12 +20,13 @@ import type {
   EventSessionRound,
   LiveEventHistoryItem,
   LiveEventOverview,
+  LiveEventBestOf,
   LiveEventProgressAction,
   LiveEventState,
   MatchResultPayload,
 } from "@/types/liveEvent";
 
-const LIVE_EVENT_WINDOW_MS = 12 * 60 * 60 * 1000;
+const LIVE_EVENT_JOIN_GRACE_MS = 10 * 60 * 1000;
 
 async function getAuthenticatedUser() {
   const supabase = getSupabaseClient();
@@ -66,14 +67,20 @@ export function isLiveEventAvailable(event: Event, session: EventSession | null)
     return false;
   }
 
-  if (isSessionLive(session)) {
-    return true;
-  }
-
   const startTime = new Date(event.start_at).getTime();
+  const joinClosesAt = startTime + LIVE_EVENT_JOIN_GRACE_MS;
   const now = Date.now();
 
-  return now >= startTime && now <= startTime + LIVE_EVENT_WINDOW_MS;
+  if (!session) {
+    return now >= startTime && now <= joinClosesAt;
+  }
+
+  const sessionHasStarted = !["not_started", "voting"].includes(session.timer_status);
+  if (sessionHasStarted) {
+    return false;
+  }
+
+  return now <= joinClosesAt;
 }
 
 export function getTimerRemainingSeconds(round: EventSessionRound | null): number | null {
@@ -400,11 +407,12 @@ export async function fetchMyLiveEventHistory(): Promise<LiveEventHistoryItem[]>
     .filter((item): item is LiveEventHistoryItem => item !== null);
 }
 
-export async function startEventSession(eventId: string, totalRounds: number): Promise<string> {
+export async function startEventSession(eventId: string, totalRounds: number, bestOf: LiveEventBestOf): Promise<string> {
   const supabase = getSupabaseClient();
-  const { data, error } = await supabase.rpc("start_event_session", {
+  const { data, error } = await supabase.rpc("start_event_session_configured", {
     p_event_id: eventId,
     p_total_rounds: totalRounds,
+    p_best_of: bestOf,
   });
 
   if (error) {
@@ -449,11 +457,16 @@ export async function leaveEventSession(sessionId: string): Promise<void> {
   }
 }
 
-export async function configureEventSession(sessionId: string, totalRounds: number): Promise<void> {
+export async function configureEventSession(
+  sessionId: string,
+  totalRounds: number,
+  bestOf: LiveEventBestOf,
+): Promise<void> {
   const supabase = getSupabaseClient();
-  const { error } = await supabase.rpc("configure_event_session", {
+  const { error } = await supabase.rpc("configure_event_session_settings", {
     p_session_id: sessionId,
     p_total_rounds: totalRounds,
+    p_best_of: bestOf,
   });
 
   if (error) {
@@ -478,6 +491,28 @@ export async function voteRoundTimer(roundId: string, minutes: number): Promise<
   const { error } = await supabase.rpc("vote_round_timer", {
     p_round_id: roundId,
     p_minutes: minutes,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function stopEventRoundTimer(roundId: string): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase.rpc("stop_event_round_timer", {
+    p_round_id: roundId,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function resetEventRound(roundId: string): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase.rpc("reset_event_round", {
+    p_round_id: roundId,
   });
 
   if (error) {
@@ -519,7 +554,7 @@ export async function createOrUpdateMatch(
 
 export async function reportMatchResult(matchId: string, payload: MatchResultPayload): Promise<string> {
   const supabase = getSupabaseClient();
-  const { data, error } = await supabase.rpc("report_match_result", {
+  const { data, error } = await supabase.rpc("report_match_result_checked", {
     p_match_id: matchId,
     p_round_result: payload.roundResult,
     p_games_won: payload.gamesWon,

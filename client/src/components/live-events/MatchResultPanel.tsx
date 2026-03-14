@@ -1,46 +1,186 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { EventPlayerRoundStat, EventRoundMatch, LiveEventResult, MatchResultPayload } from "@/types/liveEvent";
+import { useEffect, useMemo, useState } from "react";
+import {
+  deriveMatchResultFromScore,
+  getGameCountOptions,
+  getLiveEventBestOfLabel,
+  validateMatchResultPayload,
+} from "@/lib/liveEventMatchUtils";
+import type {
+  EventPlayerRoundStat,
+  EventRoundMatch,
+  LiveEventBestOf,
+  LiveEventResult,
+  MatchResultPayload,
+} from "@/types/liveEvent";
 
 interface MatchResultPanelProps {
   currentMatch: EventRoundMatch | null;
   existingStat: EventPlayerRoundStat | null;
   opponentName: string;
+  bestOf: LiveEventBestOf;
   pending: boolean;
   onSubmit: (payload: MatchResultPayload) => void | Promise<void>;
+}
+
+type ScoreField = "gamesWon" | "gamesLost" | "gamesTied";
+
+interface CountSelectorProps {
+  label: string;
+  value: number;
+  options: number[];
+  disabledOptions?: number[];
+  onChange: (value: number) => void;
+}
+
+function CountSelector({ label, value, options, disabledOptions = [], onChange }: CountSelectorProps) {
+  return (
+    <div>
+      <div className="mb-2 block text-sm font-medium text-theme-foreground">{label}</div>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => {
+          const isDisabled = disabledOptions.includes(option);
+
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onChange(option)}
+              disabled={isDisabled}
+              className={`${value === option ? "theme-button" : "theme-button-ghost"} min-w-10 rounded-md px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40`}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function normalizeScoreSelection(
+  bestOf: LiveEventBestOf,
+  field: ScoreField,
+  value: number,
+  currentScore: Record<ScoreField, number>,
+): Record<ScoreField, number> {
+  const nextScore = {
+    ...currentScore,
+    [field]: value,
+  };
+
+  if (bestOf === 1) {
+    if (value === 1) {
+      return {
+        gamesWon: field === "gamesWon" ? 1 : 0,
+        gamesLost: field === "gamesLost" ? 1 : 0,
+        gamesTied: field === "gamesTied" ? 1 : 0,
+      };
+    }
+
+    return nextScore;
+  }
+
+  if ((field === "gamesWon" || field === "gamesLost") && value === 2) {
+    return {
+      gamesWon: field === "gamesWon" ? 2 : 0,
+      gamesLost: field === "gamesLost" ? 2 : 0,
+      gamesTied: 0,
+    };
+  }
+
+  return nextScore;
+}
+
+function getResultLabel(result: LiveEventResult): string {
+  if (result === "win") {
+    return "Win";
+  }
+
+  if (result === "loss") {
+    return "Loss";
+  }
+
+  return "Tie";
 }
 
 export default function MatchResultPanel({
   currentMatch,
   existingStat,
   opponentName,
+  bestOf,
   pending,
   onSubmit,
 }: MatchResultPanelProps) {
-  const [roundResult, setRoundResult] = useState<LiveEventResult>("win");
-  const [gamesWon, setGamesWon] = useState("2");
-  const [gamesLost, setGamesLost] = useState("0");
-  const [gamesTied, setGamesTied] = useState("0");
-  const [wentFirst, setWentFirst] = useState("");
+  const [gamesWon, setGamesWon] = useState(0);
+  const [gamesLost, setGamesLost] = useState(0);
+  const [gamesTied, setGamesTied] = useState(0);
+  const [wentFirst, setWentFirst] = useState<"" | "yes" | "no">("");
   const [roundDurationMinutes, setRoundDurationMinutes] = useState("");
   const [opponentArchetype, setOpponentArchetype] = useState("");
   const [notes, setNotes] = useState("");
+  const gameCountOptions = useMemo(() => getGameCountOptions(bestOf), [bestOf]);
+  const derivedRoundResult = useMemo<LiveEventResult>(
+    () => deriveMatchResultFromScore({ gamesWon, gamesLost }),
+    [gamesLost, gamesWon],
+  );
+
+  useEffect(() => {
+    if (existingStat) {
+      return;
+    }
+
+    setGamesWon(0);
+    setGamesLost(0);
+    setGamesTied(0);
+  }, [bestOf, existingStat]);
 
   useEffect(() => {
     if (!existingStat) {
       return;
     }
 
-    setRoundResult(existingStat.round_result);
-    setGamesWon(String(existingStat.games_won));
-    setGamesLost(String(existingStat.games_lost));
-    setGamesTied(String(existingStat.games_tied));
+    setGamesWon(existingStat.games_won);
+    setGamesLost(existingStat.games_lost);
+    setGamesTied(existingStat.games_tied);
     setWentFirst(existingStat.went_first === null ? "" : existingStat.went_first ? "yes" : "no");
     setRoundDurationMinutes(existingStat.round_duration_minutes ? String(existingStat.round_duration_minutes) : "");
     setOpponentArchetype(existingStat.opponent_archetype ?? "");
     setNotes(existingStat.notes ?? "");
   }, [existingStat]);
+
+  const handleScoreChange = (field: ScoreField, value: number) => {
+    const normalizedScore = normalizeScoreSelection(
+      bestOf,
+      field,
+      value,
+      { gamesWon, gamesLost, gamesTied },
+    );
+
+    setGamesWon(normalizedScore.gamesWon);
+    setGamesLost(normalizedScore.gamesLost);
+    setGamesTied(normalizedScore.gamesTied);
+  };
+
+  const submissionPayload = useMemo<MatchResultPayload>(
+    () => ({
+      roundResult: derivedRoundResult,
+      gamesWon,
+      gamesLost,
+      gamesTied,
+      wentFirst: wentFirst === "" ? null : wentFirst === "yes",
+      roundDurationMinutes: roundDurationMinutes ? Number(roundDurationMinutes) : null,
+      opponentArchetype,
+      notes,
+    }),
+    [derivedRoundResult, gamesLost, gamesTied, gamesWon, notes, opponentArchetype, roundDurationMinutes, wentFirst],
+  );
+
+  const validationMessage = useMemo(
+    () => validateMatchResultPayload(submissionPayload, bestOf),
+    [bestOf, submissionPayload],
+  );
 
   if (!currentMatch) {
     return (
@@ -59,29 +199,22 @@ export default function MatchResultPanel({
         <h2 className="text-lg font-semibold text-theme-foreground">Report Match</h2>
         <p className="text-sm text-theme-muted">
           Opponent: <span className="font-medium text-theme-foreground">{opponentName}</span>
-          {" · "}
+          {" | "}
           Match status: <span className="font-medium text-theme-foreground">{currentMatch.result_status}</span>
+        </p>
+        <p className="text-sm text-theme-muted">
+          Match format: <span className="font-medium text-theme-foreground">{getLiveEventBestOfLabel(bestOf)}</span>
+        </p>
+        <p className="text-sm text-theme-muted">
+          Round result: <span className="font-medium text-theme-foreground">{getResultLabel(derivedRoundResult)}</span>
+        </p>
+        <p className="text-xs text-theme-muted">
+          In best of 1, selecting a `1` forces the other scores to `0`. In best of 3, selecting `2` wins or losses
+          closes out the match immediately. Leaving everything at `0` records the round as a tie.
         </p>
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <div>
-          <label className="mb-2 block text-sm font-medium text-theme-foreground" htmlFor="round-result">
-            Round result
-          </label>
-          <select
-            id="round-result"
-            value={roundResult}
-            onChange={(event) => setRoundResult(event.target.value as LiveEventResult)}
-            className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
-            style={{ borderColor: "var(--theme-border-soft)" }}
-          >
-            <option value="win">Win</option>
-            <option value="loss">Loss</option>
-            <option value="tie">Tie</option>
-          </select>
-        </div>
-
         <div>
           <label className="mb-2 block text-sm font-medium text-theme-foreground" htmlFor="round-duration">
             Round duration (minutes)
@@ -98,66 +231,55 @@ export default function MatchResultPanel({
           />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3 lg:col-span-2">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-theme-foreground" htmlFor="games-won">
-              Games won
-            </label>
-            <input
-              id="games-won"
-              type="number"
-              min={0}
-              value={gamesWon}
-              onChange={(event) => setGamesWon(event.target.value)}
-              className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
-              style={{ borderColor: "var(--theme-border-soft)" }}
-            />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm font-medium text-theme-foreground" htmlFor="games-lost">
-              Games lost
-            </label>
-            <input
-              id="games-lost"
-              type="number"
-              min={0}
-              value={gamesLost}
-              onChange={(event) => setGamesLost(event.target.value)}
-              className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
-              style={{ borderColor: "var(--theme-border-soft)" }}
-            />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm font-medium text-theme-foreground" htmlFor="games-tied">
-              Games tied
-            </label>
-            <input
-              id="games-tied"
-              type="number"
-              min={0}
-              value={gamesTied}
-              onChange={(event) => setGamesTied(event.target.value)}
-              className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
-              style={{ borderColor: "var(--theme-border-soft)" }}
-            />
+        <div>
+          <div className="mb-2 block text-sm font-medium text-theme-foreground">Went first?</div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setWentFirst("")}
+              className={`${wentFirst === "" ? "theme-button" : "theme-button-ghost"} rounded-md px-3 py-2 text-sm`}
+            >
+              Don't Remember
+            </button>
+            <button
+              type="button"
+              onClick={() => setWentFirst("yes")}
+              className={`${wentFirst === "yes" ? "theme-button" : "theme-button-ghost"} rounded-md px-3 py-2 text-sm`}
+            >
+              Yes
+            </button>
+            <button
+              type="button"
+              onClick={() => setWentFirst("no")}
+              className={`${wentFirst === "no" ? "theme-button" : "theme-button-ghost"} rounded-md px-3 py-2 text-sm`}
+            >
+              No
+            </button>
           </div>
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium text-theme-foreground" htmlFor="went-first">
-            Went first?
-          </label>
-          <select
-            id="went-first"
-            value={wentFirst}
-            onChange={(event) => setWentFirst(event.target.value)}
-            className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
-            style={{ borderColor: "var(--theme-border-soft)" }}
-          >
-            <option value="">Prefer not to say</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
+        <div className="grid gap-4 lg:col-span-2 sm:grid-cols-3">
+          <CountSelector
+            label="Games won"
+            value={gamesWon}
+            options={gameCountOptions}
+            disabledOptions={bestOf === 1 ? [2] : []}
+            onChange={(value) => handleScoreChange("gamesWon", value)}
+          />
+          <CountSelector
+            label="Games lost"
+            value={gamesLost}
+            options={gameCountOptions}
+            disabledOptions={bestOf === 1 ? [2] : []}
+            onChange={(value) => handleScoreChange("gamesLost", value)}
+          />
+          <CountSelector
+            label="Games tied"
+            value={gamesTied}
+            options={gameCountOptions}
+            disabledOptions={bestOf === 1 ? [2] : []}
+            onChange={(value) => handleScoreChange("gamesTied", value)}
+          />
         </div>
 
         <div>
@@ -191,22 +313,12 @@ export default function MatchResultPanel({
         </div>
       </div>
 
-      <div className="mt-4 flex justify-end">
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-sm text-red-600">{validationMessage ?? ""}</div>
         <button
           type="button"
-          onClick={() =>
-            void onSubmit({
-              roundResult,
-              gamesWon: Number(gamesWon || 0),
-              gamesLost: Number(gamesLost || 0),
-              gamesTied: Number(gamesTied || 0),
-              wentFirst: wentFirst === "" ? null : wentFirst === "yes",
-              roundDurationMinutes: roundDurationMinutes ? Number(roundDurationMinutes) : null,
-              opponentArchetype,
-              notes,
-            })
-          }
-          disabled={pending}
+          onClick={() => void onSubmit(submissionPayload)}
+          disabled={pending || validationMessage !== null}
           className="theme-button rounded-md px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {existingStat ? "Update Result" : "Report Result"}

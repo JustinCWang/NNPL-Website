@@ -8,12 +8,14 @@ export type LiveEventMatchSource = "app_user" | "other_player";
 export type LiveEventMatchStatus = "pending" | "reported" | "confirmed" | "disputed" | "unverified";
 export type LiveEventResult = "win" | "loss" | "tie";
 export type LiveEventProgressAction = "advance" | "finish";
+export type LiveEventBestOf = 1 | 3;
 
 export interface EventSession {
   session_id: string;
   event_id: string;
   status: LiveEventSessionStatus;
   total_rounds: number;
+  best_of: LiveEventBestOf;
   current_round: number;
   timer_minutes: number | null;
   timer_status: LiveEventTimerStatus;

@@ -1,8 +1,9 @@
 "use client";
 
 import { formatDisplayDate, formatDisplayTime, formatTimeZoneLabel } from "@/lib/dateUtils";
+import { getLiveEventBestOfLabel } from "@/lib/liveEventMatchUtils";
 import type { Event } from "@/types/event";
-import type { EventSession, EventSessionRound } from "@/types/liveEvent";
+import type { EventSession, EventSessionRound, LiveEventBestOf } from "@/types/liveEvent";
 
 interface LiveEventBannerProps {
   event: Event;
@@ -11,10 +12,16 @@ interface LiveEventBannerProps {
   connectedCount: number;
   canManageEvent: boolean;
   pending: boolean;
+  stopTimerPending: boolean;
+  resetRoundPending: boolean;
   configuredRounds: number;
+  configuredBestOf: LiveEventBestOf;
   timerRemainingSeconds: number | null;
   onConfiguredRoundsChange: (value: number) => void;
-  onSaveRounds: () => void | Promise<void>;
+  onConfiguredBestOfChange: (value: LiveEventBestOf) => void;
+  onSaveSettings: () => void | Promise<void>;
+  onStopTimer: () => void | Promise<void>;
+  onResetRound: () => void | Promise<void>;
 }
 
 function formatTimerLabel(round: EventSessionRound | null, timerRemainingSeconds: number | null): string {
@@ -38,11 +45,20 @@ export default function LiveEventBanner({
   connectedCount,
   canManageEvent,
   pending,
+  stopTimerPending,
+  resetRoundPending,
   configuredRounds,
+  configuredBestOf,
   timerRemainingSeconds,
   onConfiguredRoundsChange,
-  onSaveRounds,
+  onConfiguredBestOfChange,
+  onSaveSettings,
+  onStopTimer,
+  onResetRound,
 }: LiveEventBannerProps) {
+  const canStopTimer = canManageEvent && session.status !== "completed" && Boolean(currentRound?.timer_started_at);
+  const canResetRound = canManageEvent && session.status !== "completed" && !!currentRound;
+
   return (
     <section className="theme-card rounded-xl p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -91,24 +107,43 @@ export default function LiveEventBanner({
           <div className="rounded-lg border p-4" style={{ borderColor: "var(--theme-border-soft)" }}>
             <div className="text-xs uppercase tracking-wide text-theme-muted">Connected</div>
             <div className="mt-1 text-2xl font-semibold text-theme-foreground">{connectedCount}</div>
-            <div className="text-sm text-theme-muted">Majority start requires over half of connected attendees.</div>
+            <div className="text-sm text-theme-muted">
+              Majority start requires over half of connected attendees.
+            </div>
           </div>
 
           <div className="rounded-lg border p-4" style={{ borderColor: "var(--theme-border-soft)" }}>
-            <div className="text-xs uppercase tracking-wide text-theme-muted">Total Rounds</div>
-            <div className="mt-2 flex items-center gap-2">
+            <div className="text-xs uppercase tracking-wide text-theme-muted">Session Setup</div>
+            <div className="mt-2 grid gap-2">
+              <label className="text-xs font-medium text-theme-muted" htmlFor="live-total-rounds">
+                Total rounds
+              </label>
               <input
+                id="live-total-rounds"
                 type="number"
                 min={session.current_round}
                 max={20}
                 value={configuredRounds}
                 onChange={(event) => onConfiguredRoundsChange(Number(event.target.value))}
-                className="w-20 rounded-md border px-3 py-2 text-sm bg-transparent"
+                className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
                 style={{ borderColor: "var(--theme-border-soft)" }}
               />
+              <label className="text-xs font-medium text-theme-muted" htmlFor="live-best-of">
+                Match format
+              </label>
+              <select
+                id="live-best-of"
+                value={configuredBestOf}
+                onChange={(event) => onConfiguredBestOfChange(Number(event.target.value) as LiveEventBestOf)}
+                className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
+                style={{ borderColor: "var(--theme-border-soft)" }}
+              >
+                <option value={1}>Best of 1</option>
+                <option value={3}>Best of 3</option>
+              </select>
               <button
                 type="button"
-                onClick={() => void onSaveRounds()}
+                onClick={() => void onSaveSettings()}
                 disabled={pending || session.status === "completed"}
                 className="theme-button rounded-md px-3 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
               >
@@ -116,10 +151,32 @@ export default function LiveEventBanner({
               </button>
             </div>
             <div className="mt-2 text-sm text-theme-muted">
+              Current format: {getLiveEventBestOfLabel(session.best_of)}.{" "}
               {canManageEvent ? "Managers can override this at any time." : "Anyone in the room can keep rounds in sync."}
             </div>
           </div>
         </div>
+
+        {canManageEvent && (
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => void onStopTimer()}
+              disabled={!canStopTimer || stopTimerPending}
+              className="theme-button-ghost rounded-md px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {stopTimerPending ? "Stopping Timer..." : "Stop Timer"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void onResetRound()}
+              disabled={!canResetRound || resetRoundPending}
+              className="theme-button-ghost rounded-md px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {resetRoundPending ? "Resetting Round..." : "Reset Round"}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

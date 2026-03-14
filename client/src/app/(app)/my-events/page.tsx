@@ -8,11 +8,12 @@
 */
 
 import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   fetchLiveEventOverviews,
   fetchMyLiveEventHistory,
+  isLiveEventAvailable,
 } from "@/lib/liveEventApi";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { Event, EventRegistration } from "@/types/event";
@@ -23,6 +24,7 @@ import EventCard from "@/components/ui/EventCard";
 
 export default function EventsPage() {
   const searchParams = useSearchParams();
+  const refreshTimeoutRef = useRef<number | null>(null);
   const [selectedTab, setSelectedTab] = useState<'upcoming' | 'favorites' | 'registered' | 'history'>('upcoming');
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
@@ -35,115 +37,199 @@ export default function EventsPage() {
   const [liveEventOverviews, setLiveEventOverviews] = useState<LiveEventOverview[]>([]);
   const [liveEventHistory, setLiveEventHistory] = useState<LiveEventHistoryItem[]>([]);
   const [dismissedLiveEventIds, setDismissedLiveEventIds] = useState<string[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Get initial store filter from URL query parameter
   const initialStoreId = searchParams.get('store') || '';
 
   // Fetch events and stores data
-  useEffect(() => {
-    async function fetchData() {
-      const supabase = getSupabaseClient();
-      
-      try {
+  const loadPageData = useCallback(async (showLoading: boolean = false) => {
+    const supabase = getSupabaseClient();
+
+    try {
+      if (showLoading) {
         setLoading(true);
-        setError(null);
+      }
+      setIsRefreshing(true);
+      setError(null);
+      setCurrentTime(Date.now());
 
-        const { data: authData, error: authError } = await supabase.auth.getUser();
-        if (authError || !authData.user) {
-          setError('You must be logged in to manage your events.');
-          return;
-        }
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData.user) {
+        setCurrentUserId(null);
+        setError('You must be logged in to manage your events.');
+        return;
+      }
 
-        const [eventsResponse, pastEventsResponse, storesResponse, favoritesResponse, registrationsResponse] = await Promise.all([
-          supabase
-            .from('Events')
-            .select(`
-              *,
-              store:Stores(name, location)
-            `)
-            .gte('start_at', new Date().toISOString())
-            .order('start_at', { ascending: true }),
-          supabase
-            .from('Events')
-            .select(`
-              *,
-              store:Stores(name, location)
-            `)
-            .lt('start_at', new Date().toISOString())
-            .order('start_at', { ascending: false }),
-          supabase
-            .from('Stores')
-            .select('*')
-            .order('name'),
-          supabase
-            .from('FavoriteEvents')
-            .select('event_id')
-            .eq('user_id', authData.user.id),
-          supabase
-            .from('EventRegistrations')
-            .select('event_id, created_at')
-            .eq('user_id', authData.user.id),
-        ]);
+      setCurrentUserId(authData.user.id);
 
-        const { data: eventsData, error: eventsError } = eventsResponse;
-        if (eventsError) {
-          console.error('Error fetching events:', eventsError);
-          setError('Failed to load events. Please try again later.');
-          return;
-        }
+      const nowIso = new Date().toISOString();
+      const [eventsResponse, pastEventsResponse, storesResponse, favoritesResponse, registrationsResponse] = await Promise.all([
+        supabase
+          .from('Events')
+          .select(`
+            *,
+            store:Stores(name, location)
+          `)
+          .gte('start_at', nowIso)
+          .order('start_at', { ascending: true }),
+        supabase
+          .from('Events')
+          .select(`
+            *,
+            store:Stores(name, location)
+          `)
+          .lt('start_at', nowIso)
+          .order('start_at', { ascending: false }),
+        supabase
+          .from('Stores')
+          .select('*')
+          .order('name'),
+        supabase
+          .from('FavoriteEvents')
+          .select('event_id')
+          .eq('user_id', authData.user.id),
+        supabase
+          .from('EventRegistrations')
+          .select('event_id, created_at')
+          .eq('user_id', authData.user.id),
+      ]);
 
-        const { data: pastEventsData, error: pastEventsError } = pastEventsResponse;
-        if (pastEventsError) {
-          console.error('Error fetching past events:', pastEventsError);
-        }
+      const { data: eventsData, error: eventsError } = eventsResponse;
+      if (eventsError) {
+        console.error('Error fetching events:', eventsError);
+        setError('Failed to load events. Please try again later.');
+        return;
+      }
 
-        const { data: storesData, error: storesError } = storesResponse;
-        if (storesError) {
-          console.error('Error fetching stores:', storesError);
-        }
+      const { data: pastEventsData, error: pastEventsError } = pastEventsResponse;
+      if (pastEventsError) {
+        console.error('Error fetching past events:', pastEventsError);
+      }
 
-        const { data: favoritesData, error: favoritesError } = favoritesResponse;
-        if (favoritesError) {
-          console.error('Error fetching favorite events:', favoritesError);
-          setError('Failed to load favorite events. Please try again later.');
-          return;
-        }
+      const { data: storesData, error: storesError } = storesResponse;
+      if (storesError) {
+        console.error('Error fetching stores:', storesError);
+      }
 
-        const { data: registrationsData, error: registrationsError } = registrationsResponse;
-        if (registrationsError) {
-          console.error('Error fetching event registrations:', registrationsError);
-          setError('Failed to load your event registrations. Please try again later.');
-          return;
-        }
+      const { data: favoritesData, error: favoritesError } = favoritesResponse;
+      if (favoritesError) {
+        console.error('Error fetching favorite events:', favoritesError);
+        setError('Failed to load favorite events. Please try again later.');
+        return;
+      }
 
-        setEvents(eventsData || []);
-        setFilteredEvents(eventsData || []);
-        setPastEvents(pastEventsData || []);
-        setStores(storesData || []);
-        setFavoriteEventIds((favoritesData || []).map((favorite) => favorite.event_id));
-        const registrationRows = (registrationsData || []) as EventRegistration[];
-        const registrationEventIds = registrationRows.map((registration) => registration.event_id);
-        setRegisteredEventIds(registrationEventIds);
+      const { data: registrationsData, error: registrationsError } = registrationsResponse;
+      if (registrationsError) {
+        console.error('Error fetching event registrations:', registrationsError);
+        setError('Failed to load your event registrations. Please try again later.');
+        return;
+      }
 
-        const [liveOverviews, historyItems] = await Promise.all([
-          fetchLiveEventOverviews(registrationEventIds),
-          fetchMyLiveEventHistory(),
-        ]);
+      const upcomingEvents = eventsData || [];
+      const registrationRows = (registrationsData || []) as EventRegistration[];
+      const registrationEventIds = registrationRows.map((registration) => registration.event_id);
 
-        setLiveEventOverviews(liveOverviews);
-        setLiveEventHistory(historyItems);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setError('An unexpected error occurred. Please try again later.');
-      } finally {
+      setEvents(upcomingEvents);
+      setFilteredEvents(upcomingEvents);
+      setPastEvents(pastEventsData || []);
+      setStores(storesData || []);
+      setFavoriteEventIds((favoritesData || []).map((favorite) => favorite.event_id));
+      setRegisteredEventIds(registrationEventIds);
+      setDismissedLiveEventIds((prev) => prev.filter((eventId) => registrationEventIds.includes(eventId)));
+
+      const [liveOverviews, historyItems] = await Promise.all([
+        fetchLiveEventOverviews(registrationEventIds),
+        fetchMyLiveEventHistory(),
+      ]);
+
+      setLiveEventOverviews(liveOverviews);
+      setLiveEventHistory(historyItems);
+    } catch (loadError) {
+      console.error('Error fetching data:', loadError);
+      setError('An unexpected error occurred. Please try again later.');
+    } finally {
+      if (showLoading) {
         setLoading(false);
       }
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadPageData(true);
+  }, [loadPageData]);
+
+  useEffect(() => {
+    const futureAvailabilityTimestamps = liveEventOverviews
+      .filter((overview) => overview.session?.status !== 'completed')
+      .map((overview) => new Date(overview.event.start_at).getTime())
+      .filter((startAtMs) => startAtMs > currentTime)
+      .sort((left, right) => left - right);
+
+    const nextAvailabilityMs = futureAvailabilityTimestamps[0] ?? null;
+    const delayMs =
+      nextAvailabilityMs === null
+        ? 30_000
+        : Math.min(Math.max(nextAvailabilityMs - currentTime, 1_000), 30_000);
+
+    const timerId = window.setTimeout(() => {
+      setCurrentTime(Date.now());
+    }, delayMs);
+
+    return () => window.clearTimeout(timerId);
+  }, [currentTime, liveEventOverviews]);
+
+  useEffect(() => {
+    if (!currentUserId) {
+      return;
     }
 
-    fetchData();
-  }, []);
+    const supabase = getSupabaseClient();
+    const scheduleRefresh = () => {
+      if (refreshTimeoutRef.current !== null) {
+        window.clearTimeout(refreshTimeoutRef.current);
+      }
+
+      refreshTimeoutRef.current = window.setTimeout(() => {
+        void loadPageData(false);
+        refreshTimeoutRef.current = null;
+      }, 250);
+    };
+
+    const channel = supabase
+      .channel(`my-events-${currentUserId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'Events',
+      }, scheduleRefresh)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'EventSessions',
+      }, scheduleRefresh)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'EventRegistrations',
+        filter: `user_id=eq.${currentUserId}`,
+      }, scheduleRefresh)
+      .subscribe();
+
+    return () => {
+      if (refreshTimeoutRef.current !== null) {
+        window.clearTimeout(refreshTimeoutRef.current);
+        refreshTimeoutRef.current = null;
+      }
+
+      void supabase.removeChannel(channel);
+    };
+  }, [currentUserId, loadPageData]);
 
   // Handle filtered events from the UserEventFilters component
   const handleFiltersChange = useCallback((filtered: Event[]) => {
@@ -235,6 +321,7 @@ export default function EventsPage() {
       }
 
       setError(null);
+      await loadPageData(false);
     } catch (registrationError) {
       console.error('Error updating event registration:', registrationError);
       setRegisteredEventIds((prev) =>
@@ -244,13 +331,21 @@ export default function EventsPage() {
     } finally {
       setPendingRegistrationIds((prev) => prev.filter((id) => id !== eventId));
     }
-  }, [registeredEventIds]);
+  }, [loadPageData, registeredEventIds]);
 
   const favoriteUpcomingEvents = events.filter((event) => favoriteEventIds.includes(event.event_id));
   const favoritePastEvents = pastEvents.filter((event) => favoriteEventIds.includes(event.event_id));
   const registeredUpcomingEvents = events.filter((event) => registeredEventIds.includes(event.event_id));
   const registeredPastEvents = pastEvents.filter((event) => registeredEventIds.includes(event.event_id));
-  const liveReadyEvents = liveEventOverviews.filter((overview) => overview.canJoin && !overview.isCompleted);
+  const liveReadyEvents = useMemo(
+    () =>
+      liveEventOverviews.filter(
+        (overview) =>
+          overview.session?.status !== 'completed' &&
+          isLiveEventAvailable(overview.event, overview.session),
+      ),
+    [currentTime, liveEventOverviews],
+  );
   const activePromptEvent =
     liveReadyEvents.find((overview) => !dismissedLiveEventIds.includes(overview.event.event_id)) ?? null;
 
@@ -277,9 +372,19 @@ export default function EventsPage() {
 
   return (
     <main>
-      <div className="mb-6">
-        <h1 className="text-3xl font-semibold text-theme-foreground">Events</h1>
-        <p className="mt-2 text-theme-muted">Manage your tournament participation and stay updated on upcoming events.</p>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold text-theme-foreground">Events</h1>
+          <p className="mt-2 text-theme-muted">Manage your tournament participation and stay updated on upcoming events.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => void loadPageData(false)}
+          disabled={loading || isRefreshing}
+          className="theme-button-ghost inline-flex items-center justify-center rounded-md px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading ? 'Loading Events...' : isRefreshing ? 'Refreshing...' : 'Refresh Events'}
+        </button>
       </div>
 
       {/* Store Filter Notice */}
@@ -347,7 +452,7 @@ export default function EventsPage() {
             <div className="text-center py-8">
               <p className="text-red-600">{error}</p>
               <button 
-                onClick={() => window.location.reload()} 
+                onClick={() => void loadPageData(true)}
                 className="theme-button mt-4 px-4 py-2 rounded-md text-sm"
               >
                 Try Again

@@ -11,6 +11,7 @@ import OpponentSelectionPanel from "@/components/live-events/OpponentSelectionPa
 import RoundProgressVotePanel from "@/components/live-events/RoundProgressVotePanel";
 import RoundHistoryList from "@/components/live-events/RoundHistoryList";
 import RoundTimerVotePanel from "@/components/live-events/RoundTimerVotePanel";
+import { normalizeLiveEventBestOf, validateMatchResultPayload } from "@/lib/liveEventMatchUtils";
 import {
   configureEventSession,
   createOrUpdateMatch,
@@ -22,23 +23,81 @@ import {
   joinEventSession,
   leaveEventSession,
   reportMatchResult,
+  resetEventRound,
   selectEventDeck,
   syncEventRoundTimer,
   startEventSession,
+  stopEventRoundTimer,
   subscribeToLiveEvent,
   voteRoundProgress,
   voteRoundTimer,
 } from "@/lib/liveEventApi";
 import type {
   DeckSelectionOption,
+  LiveEventBestOf,
+  EventRoundTimerVote,
   EventPlayerRoundStat,
   LiveEventProgressAction,
   LiveEventState,
   MatchResultPayload,
 } from "@/types/liveEvent";
 
+const PRESET_TIMER_OPTIONS = [30, 50] as const;
+const MIN_CUSTOM_TIMER_MINUTES = 1;
+const MAX_CUSTOM_TIMER_MINUTES = 90;
+
 function isConnected(lastSeenAt: string, isConnectedFlag: boolean): boolean {
   return isConnectedFlag && Date.now() - new Date(lastSeenAt).getTime() <= 90_000;
+}
+
+function isPresetTimerOption(minutes: number): boolean {
+  return PRESET_TIMER_OPTIONS.includes(minutes as (typeof PRESET_TIMER_OPTIONS)[number]);
+}
+
+function isValidTimerMinutes(minutes: number): boolean {
+  return Number.isInteger(minutes) && minutes >= MIN_CUSTOM_TIMER_MINUTES && minutes <= MAX_CUSTOM_TIMER_MINUTES;
+}
+
+function getLeadingCustomTimerMinutes(votes: EventRoundTimerVote[], currentUserId: string): number | null {
+  const currentUserCustomVote =
+    votes.find((vote) => vote.user_id === currentUserId && !isPresetTimerOption(vote.requested_minutes))
+      ?.requested_minutes ?? null;
+
+  if (currentUserCustomVote !== null) {
+    return currentUserCustomVote;
+  }
+
+  const groupedCustomVotes = new Map<number, { count: number; latestVoteAt: number }>();
+
+  for (const vote of votes) {
+    if (isPresetTimerOption(vote.requested_minutes)) {
+      continue;
+    }
+
+    const existingGroup = groupedCustomVotes.get(vote.requested_minutes);
+    const votedAtMs = new Date(vote.voted_at).getTime();
+
+    groupedCustomVotes.set(vote.requested_minutes, {
+      count: (existingGroup?.count ?? 0) + 1,
+      latestVoteAt: Math.max(existingGroup?.latestVoteAt ?? 0, votedAtMs),
+    });
+  }
+
+  return [...groupedCustomVotes.entries()]
+    .sort((left, right) => {
+      const [, leftGroup] = left;
+      const [, rightGroup] = right;
+
+      if (rightGroup.count !== leftGroup.count) {
+        return rightGroup.count - leftGroup.count;
+      }
+
+      if (rightGroup.latestVoteAt !== leftGroup.latestVoteAt) {
+        return rightGroup.latestVoteAt - leftGroup.latestVoteAt;
+      }
+
+      return left[0] - right[0];
+    })[0]?.[0] ?? null;
 }
 
 function getOpponentName(state: LiveEventState | null): string {
@@ -58,6 +117,32 @@ function getOpponentName(state: LiveEventState | null): string {
   return state.attendees.find((attendee) => attendee.user_id === opponentId)?.display_name ?? "Connected attendee";
 }
 
+function getActionErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (error && typeof error === "object") {
+    const message = "message" in error && typeof error.message === "string" ? error.message : null;
+    const details = "details" in error && typeof error.details === "string" ? error.details : null;
+    const hint = "hint" in error && typeof error.hint === "string" ? error.hint : null;
+    const code = "code" in error && typeof error.code === "string" ? error.code : null;
+
+    const parts = [
+      message,
+      details,
+      hint ? `Hint: ${hint}` : null,
+      code ? `Code: ${code}` : null,
+    ].filter((part): part is string => Boolean(part));
+
+    if (parts.length > 0) {
+      return parts.join(" ");
+    }
+  }
+
+  return "Something went wrong. Please try again.";
+}
+
 export default function LiveEventPage() {
   const params = useParams<{ eventId: string }>();
   const eventId = Array.isArray(params?.eventId) ? params.eventId[0] : params?.eventId;
@@ -72,7 +157,9 @@ export default function LiveEventPage() {
   const [selectedOpponentUserId, setSelectedOpponentUserId] = useState("");
   const [otherOpponentLabel, setOtherOpponentLabel] = useState("");
   const [customTimerMinutes, setCustomTimerMinutes] = useState("45");
+  const [hasCustomTimerDraft, setHasCustomTimerDraft] = useState(false);
   const [configuredRounds, setConfiguredRounds] = useState(4);
+  const [configuredBestOf, setConfiguredBestOf] = useState<LiveEventBestOf>(3);
   const [nowMs, setNowMs] = useState(Date.now());
   const [isEditingDisputedResult, setIsEditingDisputedResult] = useState(false);
 
@@ -88,6 +175,7 @@ export default function LiveEventPage() {
       const state = await fetchLiveEventState(eventId);
       setLiveState(state);
       setConfiguredRounds(state.session?.total_rounds ?? 4);
+      setConfiguredBestOf(normalizeLiveEventBestOf(state.session?.best_of ?? 3));
     } catch (loadError) {
       console.error("Error loading live event:", loadError);
       setError("Failed to load the live event room. Please try again.");
@@ -211,6 +299,33 @@ export default function LiveEventPage() {
   }, [liveState?.currentRound?.timer_expires_at, nowMs]);
 
   const isCurrentMatchDisputed = liveState?.currentUserMatch?.result_status === "disputed";
+  const matchBestOf = useMemo(
+    () => normalizeLiveEventBestOf(liveState?.session?.best_of ?? configuredBestOf),
+    [configuredBestOf, liveState?.session?.best_of],
+  );
+  const currentUserTimerVote =
+    liveState?.votes.find((vote) => vote.user_id === liveState.currentUserId)?.requested_minutes ?? null;
+  const leadingCustomTimerMinutes = useMemo(
+    () => (liveState ? getLeadingCustomTimerMinutes(liveState.votes, liveState.currentUserId) : null),
+    [liveState],
+  );
+
+  useEffect(() => {
+    if (!liveState) {
+      return;
+    }
+
+    const preferredCustomTimerMinutes = leadingCustomTimerMinutes ?? 45;
+    const shouldSyncDraft = !hasCustomTimerDraft;
+
+    if (!shouldSyncDraft) {
+      return;
+    }
+
+    const nextValue = String(preferredCustomTimerMinutes);
+    setCustomTimerMinutes((previousValue) => (previousValue === nextValue ? previousValue : nextValue));
+    setHasCustomTimerDraft(false);
+  }, [currentUserTimerVote, hasCustomTimerDraft, leadingCustomTimerMinutes, liveState]);
 
   useEffect(() => {
     if (!isCurrentMatchDisputed) {
@@ -244,13 +359,70 @@ export default function LiveEventPage() {
         await loadState(false);
       } catch (actionError) {
         console.error(`Error during ${actionKey}:`, actionError);
-        const message = actionError instanceof Error ? actionError.message : "Something went wrong. Please try again.";
-        setError(message);
+        setError(getActionErrorMessage(actionError));
       } finally {
         setPendingAction(null);
       }
     },
     [loadState],
+  );
+
+  const handleCustomTimerMinutesChange = useCallback((value: string) => {
+    if (value === "") {
+      setCustomTimerMinutes("");
+      setHasCustomTimerDraft(true);
+      return;
+    }
+
+    if (!/^\d+$/.test(value)) {
+      return;
+    }
+
+    const parsedMinutes = Number.parseInt(value, 10);
+    if (!Number.isInteger(parsedMinutes)) {
+      return;
+    }
+
+    setCustomTimerMinutes(String(Math.min(MAX_CUSTOM_TIMER_MINUTES, Math.max(MIN_CUSTOM_TIMER_MINUTES, parsedMinutes))));
+    setHasCustomTimerDraft(true);
+  }, []);
+
+  const handleCustomTimerMinutesBlur = useCallback(() => {
+    if (customTimerMinutes === "") {
+      setCustomTimerMinutes(String(leadingCustomTimerMinutes ?? 45));
+      setHasCustomTimerDraft(false);
+      return;
+    }
+
+    const parsedMinutes = Number.parseInt(customTimerMinutes, 10);
+    if (!Number.isInteger(parsedMinutes)) {
+      setCustomTimerMinutes(String(leadingCustomTimerMinutes ?? 45));
+      setHasCustomTimerDraft(false);
+      return;
+    }
+
+    setCustomTimerMinutes(String(Math.min(MAX_CUSTOM_TIMER_MINUTES, Math.max(MIN_CUSTOM_TIMER_MINUTES, parsedMinutes))));
+    setHasCustomTimerDraft(true);
+  }, [customTimerMinutes, leadingCustomTimerMinutes]);
+
+  const handleReportMatchResult = useCallback(
+    async (payload: MatchResultPayload, options?: { closeDisputedEditor?: boolean }) => {
+      if (!liveState?.currentUserMatch) {
+        throw new Error("Select an opponent before reporting a result.");
+      }
+
+      const validationMessage = validateMatchResultPayload(payload, matchBestOf);
+      if (validationMessage) {
+        throw new Error(validationMessage);
+      }
+
+      await reportMatchResult(liveState.currentUserMatch.match_id, payload);
+
+      if (options?.closeDisputedEditor) {
+        setIsEditingDisputedResult(false);
+      }
+    },
+    [liveState, matchBestOf],
   );
 
   if (!eventId) {
@@ -290,6 +462,7 @@ export default function LiveEventPage() {
   const roundTimerStarted = !!liveState.currentRound?.timer_started_at;
   const roundTimerExpired = !!liveState.currentRound && isRoundTimerExpired(liveState.currentRound);
   const hasSubmittedResult = !!existingStat;
+  const canStartEvent = connectedAttendees.length >= 2;
   const isFinalRound =
     liveState.session !== null && liveState.currentRound?.round_number === liveState.session.total_rounds;
   const currentUserProgressVote =
@@ -340,13 +513,13 @@ export default function LiveEventPage() {
                 type="button"
                 onClick={() =>
                   void handleAction(
-                    "join-session",
-                    async () => {
-                      if (liveState.canManageEvent) {
-                        await startEventSession(eventId, configuredRounds);
-                      }
-                      await joinEventSession(eventId);
-                    },
+                        "join-session",
+                        async () => {
+                          if (liveState.canManageEvent) {
+                        await startEventSession(eventId, configuredRounds, configuredBestOf);
+                          }
+                          await joinEventSession(eventId);
+                        },
                     liveState.canManageEvent ? "Started and joined the live event room." : "Joined the live event room.",
                   )
                 }
@@ -359,20 +532,37 @@ export default function LiveEventPage() {
           </div>
 
           {liveState.canManageEvent && (
-            <div className="mt-4 max-w-xs">
-              <label className="mb-2 block text-sm font-medium text-theme-foreground" htmlFor="prestart-rounds">
-                Initial total rounds
-              </label>
-              <input
-                id="prestart-rounds"
-                type="number"
-                min={1}
-                max={20}
-                value={configuredRounds}
-                onChange={(event) => setConfiguredRounds(Number(event.target.value))}
-                className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
-                style={{ borderColor: "var(--theme-border-soft)" }}
-              />
+            <div className="mt-4 grid max-w-md gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-theme-foreground" htmlFor="prestart-rounds">
+                  Initial total rounds
+                </label>
+                <input
+                  id="prestart-rounds"
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={configuredRounds}
+                  onChange={(event) => setConfiguredRounds(Number(event.target.value))}
+                  className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
+                  style={{ borderColor: "var(--theme-border-soft)" }}
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-theme-foreground" htmlFor="prestart-best-of">
+                  Match format
+                </label>
+                <select
+                  id="prestart-best-of"
+                  value={configuredBestOf}
+                  onChange={(event) => setConfiguredBestOf(normalizeLiveEventBestOf(Number(event.target.value)))}
+                  className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
+                  style={{ borderColor: "var(--theme-border-soft)" }}
+                >
+                  <option value={1}>Best of 1</option>
+                  <option value={3}>Best of 3</option>
+                </select>
+              </div>
             </div>
           )}
         </section>
@@ -385,42 +575,91 @@ export default function LiveEventPage() {
             connectedCount={connectedAttendees.length}
             canManageEvent={liveState.canManageEvent}
             pending={pendingAction === "save-rounds"}
+            stopTimerPending={pendingAction === "stop-timer"}
+            resetRoundPending={pendingAction === "reset-round"}
             configuredRounds={configuredRounds}
+            configuredBestOf={configuredBestOf}
             timerRemainingSeconds={timerRemainingSeconds}
             onConfiguredRoundsChange={setConfiguredRounds}
-            onSaveRounds={() =>
+            onConfiguredBestOfChange={setConfiguredBestOf}
+            onSaveSettings={() =>
               handleAction(
                 "save-rounds",
                 async () => {
-                  await configureEventSession(liveState.session!.session_id, configuredRounds);
+                  await configureEventSession(liveState.session!.session_id, configuredRounds, configuredBestOf);
                 },
-                "Updated total rounds.",
+                "Updated live event settings.",
               )
             }
+            onStopTimer={() =>
+              handleAction(
+                "stop-timer",
+                async () => {
+                  if (!liveState.currentRound) {
+                    throw new Error("There is no active round timer to stop.");
+                  }
+
+                  await stopEventRoundTimer(liveState.currentRound.round_id);
+                },
+                "Stopped the round timer.",
+              )
+            }
+            onResetRound={async () => {
+              if (!liveState.currentRound) {
+                setError("There is no active round to reset.");
+                return;
+              }
+
+              const shouldResetRound = window.confirm(
+                "Reset this round? This should clear the current round timer, votes, pairings, and reported results.",
+              );
+
+              if (!shouldResetRound) {
+                return;
+              }
+
+              await handleAction(
+                "reset-round",
+                async () => {
+                  await resetEventRound(liveState.currentRound!.round_id);
+                },
+                "Reset the current round.",
+              );
+            }}
           />
 
           {!hasJoinedSession ? (
             <section className="theme-card rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-theme-foreground">Join This Live Room</h2>
+              <h2 className="text-xl font-semibold text-theme-foreground">
+                {canJoin ? "Join This Live Room" : "Live Room Closed"}
+              </h2>
               <p className="mt-2 text-theme-muted">
-                The event session is already active. Join now to pick your deck and start tracking your rounds.
+                {canJoin
+                  ? "The event session is already active. Join now to pick your deck and start tracking your rounds."
+                  : "New entries close once round play begins, or 10 minutes after the scheduled event start if the room never starts."}
               </p>
-              <button
-                type="button"
-                onClick={() =>
-                  void handleAction(
-                    "join-active-session",
-                    async () => {
-                      await joinEventSession(eventId);
-                    },
-                    "Joined the live event room.",
-                  )
-                }
-                disabled={pendingAction === "join-active-session"}
-                className="theme-button mt-4 rounded-md px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                Join Active Room
-              </button>
+              {canJoin && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    void handleAction(
+                      "join-active-session",
+                      async () => {
+                        if (!isLiveEventAvailable(liveState.event, liveState.session)) {
+                          throw new Error("This live room is no longer accepting new attendees.");
+                        }
+
+                        await joinEventSession(eventId);
+                      },
+                      "Joined the live event room.",
+                    )
+                  }
+                  disabled={pendingAction === "join-active-session"}
+                  className="theme-button mt-4 rounded-md px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Join Active Room
+                </button>
+              )}
             </section>
           ) : (
             <>
@@ -510,6 +749,13 @@ export default function LiveEventPage() {
                     The shared timer is already running for this round, so pairings are locked. Wait for the current round to finish before joining the next one.
                   </p>
                 </section>
+              ) : !canStartEvent ? (
+                <section className="theme-card rounded-xl p-5">
+                  <h2 className="text-lg font-semibold text-theme-foreground">Waiting For Another Player</h2>
+                  <p className="mt-2 text-sm text-theme-muted">
+                    At least 2 connected attendees are required before the event can start. Keep the room open so late arrivals can join during the 10-minute grace window.
+                  </p>
+                </section>
               ) : !roundTimerStarted ? (
                 <>
                   <section className="theme-card rounded-xl p-5">
@@ -525,7 +771,8 @@ export default function LiveEventPage() {
                     currentUserId={liveState.currentUserId}
                     customMinutes={customTimerMinutes}
                     pending={pendingAction === "vote-timer"}
-                    onCustomMinutesChange={setCustomTimerMinutes}
+                    onCustomMinutesChange={handleCustomTimerMinutesChange}
+                    onCustomMinutesBlur={handleCustomTimerMinutesBlur}
                     onVote={(minutes) =>
                       handleAction(
                         "vote-timer",
@@ -533,6 +780,13 @@ export default function LiveEventPage() {
                           if (!liveState.currentRound) {
                             throw new Error("There is no active round to vote on.");
                           }
+                          if (connectedAttendees.length < 2) {
+                            throw new Error("At least 2 connected attendees are required before the event can start.");
+                          }
+                          if (!isValidTimerMinutes(minutes)) {
+                            throw new Error("Round timers must be whole minutes between 1 and 90.");
+                          }
+
                           await voteRoundTimer(liveState.currentRound.round_id, minutes);
                         },
                         "Submitted your timer vote.",
@@ -565,17 +819,12 @@ export default function LiveEventPage() {
                     currentMatch={liveState.currentUserMatch}
                     existingStat={existingStat}
                     opponentName={getOpponentName(liveState)}
+                    bestOf={matchBestOf}
                     pending={pendingAction === "report-result"}
                     onSubmit={(payload: MatchResultPayload) =>
                       handleAction(
                         "report-result",
-                        async () => {
-                          if (!liveState.currentUserMatch) {
-                            throw new Error("Select an opponent before reporting a result.");
-                          }
-
-                          await reportMatchResult(liveState.currentUserMatch.match_id, payload);
-                        },
+                        async () => handleReportMatchResult(payload),
                         "Saved your match report.",
                       )
                     }
@@ -603,18 +852,12 @@ export default function LiveEventPage() {
                       currentMatch={liveState.currentUserMatch}
                       existingStat={existingStat}
                       opponentName={getOpponentName(liveState)}
+                      bestOf={matchBestOf}
                       pending={pendingAction === "report-result"}
                       onSubmit={(payload: MatchResultPayload) =>
                         handleAction(
                           "report-result",
-                          async () => {
-                            if (!liveState.currentUserMatch) {
-                              throw new Error("Select an opponent before reporting a result.");
-                            }
-
-                            await reportMatchResult(liveState.currentUserMatch.match_id, payload);
-                            setIsEditingDisputedResult(false);
-                          },
+                          async () => handleReportMatchResult(payload, { closeDisputedEditor: true }),
                           "Updated your match report.",
                         )
                       }
