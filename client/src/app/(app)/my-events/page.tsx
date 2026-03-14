@@ -346,6 +346,13 @@ export default function EventsPage() {
       ),
     [currentTime, liveEventOverviews],
   );
+  const ongoingLiveEvents = useMemo(
+    () =>
+      liveEventOverviews.filter(
+        (overview) => overview.session?.status !== 'completed' && (overview.canJoin || overview.canReconnect),
+      ),
+    [liveEventOverviews],
+  );
   const activePromptEvent =
     liveReadyEvents.find((overview) => !dismissedLiveEventIds.includes(overview.event.event_id)) ?? null;
 
@@ -518,16 +525,16 @@ export default function EventsPage() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-theme" style={{ borderTopColor: "transparent" }}></div>
               <p className="mt-2 text-theme-muted">Loading your registrations...</p>
             </div>
-          ) : liveReadyEvents.length > 0 || registeredUpcomingEvents.length > 0 || registeredPastEvents.length > 0 ? (
+          ) : ongoingLiveEvents.length > 0 || registeredUpcomingEvents.length > 0 || registeredPastEvents.length > 0 ? (
             <>
-              {liveReadyEvents.length > 0 && (
+              {ongoingLiveEvents.length > 0 && (
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-medium text-theme-foreground mb-2">Live Right Now</h3>
-                    <p className="text-sm text-theme-muted">These registered events are ready for deck selection, round tracking, and live reporting.</p>
+                    <h3 className="text-lg font-medium text-theme-foreground mb-2">Ongoing Live Rooms</h3>
+                    <p className="text-sm text-theme-muted">Reconnect to any live event that has started and has not finished yet.</p>
                   </div>
                   <div className="grid gap-4">
-                    {liveReadyEvents.map((overview) => (
+                    {ongoingLiveEvents.map((overview) => (
                       <div
                         key={overview.event.event_id}
                         className="theme-card rounded-lg p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
@@ -536,7 +543,7 @@ export default function EventsPage() {
                           <div className="flex flex-wrap items-center gap-2">
                             <h4 className="text-lg font-semibold text-theme-foreground">{overview.event.name}</h4>
                             <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
-                              {overview.session?.status === 'active' ? 'Live now' : 'Ready to join'}
+                              {overview.session?.status === 'active' ? 'In progress' : 'Open'}
                             </span>
                           </div>
                           <p className="text-sm text-theme-muted">
@@ -546,11 +553,16 @@ export default function EventsPage() {
                               : 'Waiting for the first attendee to join'}
                           </p>
                         </div>
+                        <p className="text-sm text-theme-muted">
+                          {overview.canJoin
+                            ? 'Open the live room to join or reconnect.'
+                            : 'If you were already in the room, use connect to get back in.'}
+                        </p>
                         <Link
                           href={`/my-events/${overview.event.event_id}/live`}
                           className="theme-button inline-flex rounded-md px-4 py-2 text-sm"
                         >
-                          Enter Live Room
+                          Connect To Live Room
                         </Link>
                       </div>
                     ))}

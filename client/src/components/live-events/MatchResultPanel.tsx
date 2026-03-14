@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   deriveMatchResultFromScore,
   getGameCountOptions,
@@ -20,7 +20,9 @@ interface MatchResultPanelProps {
   existingStat: EventPlayerRoundStat | null;
   opponentName: string;
   bestOf: LiveEventBestOf;
+  suggestedRoundDurationMinutes?: number | null;
   pending: boolean;
+  locked?: boolean;
   onSubmit: (payload: MatchResultPayload) => void | Promise<void>;
 }
 
@@ -31,16 +33,17 @@ interface CountSelectorProps {
   value: number;
   options: number[];
   disabledOptions?: number[];
+  disabled?: boolean;
   onChange: (value: number) => void;
 }
 
-function CountSelector({ label, value, options, disabledOptions = [], onChange }: CountSelectorProps) {
+function CountSelector({ label, value, options, disabledOptions = [], disabled = false, onChange }: CountSelectorProps) {
   return (
     <div>
       <div className="mb-2 block text-sm font-medium text-theme-foreground">{label}</div>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => {
-          const isDisabled = disabledOptions.includes(option);
+          const isDisabled = disabled || disabledOptions.includes(option);
 
           return (
             <button
@@ -110,9 +113,12 @@ export default function MatchResultPanel({
   existingStat,
   opponentName,
   bestOf,
+  suggestedRoundDurationMinutes = null,
   pending,
+  locked = false,
   onSubmit,
 }: MatchResultPanelProps) {
+  const hydratedSignatureRef = useRef<string | null>(null);
   const [gamesWon, setGamesWon] = useState(0);
   const [gamesLost, setGamesLost] = useState(0);
   const [gamesTied, setGamesTied] = useState(0);
@@ -120,27 +126,48 @@ export default function MatchResultPanel({
   const [roundDurationMinutes, setRoundDurationMinutes] = useState("");
   const [opponentArchetype, setOpponentArchetype] = useState("");
   const [notes, setNotes] = useState("");
+  const [hasDraftChanges, setHasDraftChanges] = useState(false);
   const gameCountOptions = useMemo(() => getGameCountOptions(bestOf), [bestOf]);
+  const normalizedRoundDurationMinutes = useMemo(() => {
+    if (!roundDurationMinutes.trim()) {
+      return null;
+    }
+
+    const parsedValue = Number(roundDurationMinutes);
+    if (!Number.isInteger(parsedValue) || parsedValue < 1 || parsedValue > 180) {
+      return null;
+    }
+
+    return parsedValue;
+  }, [roundDurationMinutes]);
   const derivedRoundResult = useMemo<LiveEventResult>(
     () => deriveMatchResultFromScore({ gamesWon, gamesLost }),
     [gamesLost, gamesWon],
   );
+  const hydrationSignature = `${currentMatch?.match_id ?? "none"}:${existingStat?.reported_at ?? "new"}:${existingStat?.user_id ?? "none"}`;
 
   useEffect(() => {
-    if (existingStat) {
+    if (existingStat || hasDraftChanges || hydratedSignatureRef.current === hydrationSignature) {
       return;
     }
 
+    hydratedSignatureRef.current = hydrationSignature;
     setGamesWon(0);
     setGamesLost(0);
     setGamesTied(0);
-  }, [bestOf, existingStat]);
+    setWentFirst("");
+    setRoundDurationMinutes(suggestedRoundDurationMinutes ? String(suggestedRoundDurationMinutes) : "");
+    setOpponentArchetype("");
+    setNotes("");
+    setHasDraftChanges(false);
+  }, [existingStat, hasDraftChanges, hydrationSignature, suggestedRoundDurationMinutes]);
 
   useEffect(() => {
-    if (!existingStat) {
+    if (!existingStat || hydratedSignatureRef.current === hydrationSignature) {
       return;
     }
 
+    hydratedSignatureRef.current = hydrationSignature;
     setGamesWon(existingStat.games_won);
     setGamesLost(existingStat.games_lost);
     setGamesTied(existingStat.games_tied);
@@ -148,7 +175,16 @@ export default function MatchResultPanel({
     setRoundDurationMinutes(existingStat.round_duration_minutes ? String(existingStat.round_duration_minutes) : "");
     setOpponentArchetype(existingStat.opponent_archetype ?? "");
     setNotes(existingStat.notes ?? "");
-  }, [existingStat]);
+    setHasDraftChanges(false);
+  }, [existingStat, hydrationSignature]);
+
+  useEffect(() => {
+    if (existingStat || suggestedRoundDurationMinutes === null || hasDraftChanges) {
+      return;
+    }
+
+    setRoundDurationMinutes((previousValue) => (previousValue ? previousValue : String(suggestedRoundDurationMinutes)));
+  }, [existingStat, hasDraftChanges, suggestedRoundDurationMinutes]);
 
   const handleScoreChange = (field: ScoreField, value: number) => {
     const normalizedScore = normalizeScoreSelection(
@@ -161,6 +197,7 @@ export default function MatchResultPanel({
     setGamesWon(normalizedScore.gamesWon);
     setGamesLost(normalizedScore.gamesLost);
     setGamesTied(normalizedScore.gamesTied);
+    setHasDraftChanges(true);
   };
 
   const submissionPayload = useMemo<MatchResultPayload>(
@@ -170,17 +207,18 @@ export default function MatchResultPanel({
       gamesLost,
       gamesTied,
       wentFirst: wentFirst === "" ? null : wentFirst === "yes",
-      roundDurationMinutes: roundDurationMinutes ? Number(roundDurationMinutes) : null,
+      roundDurationMinutes: normalizedRoundDurationMinutes,
       opponentArchetype,
       notes,
     }),
-    [derivedRoundResult, gamesLost, gamesTied, gamesWon, notes, opponentArchetype, roundDurationMinutes, wentFirst],
+    [derivedRoundResult, gamesLost, gamesTied, gamesWon, normalizedRoundDurationMinutes, notes, opponentArchetype, wentFirst],
   );
 
   const validationMessage = useMemo(
     () => validateMatchResultPayload(submissionPayload, bestOf),
     [bestOf, submissionPayload],
   );
+  const isFormLocked = pending || locked;
 
   if (!currentMatch) {
     return (
@@ -212,6 +250,11 @@ export default function MatchResultPanel({
           In best of 1, selecting a `1` forces the other scores to `0`. In best of 3, selecting `2` wins or losses
           closes out the match immediately. Leaving everything at `0` records the round as a tie.
         </p>
+        {locked && (
+          <p className="text-xs font-medium text-theme-muted">
+            This event is complete. Match reporting is locked.
+          </p>
+        )}
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -225,9 +268,27 @@ export default function MatchResultPanel({
             min={1}
             max={180}
             value={roundDurationMinutes}
-            onChange={(event) => setRoundDurationMinutes(event.target.value)}
+            onChange={(event) => {
+              setRoundDurationMinutes(event.target.value);
+              setHasDraftChanges(true);
+            }}
+            onBlur={() => {
+              if (!roundDurationMinutes.trim()) {
+                setRoundDurationMinutes("");
+                return;
+              }
+
+              const parsedValue = Number(roundDurationMinutes);
+              if (!Number.isInteger(parsedValue) || parsedValue < 1 || parsedValue > 180) {
+                setRoundDurationMinutes("");
+                return;
+              }
+
+              setRoundDurationMinutes(String(parsedValue));
+            }}
             className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
             style={{ borderColor: "var(--theme-border-soft)" }}
+            disabled={isFormLocked}
           />
         </div>
 
@@ -236,21 +297,33 @@ export default function MatchResultPanel({
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => setWentFirst("")}
+              onClick={() => {
+                setWentFirst("");
+                setHasDraftChanges(true);
+              }}
+              disabled={isFormLocked}
               className={`${wentFirst === "" ? "theme-button" : "theme-button-ghost"} rounded-md px-3 py-2 text-sm`}
             >
               Don't Remember
             </button>
             <button
               type="button"
-              onClick={() => setWentFirst("yes")}
+              onClick={() => {
+                setWentFirst("yes");
+                setHasDraftChanges(true);
+              }}
+              disabled={isFormLocked}
               className={`${wentFirst === "yes" ? "theme-button" : "theme-button-ghost"} rounded-md px-3 py-2 text-sm`}
             >
               Yes
             </button>
             <button
               type="button"
-              onClick={() => setWentFirst("no")}
+              onClick={() => {
+                setWentFirst("no");
+                setHasDraftChanges(true);
+              }}
+              disabled={isFormLocked}
               className={`${wentFirst === "no" ? "theme-button" : "theme-button-ghost"} rounded-md px-3 py-2 text-sm`}
             >
               No
@@ -263,22 +336,43 @@ export default function MatchResultPanel({
             label="Games won"
             value={gamesWon}
             options={gameCountOptions}
+            disabled={isFormLocked}
             disabledOptions={bestOf === 1 ? [2] : []}
-            onChange={(value) => handleScoreChange("gamesWon", value)}
+            onChange={(value) => {
+              if (isFormLocked) {
+                return;
+              }
+
+              handleScoreChange("gamesWon", value);
+            }}
           />
           <CountSelector
             label="Games lost"
             value={gamesLost}
             options={gameCountOptions}
+            disabled={isFormLocked}
             disabledOptions={bestOf === 1 ? [2] : []}
-            onChange={(value) => handleScoreChange("gamesLost", value)}
+            onChange={(value) => {
+              if (isFormLocked) {
+                return;
+              }
+
+              handleScoreChange("gamesLost", value);
+            }}
           />
           <CountSelector
             label="Games tied"
             value={gamesTied}
             options={gameCountOptions}
+            disabled={isFormLocked}
             disabledOptions={bestOf === 1 ? [2] : []}
-            onChange={(value) => handleScoreChange("gamesTied", value)}
+            onChange={(value) => {
+              if (isFormLocked) {
+                return;
+              }
+
+              handleScoreChange("gamesTied", value);
+            }}
           />
         </div>
 
@@ -290,10 +384,14 @@ export default function MatchResultPanel({
             id="opponent-archetype"
             type="text"
             value={opponentArchetype}
-            onChange={(event) => setOpponentArchetype(event.target.value)}
+            onChange={(event) => {
+              setOpponentArchetype(event.target.value);
+              setHasDraftChanges(true);
+            }}
             placeholder="Example: Dragapult"
             className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
             style={{ borderColor: "var(--theme-border-soft)" }}
+            disabled={isFormLocked}
           />
         </div>
 
@@ -305,23 +403,27 @@ export default function MatchResultPanel({
             id="round-notes"
             rows={4}
             value={notes}
-            onChange={(event) => setNotes(event.target.value)}
+            onChange={(event) => {
+              setNotes(event.target.value);
+              setHasDraftChanges(true);
+            }}
             placeholder="Key observations, matchup notes, or anything useful to revisit later."
             className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
             style={{ borderColor: "var(--theme-border-soft)" }}
+            disabled={isFormLocked}
           />
         </div>
       </div>
 
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-red-600">{validationMessage ?? ""}</div>
+        <div className="text-sm text-red-600">{locked ? "" : validationMessage ?? ""}</div>
         <button
           type="button"
           onClick={() => void onSubmit(submissionPayload)}
-          disabled={pending || validationMessage !== null}
+          disabled={isFormLocked || validationMessage !== null}
           className="theme-button rounded-md px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {existingStat ? "Update Result" : "Report Result"}
+          {locked ? "Reporting Locked" : existingStat ? "Update Result" : "Report Result"}
         </button>
       </div>
     </section>

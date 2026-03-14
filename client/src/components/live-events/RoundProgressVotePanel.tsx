@@ -4,27 +4,32 @@ import type { EventRoundProgressVote, LiveEventProgressAction } from "@/types/li
 
 interface RoundProgressVotePanelProps {
   progressVotes: EventRoundProgressVote[];
-  connectedCount: number;
   currentUserId: string;
   isFinalRound: boolean;
   pending: boolean;
+  dropPending: boolean;
+  canDrop: boolean;
+  requiredPairVotes: number;
+  advancePairVotes: number;
+  finishPairVotes: number;
   onVote: (action: LiveEventProgressAction) => void | Promise<void>;
-}
-
-function countVotes(progressVotes: EventRoundProgressVote[], action: LiveEventProgressAction) {
-  return progressVotes.filter((vote) => vote.action === action).length;
+  onDrop: () => void | Promise<void>;
 }
 
 export default function RoundProgressVotePanel({
   progressVotes,
-  connectedCount,
   currentUserId,
   isFinalRound,
   pending,
+  dropPending,
+  canDrop,
+  requiredPairVotes,
+  advancePairVotes,
+  finishPairVotes,
   onVote,
+  onDrop,
 }: RoundProgressVotePanelProps) {
   const currentUserVote = progressVotes.find((vote) => vote.user_id === currentUserId)?.action ?? null;
-  const majorityRequired = Math.floor(connectedCount / 2) + 1;
 
   return (
     <section className="theme-card rounded-xl p-5">
@@ -33,10 +38,10 @@ export default function RoundProgressVotePanel({
           {isFinalRound ? "Finish Event Vote" : "Next Round Vote"}
         </h2>
         <p className="text-sm text-theme-muted">
-          Once results are in, connected attendees vote together to continue the event flow.
+          Once results are in, each active finished pairing gets one counted vote to continue the event flow.
         </p>
         <p className="text-sm text-theme-muted">
-          Majority needed: <span className="font-medium text-theme-foreground">{majorityRequired}</span>
+          Pair votes needed: <span className="font-medium text-theme-foreground">{requiredPairVotes}</span>
         </p>
       </div>
 
@@ -48,7 +53,7 @@ export default function RoundProgressVotePanel({
             disabled={pending}
             className={`${currentUserVote === "advance" ? "theme-button" : "theme-button-ghost"} rounded-md px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed`}
           >
-            Advance Round ({countVotes(progressVotes, "advance")})
+            Advance Round ({advancePairVotes})
           </button>
         )}
 
@@ -58,7 +63,16 @@ export default function RoundProgressVotePanel({
           disabled={pending || !isFinalRound}
           className={`${currentUserVote === "finish" ? "theme-button" : "theme-button-ghost"} rounded-md px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed`}
         >
-          Finish Event ({countVotes(progressVotes, "finish")})
+          Finish Event ({finishPairVotes})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => void onDrop()}
+          disabled={!canDrop || dropPending}
+          className="theme-button-ghost rounded-md px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {dropPending ? "Dropping..." : "Drop After Round"}
         </button>
       </div>
     </section>

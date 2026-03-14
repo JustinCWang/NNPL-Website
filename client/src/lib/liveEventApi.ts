@@ -10,6 +10,7 @@ import { getSupabaseClient } from "@/lib/supabaseClient";
 import type { Event } from "@/types/event";
 import type {
   DeckSelectionOption,
+  EventMatchFinishSignal,
   EventPlayerRoundStat,
   EventRoundProgressVote,
   EventPlayerSummary,
@@ -27,6 +28,7 @@ import type {
 } from "@/types/liveEvent";
 
 const LIVE_EVENT_JOIN_GRACE_MS = 10 * 60 * 1000;
+const LIVE_EVENT_TURNS_MS = 15 * 60 * 1000;
 
 async function getAuthenticatedUser() {
   const supabase = getSupabaseClient();
@@ -71,8 +73,12 @@ export function isLiveEventAvailable(event: Event, session: EventSession | null)
   const joinClosesAt = startTime + LIVE_EVENT_JOIN_GRACE_MS;
   const now = Date.now();
 
+  if (now < startTime) {
+    return false;
+  }
+
   if (!session) {
-    return now >= startTime && now <= joinClosesAt;
+    return now <= joinClosesAt;
   }
 
   const sessionHasStarted = !["not_started", "voting"].includes(session.timer_status);
@@ -97,6 +103,28 @@ export function isRoundTimerExpired(round: EventSessionRound | null): boolean {
   return remaining !== null && remaining <= 0;
 }
 
+export function getRoundTurnsRemainingSeconds(round: EventSessionRound | null): number | null {
+  if (!round?.timer_expires_at) {
+    return null;
+  }
+
+  const turnsDeadlineMs = new Date(round.timer_expires_at).getTime() + LIVE_EVENT_TURNS_MS;
+  const remainingMs = turnsDeadlineMs - Date.now();
+  return Math.max(0, Math.ceil(remainingMs / 1000));
+}
+
+export function isRoundInTurns(round: EventSessionRound | null): boolean {
+  if (!round?.timer_expires_at) {
+    return false;
+  }
+
+  return isRoundTimerExpired(round) && getRoundTurnsRemainingSeconds(round) !== 0;
+}
+
+export function haveRoundTurnsExpired(round: EventSessionRound | null): boolean {
+  return !!round?.timer_expires_at && getRoundTurnsRemainingSeconds(round) === 0;
+}
+
 export async function fetchDeckSelectionOptions(): Promise<DeckSelectionOption[]> {
   return fetchMyDecklists();
 }
@@ -107,6 +135,7 @@ export async function fetchLiveEventOverviews(eventIds: string[]): Promise<LiveE
   }
 
   const supabase = getSupabaseClient();
+  const user = await getAuthenticatedUser();
 
   const [{ data: eventsData, error: eventsError }, { data: sessionsData, error: sessionsError }] = await Promise.all([
     supabase
@@ -130,9 +159,28 @@ export async function fetchLiveEventOverviews(eventIds: string[]): Promise<LiveE
     throw sessionsError;
   }
 
-  const sessionsByEventId = new Map<string, EventSession>(
-    ((sessionsData ?? []) as EventSession[]).map((session) => [session.event_id, session]),
-  );
+  const sessions = (sessionsData ?? []) as EventSession[];
+  const sessionIds = sessions.map((session) => session.session_id);
+  let reconnectableSessionIds = new Set<string>();
+
+  if (sessionIds.length > 0) {
+    const { data: attendeeData, error: attendeeError } = await supabase
+      .from("EventSessionAttendees")
+      .select("session_id, dropped_at")
+      .in("session_id", sessionIds)
+      .eq("user_id", user.id)
+      .is("dropped_at", null);
+
+    if (attendeeError) {
+      throw attendeeError;
+    }
+
+    reconnectableSessionIds = new Set(
+      (attendeeData ?? []).map((attendee) => attendee.session_id as string),
+    );
+  }
+
+  const sessionsByEventId = new Map<string, EventSession>(sessions.map((session) => [session.event_id, session]));
 
   return ((eventsData ?? []) as Event[]).map((event) => {
     const session = sessionsByEventId.get(event.event_id) ?? null;
@@ -142,6 +190,7 @@ export async function fetchLiveEventOverviews(eventIds: string[]): Promise<LiveE
       isLive: isSessionLive(session),
       isCompleted: session?.status === "completed",
       canJoin: isLiveEventAvailable(event, session),
+      canReconnect: !!session && session.status !== "completed" && reconnectableSessionIds.has(session.session_id),
     };
   });
 }
@@ -196,6 +245,7 @@ export async function fetchLiveEventState(eventId: string): Promise<LiveEventSta
       votes: [],
       progressVotes: [],
       matches: [],
+      finishSignals: [],
       currentUserStats: [],
       summary: null,
       currentRound: null,
@@ -243,6 +293,7 @@ export async function fetchLiveEventState(eventId: string): Promise<LiveEventSta
   let votes: EventRoundTimerVote[] = [];
   let progressVotes: EventRoundProgressVote[] = [];
   let matches: EventRoundMatch[] = [];
+  let finishSignals: EventMatchFinishSignal[] = [];
   let currentUserStats: EventPlayerRoundStat[] = [];
 
   if (currentRound) {
@@ -284,18 +335,29 @@ export async function fetchLiveEventState(eventId: string): Promise<LiveEventSta
 
     const matchIds = matches.map((match) => match.match_id);
     if (matchIds.length > 0) {
-      const statsResponse = await supabase
-        .from("EventPlayerRoundStats")
-        .select("*")
-        .in("match_id", matchIds)
-        .eq("user_id", user.id)
-        .order("reported_at", { ascending: true });
+      const [statsResponse, finishSignalsResponse] = await Promise.all([
+        supabase
+          .from("EventPlayerRoundStats")
+          .select("*")
+          .in("match_id", matchIds)
+          .eq("user_id", user.id)
+          .order("reported_at", { ascending: true }),
+        supabase
+          .from("EventMatchFinishSignals")
+          .select("*")
+          .in("match_id", matchIds),
+      ]);
 
       if (statsResponse.error) {
         throw statsResponse.error;
       }
 
+      if (finishSignalsResponse.error) {
+        throw finishSignalsResponse.error;
+      }
+
       currentUserStats = (statsResponse.data ?? []) as EventPlayerRoundStat[];
+      finishSignals = (finishSignalsResponse.data ?? []) as EventMatchFinishSignal[];
     }
   }
 
@@ -318,6 +380,7 @@ export async function fetchLiveEventState(eventId: string): Promise<LiveEventSta
     votes,
     progressVotes,
     matches,
+    finishSignals,
     currentUserStats,
     summary: (summaryResponse.data as EventPlayerSummary | null) ?? null,
     currentRound,
@@ -424,7 +487,7 @@ export async function startEventSession(eventId: string, totalRounds: number, be
 
 export async function joinEventSession(eventId: string): Promise<string> {
   const supabase = getSupabaseClient();
-  const { data, error } = await supabase.rpc("join_event_session", {
+  const { data, error } = await supabase.rpc("join_event_session_checked", {
     p_event_id: eventId,
   });
 
@@ -573,6 +636,30 @@ export async function reportMatchResult(matchId: string, payload: MatchResultPay
   return data as string;
 }
 
+export async function markMatchFinished(matchId: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase.rpc("mark_event_match_finished", {
+    p_match_id: matchId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return Boolean(data);
+}
+
+export async function dropEventSessionAttendee(sessionId: string): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase.rpc("drop_event_session_attendee", {
+    p_session_id: sessionId,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
 export async function voteRoundProgress(
   sessionId: string,
   action: LiveEventProgressAction,
@@ -591,6 +678,7 @@ export async function voteRoundProgress(
 export function subscribeToLiveEvent(
   sessionId: string,
   currentRoundId: string | null,
+  currentRoundMatchIds: string[],
   currentUserId: string,
   onRefresh: () => void,
 ) {
@@ -648,6 +736,15 @@ export function subscribeToLiveEvent(
       table: "EventRoundMatches",
       filter: `round_id=eq.${currentRoundId}`,
     }, onRefresh);
+
+    currentRoundMatchIds.forEach((matchId) => {
+      channel.on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "EventMatchFinishSignals",
+        filter: `match_id=eq.${matchId}`,
+      }, onRefresh);
+    });
   }
 
   channel.subscribe();

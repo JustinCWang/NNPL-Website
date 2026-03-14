@@ -15,13 +15,18 @@ import { normalizeLiveEventBestOf, validateMatchResultPayload } from "@/lib/live
 import {
   configureEventSession,
   createOrUpdateMatch,
+  dropEventSessionAttendee,
   fetchDeckSelectionOptions,
   fetchLiveEventState,
+  getRoundTurnsRemainingSeconds,
   heartbeatEventSession,
+  haveRoundTurnsExpired,
   isLiveEventAvailable,
+  isRoundInTurns,
   isRoundTimerExpired,
   joinEventSession,
   leaveEventSession,
+  markMatchFinished,
   reportMatchResult,
   resetEventRound,
   selectEventDeck,
@@ -147,6 +152,7 @@ export default function LiveEventPage() {
   const params = useParams<{ eventId: string }>();
   const eventId = Array.isArray(params?.eventId) ? params.eventId[0] : params?.eventId;
   const refreshTimeoutRef = useRef<number | null>(null);
+  const reconnectAttemptedSessionRef = useRef<string | null>(null);
 
   const [liveState, setLiveState] = useState<LiveEventState | null>(null);
   const [decks, setDecks] = useState<DeckSelectionOption[]>([]);
@@ -160,6 +166,7 @@ export default function LiveEventPage() {
   const [hasCustomTimerDraft, setHasCustomTimerDraft] = useState(false);
   const [configuredRounds, setConfiguredRounds] = useState(4);
   const [configuredBestOf, setConfiguredBestOf] = useState<LiveEventBestOf>(3);
+  const [hasSessionSettingsDraft, setHasSessionSettingsDraft] = useState(false);
   const [nowMs, setNowMs] = useState(Date.now());
   const [isEditingDisputedResult, setIsEditingDisputedResult] = useState(false);
 
@@ -174,8 +181,6 @@ export default function LiveEventPage() {
       }
       const state = await fetchLiveEventState(eventId);
       setLiveState(state);
-      setConfiguredRounds(state.session?.total_rounds ?? 4);
-      setConfiguredBestOf(normalizeLiveEventBestOf(state.session?.best_of ?? 3));
     } catch (loadError) {
       console.error("Error loading live event:", loadError);
       setError("Failed to load the live event room. Please try again.");
@@ -221,18 +226,27 @@ export default function LiveEventPage() {
   }, []);
 
   useEffect(() => {
-    if (!liveState?.session || !liveState.currentUserAttendee) {
+    if (!liveState?.session || !liveState.currentUserAttendee || liveState.currentUserAttendee.dropped_at) {
       return;
     }
+
+    const currentRoundMatchIds = liveState.matches
+      .filter((match) => match.round_id === liveState.currentRound?.round_id)
+      .map((match) => match.match_id);
 
     const unsubscribe = subscribeToLiveEvent(
       liveState.session.session_id,
       liveState.currentRound?.round_id ?? null,
+      currentRoundMatchIds,
       liveState.currentUserId,
       () => {
         scheduleSilentRefresh();
       },
     );
+
+    void heartbeatEventSession(liveState.session.session_id).catch((heartbeatError) => {
+      console.error("Initial heartbeat failed:", heartbeatError);
+    });
 
     const heartbeatId = window.setInterval(() => {
       void heartbeatEventSession(liveState.session!.session_id).catch((heartbeatError) => {
@@ -256,6 +270,35 @@ export default function LiveEventPage() {
   }, [liveState, scheduleSilentRefresh]);
 
   useEffect(() => {
+    if (!liveState?.session || liveState.session.status === "completed") {
+      return;
+    }
+
+    const pollId = window.setInterval(() => {
+      void loadState(false);
+    }, 5000);
+
+    const handleVisibilityRefresh = () => {
+      if (document.visibilityState === "visible") {
+        void loadState(false);
+      }
+    };
+
+    const handleWindowFocus = () => {
+      void loadState(false);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityRefresh);
+    window.addEventListener("focus", handleWindowFocus);
+
+    return () => {
+      window.clearInterval(pollId);
+      document.removeEventListener("visibilitychange", handleVisibilityRefresh);
+      window.removeEventListener("focus", handleWindowFocus);
+    };
+  }, [liveState?.session, loadState]);
+
+  useEffect(() => {
     return () => {
       if (refreshTimeoutRef.current !== null) {
         window.clearTimeout(refreshTimeoutRef.current);
@@ -276,9 +319,15 @@ export default function LiveEventPage() {
     return () => window.clearTimeout(timeout);
   }, [error, notice]);
 
-  const connectedAttendees = useMemo(
-    () => liveState?.attendees.filter((attendee) => isConnected(attendee.last_seen_at, attendee.is_connected)) ?? [],
+  const activeAttendees = useMemo(
+    () => liveState?.attendees.filter((attendee) => !attendee.dropped_at) ?? [],
     [liveState],
+  );
+  const activeAttendeeIds = useMemo(() => new Set(activeAttendees.map((attendee) => attendee.user_id)), [activeAttendees]);
+
+  const connectedAttendees = useMemo(
+    () => activeAttendees.filter((attendee) => isConnected(attendee.last_seen_at, attendee.is_connected)),
+    [activeAttendees],
   );
 
   const existingStat = useMemo<EventPlayerRoundStat | null>(() => {
@@ -297,18 +346,110 @@ export default function LiveEventPage() {
     const remaining = Math.ceil((new Date(liveState.currentRound.timer_expires_at).getTime() - nowMs) / 1000);
     return Math.max(0, remaining);
   }, [liveState?.currentRound?.timer_expires_at, nowMs]);
+  const turnsRemainingSeconds = useMemo(
+    () => getRoundTurnsRemainingSeconds(liveState?.currentRound ?? null),
+    [liveState?.currentRound, nowMs],
+  );
 
   const isCurrentMatchDisputed = liveState?.currentUserMatch?.result_status === "disputed";
+  const isCurrentUserDropped = !!liveState?.currentUserAttendee?.dropped_at;
+  const isCurrentUserConnected = liveState?.currentUserAttendee
+    ? isConnected(liveState.currentUserAttendee.last_seen_at, liveState.currentUserAttendee.is_connected)
+    : false;
   const matchBestOf = useMemo(
     () => normalizeLiveEventBestOf(liveState?.session?.best_of ?? configuredBestOf),
     [configuredBestOf, liveState?.session?.best_of],
   );
+  const currentRoundMatches = useMemo(
+    () => liveState?.matches.filter((match) => match.round_id === liveState.currentRound?.round_id) ?? [],
+    [liveState],
+  );
+  const currentMatchFinishSignals = useMemo(
+    () => liveState?.finishSignals.filter((signal) => signal.match_id === liveState.currentUserMatch?.match_id) ?? [],
+    [liveState],
+  );
+  const currentUserFinishSignal =
+    currentMatchFinishSignals.find((signal) => signal.user_id === liveState?.currentUserId) ?? null;
+  const opponentFinishSignal =
+    currentMatchFinishSignals.find((signal) => signal.user_id !== liveState?.currentUserId) ?? null;
+  const isCurrentMatchFinishedByBoth = Boolean(liveState?.currentUserMatch?.pair_finished_at);
+  const suggestedRoundDurationMinutes = liveState?.currentUserMatch?.pair_finished_duration_minutes ?? null;
+  const roundInTurns = isRoundInTurns(liveState?.currentRound ?? null);
+  const roundTurnsExpired = haveRoundTurnsExpired(liveState?.currentRound ?? null);
   const currentUserTimerVote =
     liveState?.votes.find((vote) => vote.user_id === liveState.currentUserId)?.requested_minutes ?? null;
   const leadingCustomTimerMinutes = useMemo(
     () => (liveState ? getLeadingCustomTimerMinutes(liveState.votes, liveState.currentUserId) : null),
     [liveState],
   );
+  const finishedRoundParticipantIds = useMemo(() => {
+    const participantIds = new Set<string>();
+
+    for (const match of currentRoundMatches) {
+      if (!["confirmed", "unverified"].includes(match.result_status)) {
+        continue;
+      }
+
+      participantIds.add(match.player_user_id);
+      if (match.opponent_user_id) {
+        participantIds.add(match.opponent_user_id);
+      }
+    }
+
+    return participantIds;
+  }, [currentRoundMatches]);
+  const activeSettledRoundMatches = useMemo(
+    () =>
+      currentRoundMatches.filter(
+        (match) =>
+          ["confirmed", "unverified"].includes(match.result_status) &&
+          (activeAttendeeIds.has(match.player_user_id) ||
+            (match.opponent_user_id !== null && activeAttendeeIds.has(match.opponent_user_id))),
+      ),
+    [activeAttendeeIds, currentRoundMatches],
+  );
+  const pairVotesByAction = useMemo(() => {
+    const activeVotes = new Map(
+      liveState?.progressVotes
+        .filter((vote) => activeAttendeeIds.has(vote.user_id))
+        .map((vote) => [vote.user_id, vote.action]) ?? [],
+    );
+
+    let advance = 0;
+    let finish = 0;
+
+    for (const match of activeSettledRoundMatches) {
+      const pairActions = new Set(
+        [
+        activeVotes.get(match.player_user_id),
+        match.opponent_user_id ? activeVotes.get(match.opponent_user_id) : null,
+        ].filter((action): action is LiveEventProgressAction => action !== null),
+      );
+
+      if (pairActions.size !== 1) {
+        continue;
+      }
+
+      if (pairActions.has("advance")) {
+        advance += 1;
+      }
+
+      if (pairActions.has("finish")) {
+        finish += 1;
+      }
+    }
+
+    return { advance, finish };
+  }, [activeAttendeeIds, activeSettledRoundMatches, liveState?.progressVotes]);
+
+  useEffect(() => {
+    if (hasSessionSettingsDraft) {
+      return;
+    }
+
+    setConfiguredRounds(liveState?.session?.total_rounds ?? 4);
+    setConfiguredBestOf(normalizeLiveEventBestOf(liveState?.session?.best_of ?? 3));
+  }, [hasSessionSettingsDraft, liveState?.session?.best_of, liveState?.session?.total_rounds]);
 
   useEffect(() => {
     if (!liveState) {
@@ -334,7 +475,32 @@ export default function LiveEventPage() {
   }, [isCurrentMatchDisputed]);
 
   useEffect(() => {
-    if (!liveState?.currentRound || !isRoundTimerExpired(liveState.currentRound)) {
+    if (!eventId || !liveState?.session || !liveState.currentUserAttendee || liveState.currentUserAttendee.dropped_at) {
+      return;
+    }
+
+    if (liveState.session.status === "completed" || isCurrentUserConnected) {
+      reconnectAttemptedSessionRef.current = null;
+      return;
+    }
+
+    if (reconnectAttemptedSessionRef.current === liveState.session.session_id) {
+      return;
+    }
+
+    reconnectAttemptedSessionRef.current = liveState.session.session_id;
+
+    void joinEventSession(eventId)
+      .then(() => loadState(false))
+      .catch((reconnectError) => {
+        console.error("Error reconnecting to live event:", reconnectError);
+        setError(getActionErrorMessage(reconnectError));
+        reconnectAttemptedSessionRef.current = null;
+      });
+  }, [eventId, isCurrentUserConnected, liveState, loadState]);
+
+  useEffect(() => {
+    if (!liveState?.currentRound || !haveRoundTurnsExpired(liveState.currentRound)) {
       return;
     }
 
@@ -387,6 +553,18 @@ export default function LiveEventPage() {
     setHasCustomTimerDraft(true);
   }, []);
 
+  const handleConfiguredRoundsChange = useCallback((value: number) => {
+    const nextValue = Number.isInteger(value) ? value : 4;
+    const minRounds = liveState?.session?.current_round ?? 1;
+    setConfiguredRounds(Math.min(20, Math.max(minRounds, nextValue)));
+    setHasSessionSettingsDraft(true);
+  }, [liveState?.session?.current_round]);
+
+  const handleConfiguredBestOfChange = useCallback((value: LiveEventBestOf) => {
+    setConfiguredBestOf(normalizeLiveEventBestOf(value));
+    setHasSessionSettingsDraft(true);
+  }, []);
+
   const handleCustomTimerMinutesBlur = useCallback(() => {
     if (customTimerMinutes === "") {
       setCustomTimerMinutes(String(leadingCustomTimerMinutes ?? 45));
@@ -425,6 +603,29 @@ export default function LiveEventPage() {
     [liveState, matchBestOf],
   );
 
+  const handleMarkCurrentMatchFinished = useCallback(async () => {
+    if (!liveState?.currentUserMatch) {
+      throw new Error("There is no active match to mark finished.");
+    }
+
+    if (liveState.currentUserMatch.source_type !== "app_user" || !liveState.currentUserMatch.opponent_user_id) {
+      throw new Error("Finish confirmation is only available for app-vs-app matches.");
+    }
+
+    await markMatchFinished(liveState.currentUserMatch.match_id);
+  }, [liveState]);
+
+  const handleDropFromEvent = useCallback(async () => {
+    if (!liveState?.session) {
+      throw new Error("There is no active session to drop from.");
+    }
+
+    await dropEventSessionAttendee(liveState.session.session_id);
+    await leaveEventSession(liveState.session.session_id).catch(() => {
+      // Ignore best-effort disconnect errors after the attendee is dropped.
+    });
+  }, [liveState]);
+
   if (!eventId) {
     return (
       <main className="py-16 text-center">
@@ -454,6 +655,12 @@ export default function LiveEventPage() {
   }
 
   const canJoin = isLiveEventAvailable(liveState.event, liveState.session);
+  const canReconnectToOngoingSession = Boolean(
+    liveState.session &&
+      liveState.session.status !== "completed" &&
+      liveState.currentUserAttendee &&
+      !liveState.currentUserAttendee.dropped_at,
+  );
   const hasJoinedSession = !!liveState.currentUserAttendee;
   const selectedDeckId = liveState.currentUserAttendee?.selected_deck_id ?? null;
   const isSessionLocked = liveState.session?.status === "completed";
@@ -467,9 +674,19 @@ export default function LiveEventPage() {
     liveState.session !== null && liveState.currentRound?.round_number === liveState.session.total_rounds;
   const currentUserProgressVote =
     liveState.progressVotes.find((vote) => vote.user_id === liveState.currentUserId)?.action ?? null;
-  const roundResultsSettled = liveState.matches
-    .filter((match) => match.round_id === liveState.currentRound?.round_id)
-    .every((match) => ["confirmed", "unverified"].includes(match.result_status));
+  const canSignalCurrentMatchFinished =
+    !!liveState.currentUserMatch &&
+    liveState.currentUserMatch.source_type === "app_user" &&
+    !!liveState.currentUserMatch.opponent_user_id &&
+    roundTimerStarted &&
+    !isCurrentMatchFinishedByBoth &&
+    !hasSubmittedResult &&
+    !isCurrentUserDropped;
+  const canReportResult = roundTurnsExpired || isCurrentMatchFinishedByBoth;
+  const roundResultsSettled = currentRoundMatches.every((match) => ["confirmed", "unverified"].includes(match.result_status));
+  const allActiveAttendeesFinishedRound = activeAttendees.every((attendee) => finishedRoundParticipantIds.has(attendee.user_id));
+  const canOpenProgressVoting = roundResultsSettled && allActiveAttendeesFinishedRound;
+  const requiredPairVotes = activeSettledRoundMatches.length;
 
   return (
     <main className="space-y-6">
@@ -516,7 +733,8 @@ export default function LiveEventPage() {
                         "join-session",
                         async () => {
                           if (liveState.canManageEvent) {
-                        await startEventSession(eventId, configuredRounds, configuredBestOf);
+                            await startEventSession(eventId, configuredRounds, configuredBestOf);
+                            setHasSessionSettingsDraft(false);
                           }
                           await joinEventSession(eventId);
                         },
@@ -543,7 +761,7 @@ export default function LiveEventPage() {
                   min={1}
                   max={20}
                   value={configuredRounds}
-                  onChange={(event) => setConfiguredRounds(Number(event.target.value))}
+                  onChange={(event) => handleConfiguredRoundsChange(Number(event.target.value))}
                   className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
                   style={{ borderColor: "var(--theme-border-soft)" }}
                 />
@@ -555,7 +773,7 @@ export default function LiveEventPage() {
                 <select
                   id="prestart-best-of"
                   value={configuredBestOf}
-                  onChange={(event) => setConfiguredBestOf(normalizeLiveEventBestOf(Number(event.target.value)))}
+                  onChange={(event) => handleConfiguredBestOfChange(normalizeLiveEventBestOf(Number(event.target.value)))}
                   className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
                   style={{ borderColor: "var(--theme-border-soft)" }}
                 >
@@ -579,14 +797,16 @@ export default function LiveEventPage() {
             resetRoundPending={pendingAction === "reset-round"}
             configuredRounds={configuredRounds}
             configuredBestOf={configuredBestOf}
-            timerRemainingSeconds={timerRemainingSeconds}
-            onConfiguredRoundsChange={setConfiguredRounds}
-            onConfiguredBestOfChange={setConfiguredBestOf}
+            timerRemainingSeconds={roundInTurns ? turnsRemainingSeconds : timerRemainingSeconds}
+            isInTurns={roundInTurns}
+            onConfiguredRoundsChange={handleConfiguredRoundsChange}
+            onConfiguredBestOfChange={handleConfiguredBestOfChange}
             onSaveSettings={() =>
               handleAction(
                 "save-rounds",
                 async () => {
                   await configureEventSession(liveState.session!.session_id, configuredRounds, configuredBestOf);
+                  setHasSessionSettingsDraft(false);
                 },
                 "Updated live event settings.",
               )
@@ -631,33 +851,35 @@ export default function LiveEventPage() {
           {!hasJoinedSession ? (
             <section className="theme-card rounded-xl p-6">
               <h2 className="text-xl font-semibold text-theme-foreground">
-                {canJoin ? "Join This Live Room" : "Live Room Closed"}
+                {canJoin ? "Join This Live Room" : canReconnectToOngoingSession ? "Reconnect To Live Room" : "Live Room Closed"}
               </h2>
               <p className="mt-2 text-theme-muted">
                 {canJoin
                   ? "The event session is already active. Join now to pick your deck and start tracking your rounds."
-                  : "New entries close once round play begins, or 10 minutes after the scheduled event start if the room never starts."}
+                  : canReconnectToOngoingSession
+                    ? "This event is still ongoing. If you were already in the room and got disconnected, reconnect here to resume tracking."
+                    : "New entries close once round play begins, or 10 minutes after the scheduled event start if the room never starts."}
               </p>
-              {canJoin && (
+              {(canJoin || canReconnectToOngoingSession) && (
                 <button
                   type="button"
                   onClick={() =>
                     void handleAction(
                       "join-active-session",
                       async () => {
-                        if (!isLiveEventAvailable(liveState.event, liveState.session)) {
+                        if (!canJoin && !canReconnectToOngoingSession) {
                           throw new Error("This live room is no longer accepting new attendees.");
                         }
 
                         await joinEventSession(eventId);
                       },
-                      "Joined the live event room.",
+                      canJoin ? "Joined the live event room." : "Reconnected to the live event room.",
                     )
                   }
                   disabled={pendingAction === "join-active-session"}
                   className="theme-button mt-4 rounded-md px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Join Active Room
+                  {canJoin ? "Join Active Room" : "Reconnect To Live Room"}
                 </button>
               )}
             </section>
@@ -679,7 +901,11 @@ export default function LiveEventPage() {
                   }
                 />
 
-                <CurrentRecordCard attendee={liveState.currentUserAttendee} summary={liveState.summary} />
+                <CurrentRecordCard
+                  attendee={liveState.currentUserAttendee}
+                  summary={liveState.summary}
+                  compact={isSessionLocked}
+                />
               </div>
 
               {isSessionLocked ? (
@@ -687,6 +913,13 @@ export default function LiveEventPage() {
                   <h2 className="text-lg font-semibold text-theme-foreground">Event Complete</h2>
                   <p className="mt-2 text-sm text-theme-muted">
                     This live event is now locked. Your recorded rounds and statistics are available below in round history.
+                  </p>
+                </section>
+              ) : isCurrentUserDropped ? (
+                <section className="theme-card rounded-xl p-5">
+                  <h2 className="text-lg font-semibold text-theme-foreground">You Dropped From The Event</h2>
+                  <p className="mt-2 text-sm text-theme-muted">
+                    You will stay out of future rounds and progression votes, but your recorded results remain available below.
                   </p>
                 </section>
               ) : !hasSelectedDeck ? (
@@ -794,25 +1027,63 @@ export default function LiveEventPage() {
                     }
                   />
                 </>
-              ) : !roundTimerExpired ? (
+              ) : (!roundTurnsExpired && !canReportResult) ? (
                 <section className="theme-card rounded-xl p-6 text-center">
-                  <h2 className="text-2xl font-semibold text-theme-foreground">Round In Progress</h2>
+                  <h2 className="text-2xl font-semibold text-theme-foreground">
+                    {roundInTurns ? "Go To Turns" : "Round In Progress"}
+                  </h2>
                   <p className="mt-2 text-theme-muted">
                     Match vs <span className="font-medium text-theme-foreground">{getOpponentName(liveState)}</span>
                   </p>
                   <div className="mt-6 text-6xl font-semibold text-theme-foreground">
-                    {Math.floor((timerRemainingSeconds ?? 0) / 60)}:{String((timerRemainingSeconds ?? 0) % 60).padStart(2, "0")}
+                    {Math.floor(((roundInTurns ? turnsRemainingSeconds : timerRemainingSeconds) ?? 0) / 60)}:
+                    {String(((roundInTurns ? turnsRemainingSeconds : timerRemainingSeconds) ?? 0) % 60).padStart(2, "0")}
                   </div>
                   <p className="mt-3 text-sm text-theme-muted">
-                    The round timer is shared across the room. Results unlock for everyone once the countdown reaches zero.
+                    {roundInTurns
+                      ? "Time is up for the shared round clock. Finish the Pokemon TCG turns procedure now."
+                      : "The round timer is shared across the room. Results unlock for everyone once the timer and turns are finished."}
                   </p>
+                  {canSignalCurrentMatchFinished && (
+                    <div className="mt-4 flex flex-col items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          void handleAction(
+                            "finish-match",
+                            async () => {
+                              await handleMarkCurrentMatchFinished();
+                            },
+                            "Updated your match-finished status.",
+                          )
+                        }
+                        disabled={pendingAction === "finish-match"}
+                        className="theme-button rounded-md px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {currentUserFinishSignal
+                          ? "Waiting On Opponent To Confirm"
+                          : opponentFinishSignal
+                            ? "Confirm Match Finished"
+                            : "Mark Match Finished"}
+                      </button>
+                      <p className="text-sm text-theme-muted">
+                        {currentUserFinishSignal
+                          ? "You marked this match finished. Results unlock early once your opponent confirms."
+                          : opponentFinishSignal
+                            ? "Your opponent already marked the match finished. Confirm it to unlock results early."
+                            : "Both current players need to mark the match finished before results unlock early."}
+                      </p>
+                    </div>
+                  )}
                 </section>
               ) : !hasSubmittedResult ? (
                 <>
                   <section className="theme-card rounded-xl p-5">
                     <h2 className="text-lg font-semibold text-theme-foreground">Step 4: Report Your Result</h2>
                     <p className="mt-2 text-sm text-theme-muted">
-                      The round timer is complete. Record the match outcome, game score, and any notes you want saved for later stats.
+                      {isCurrentMatchFinishedByBoth
+                        ? "Both players marked this match finished. Your time used field has been auto-filled from that finish confirmation."
+                        : "The round timer and turns are complete. Record the match outcome, game score, and any notes you want saved for later stats."}
                     </p>
                   </section>
                   <MatchResultPanel
@@ -820,7 +1091,9 @@ export default function LiveEventPage() {
                     existingStat={existingStat}
                     opponentName={getOpponentName(liveState)}
                     bestOf={matchBestOf}
+                    suggestedRoundDurationMinutes={suggestedRoundDurationMinutes}
                     pending={pendingAction === "report-result"}
+                    locked={isSessionLocked}
                     onSubmit={(payload: MatchResultPayload) =>
                       handleAction(
                         "report-result",
@@ -853,7 +1126,9 @@ export default function LiveEventPage() {
                       existingStat={existingStat}
                       opponentName={getOpponentName(liveState)}
                       bestOf={matchBestOf}
+                      suggestedRoundDurationMinutes={suggestedRoundDurationMinutes}
                       pending={pendingAction === "report-result"}
+                      locked={isSessionLocked}
                       onSubmit={(payload: MatchResultPayload) =>
                         handleAction(
                           "report-result",
@@ -864,12 +1139,14 @@ export default function LiveEventPage() {
                     />
                   )}
                 </>
-              ) : !roundResultsSettled ? (
+              ) : !canOpenProgressVoting ? (
                 <>
                   <section className="theme-card rounded-xl p-5">
                     <h2 className="text-lg font-semibold text-theme-foreground">Step 5: Wait For The Room</h2>
                     <p className="mt-2 text-sm text-theme-muted">
-                      Your result has been saved. Once all round results are confirmed, progression voting will open for the room.
+                      {roundResultsSettled
+                        ? "Your result is settled. Progression voting will open once every active player in the room has finished the round."
+                        : "Your result has been saved. Once all round results are confirmed, progression voting will open for the room."}
                     </p>
                     {liveState.currentUserMatch && (
                       <p className="mt-2 text-sm text-theme-muted">
@@ -899,10 +1176,14 @@ export default function LiveEventPage() {
                   </section>
                   <RoundProgressVotePanel
                     progressVotes={liveState.progressVotes}
-                    connectedCount={connectedAttendees.length}
                     currentUserId={liveState.currentUserId}
                     isFinalRound={Boolean(isFinalRound)}
                     pending={pendingAction === "vote-progress"}
+                    dropPending={pendingAction === "drop-event"}
+                    canDrop={!isCurrentUserDropped}
+                    requiredPairVotes={requiredPairVotes}
+                    advancePairVotes={pairVotesByAction.advance}
+                    finishPairVotes={pairVotesByAction.finish}
                     onVote={(action: LiveEventProgressAction) =>
                       handleAction(
                         "vote-progress",
@@ -911,6 +1192,25 @@ export default function LiveEventPage() {
                         },
                         action === "finish" ? "Submitted your finish vote." : "Submitted your next-round vote.",
                       )
+                    }
+                    onDrop={() =>
+                      {
+                        const shouldDrop = window.confirm(
+                          "Drop from this live event after the current round? You will be removed from future rounds.",
+                        );
+
+                        if (!shouldDrop) {
+                          return;
+                        }
+
+                        void handleAction(
+                          "drop-event",
+                          async () => {
+                            await handleDropFromEvent();
+                          },
+                          "Dropped from the live event.",
+                        );
+                      }
                     }
                   />
                 </>
@@ -922,6 +1222,7 @@ export default function LiveEventPage() {
                 matches={liveState.matches}
                 stats={liveState.currentUserStats}
                 attendees={liveState.attendees}
+                compact={isSessionLocked}
               />
             </>
           )}

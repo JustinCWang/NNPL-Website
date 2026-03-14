@@ -41,5 +41,14 @@ export function validateMatchResultPayload(payload: MatchResultPayload, bestOf: 
     return "Round result must match the completed game score.";
   }
 
+  if (
+    payload.roundDurationMinutes !== null &&
+    (!Number.isInteger(payload.roundDurationMinutes) ||
+      payload.roundDurationMinutes < 1 ||
+      payload.roundDurationMinutes > 180)
+  ) {
+    return "Round duration must be between 1 and 180 minutes, or left blank.";
+  }
+
   return null;
 }

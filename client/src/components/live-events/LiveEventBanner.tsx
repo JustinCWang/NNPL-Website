@@ -17,6 +17,7 @@ interface LiveEventBannerProps {
   configuredRounds: number;
   configuredBestOf: LiveEventBestOf;
   timerRemainingSeconds: number | null;
+  isInTurns: boolean;
   onConfiguredRoundsChange: (value: number) => void;
   onConfiguredBestOfChange: (value: LiveEventBestOf) => void;
   onSaveSettings: () => void | Promise<void>;
@@ -50,6 +51,7 @@ export default function LiveEventBanner({
   configuredRounds,
   configuredBestOf,
   timerRemainingSeconds,
+  isInTurns,
   onConfiguredRoundsChange,
   onConfiguredBestOfChange,
   onSaveSettings,
@@ -58,6 +60,10 @@ export default function LiveEventBanner({
 }: LiveEventBannerProps) {
   const canStopTimer = canManageEvent && session.status !== "completed" && Boolean(currentRound?.timer_started_at);
   const canResetRound = canManageEvent && session.status !== "completed" && !!currentRound;
+  const isSessionLocked = session.status === "completed";
+  const timerSummaryLabel = isSessionLocked
+    ? "Event complete"
+    : formatTimerLabel(currentRound, timerRemainingSeconds);
 
   return (
     <section className="theme-card rounded-xl p-6">
@@ -99,9 +105,9 @@ export default function LiveEventBanner({
           <div className="rounded-lg border p-4" style={{ borderColor: "var(--theme-border-soft)" }}>
             <div className="text-xs uppercase tracking-wide text-theme-muted">Timer</div>
             <div className="mt-1 text-2xl font-semibold text-theme-foreground">
-              {currentRound?.timer_minutes ? `${currentRound.timer_minutes} min` : "Vote"}
+              {isSessionLocked ? "Stopped" : isInTurns ? "Turns" : currentRound?.timer_minutes ? `${currentRound.timer_minutes} min` : "Vote"}
             </div>
-            <div className="text-sm text-theme-muted">{formatTimerLabel(currentRound, timerRemainingSeconds)}</div>
+            <div className="text-sm text-theme-muted">{timerSummaryLabel}</div>
           </div>
 
           <div className="rounded-lg border p-4" style={{ borderColor: "var(--theme-border-soft)" }}>
@@ -125,6 +131,7 @@ export default function LiveEventBanner({
                 max={20}
                 value={configuredRounds}
                 onChange={(event) => onConfiguredRoundsChange(Number(event.target.value))}
+                disabled={isSessionLocked}
                 className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
                 style={{ borderColor: "var(--theme-border-soft)" }}
               />
@@ -135,6 +142,7 @@ export default function LiveEventBanner({
                 id="live-best-of"
                 value={configuredBestOf}
                 onChange={(event) => onConfiguredBestOfChange(Number(event.target.value) as LiveEventBestOf)}
+                disabled={isSessionLocked}
                 className="w-full rounded-md border px-3 py-2 text-sm bg-transparent"
                 style={{ borderColor: "var(--theme-border-soft)" }}
               >
@@ -144,7 +152,7 @@ export default function LiveEventBanner({
               <button
                 type="button"
                 onClick={() => void onSaveSettings()}
-                disabled={pending || session.status === "completed"}
+                disabled={pending || isSessionLocked}
                 className="theme-button rounded-md px-3 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 Save
@@ -152,7 +160,11 @@ export default function LiveEventBanner({
             </div>
             <div className="mt-2 text-sm text-theme-muted">
               Current format: {getLiveEventBestOfLabel(session.best_of)}.{" "}
-              {canManageEvent ? "Managers can override this at any time." : "Anyone in the room can keep rounds in sync."}
+              {isSessionLocked
+                ? "Session setup is locked because this event is complete."
+                : canManageEvent
+                  ? "Managers can override this at any time."
+                  : "Anyone in the room can keep rounds in sync."}
             </div>
           </div>
         </div>

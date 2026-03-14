@@ -1,0 +1,1 @@
+-- Incorporated into the live-event baseline in 20260313210456_add_event_live_runner.sql.

@@ -13,6 +13,7 @@ interface RoundHistoryListProps {
   matches: EventRoundMatch[];
   stats: EventPlayerRoundStat[];
   attendees: EventSessionAttendee[];
+  compact?: boolean;
 }
 
 function getOpponentName(
@@ -44,6 +45,7 @@ export default function RoundHistoryList({
   matches,
   stats,
   attendees,
+  compact = false,
 }: RoundHistoryListProps) {
   const roundLookup = new Map(rounds.map((round) => [round.round_id, round]));
   const matchLookup = new Map(matches.map((match) => [match.match_id, match]));
@@ -69,7 +71,11 @@ export default function RoundHistoryList({
     <section className="theme-card rounded-xl p-5">
       <div>
         <h2 className="text-lg font-semibold text-theme-foreground">Round History</h2>
-        <p className="mt-1 text-sm text-theme-muted">Your tracked rounds, game scores, and matchup notes for this event.</p>
+        <p className="mt-1 text-sm text-theme-muted">
+          {compact
+            ? "Compact recap of your tracked rounds for this event."
+            : "Your tracked rounds, game scores, and matchup notes for this event."}
+        </p>
       </div>
 
       {statsWithContext.length === 0 ? (
@@ -77,13 +83,19 @@ export default function RoundHistoryList({
           No round reports yet. Once you submit a result, your history will appear here.
         </div>
       ) : (
-        <div className="mt-4 grid gap-4">
+        <div className={`mt-4 ${compact ? "space-y-2" : "grid gap-4"}`}>
           {statsWithContext.map(({ stat, match, round }) => (
-            <div key={stat.match_id} className="rounded-lg border p-4" style={{ borderColor: "var(--theme-border-soft)" }}>
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-2">
+            <div
+              key={stat.match_id}
+              className={`rounded-lg border ${compact ? "px-3 py-2" : "p-4"}`}
+              style={{ borderColor: "var(--theme-border-soft)" }}
+            >
+              <div className={`flex ${compact ? "flex-col gap-2 xl:grid xl:grid-cols-[auto_minmax(0,1fr)_auto]" : "flex-col gap-3 lg:flex-row lg:items-start lg:justify-between"}`}>
+                <div className={compact ? "flex flex-wrap items-center gap-2" : "space-y-2"}>
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base font-semibold text-theme-foreground">Round {round.round_number}</h3>
+                    <h3 className={`${compact ? "text-sm" : "text-base"} font-semibold text-theme-foreground`}>
+                      Round {round.round_number}
+                    </h3>
                     <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${getResultBadgeClasses(stat.round_result)}`}>
                       {stat.round_result}
                     </span>
@@ -94,23 +106,28 @@ export default function RoundHistoryList({
                   <p className="text-sm text-theme-muted">
                     Opponent: <span className="font-medium text-theme-foreground">{getOpponentName(currentUserId, match, attendees)}</span>
                   </p>
-                  <div className="flex flex-wrap gap-3 text-sm text-theme-muted">
-                    <span>
-                      Games: {stat.games_won}-{stat.games_lost}-{stat.games_tied}
-                    </span>
-                    <span>Went first: {stat.went_first === null ? "N/A" : stat.went_first ? "Yes" : "No"}</span>
-                    <span>Duration: {stat.round_duration_minutes ? `${stat.round_duration_minutes} min` : "N/A"}</span>
-                  </div>
+                </div>
+
+                <div className={`flex flex-wrap ${compact ? "gap-x-4 gap-y-1 text-xs xl:justify-center" : "gap-3 text-sm"} text-theme-muted`}>
+                  <span>
+                    Games: {stat.games_won}-{stat.games_lost}-{stat.games_tied}
+                  </span>
+                  <span>Went first: {stat.went_first === null ? "N/A" : stat.went_first ? "Yes" : "No"}</span>
+                  <span>Duration: {stat.round_duration_minutes ? `${stat.round_duration_minutes} min` : "N/A"}</span>
                 </div>
 
                 {(stat.opponent_archetype || stat.notes) && (
-                  <div className="max-w-xl space-y-1 text-sm text-theme-muted">
+                  <div className={`${compact ? "text-xs xl:text-right" : "max-w-xl text-sm"} space-y-1 text-theme-muted`}>
                     {stat.opponent_archetype && (
                       <p>
                         Archetype: <span className="font-medium text-theme-foreground">{stat.opponent_archetype}</span>
                       </p>
                     )}
-                    {stat.notes && <p>{stat.notes}</p>}
+                    {stat.notes && (
+                      <p>
+                        {stat.notes}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>

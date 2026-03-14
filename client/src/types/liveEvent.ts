@@ -37,6 +37,7 @@ export interface EventSessionAttendee {
   joined_at: string;
   last_seen_at: string;
   is_connected: boolean;
+  dropped_at: string | null;
   current_record_wins: number;
   current_record_losses: number;
   current_record_ties: number;
@@ -78,9 +79,17 @@ export interface EventRoundMatch {
   result_status: LiveEventMatchStatus;
   player_reported_result: LiveEventResult | null;
   opponent_reported_result: LiveEventResult | null;
+  pair_finished_at: string | null;
+  pair_finished_duration_minutes: number | null;
   confirmed_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface EventMatchFinishSignal {
+  match_id: string;
+  user_id: string;
+  signaled_at: string;
 }
 
 export interface EventPlayerRoundStat {
@@ -121,6 +130,7 @@ export interface LiveEventOverview {
   isLive: boolean;
   isCompleted: boolean;
   canJoin: boolean;
+  canReconnect: boolean;
 }
 
 export interface LiveEventState {
@@ -134,6 +144,7 @@ export interface LiveEventState {
   votes: EventRoundTimerVote[];
   progressVotes: EventRoundProgressVote[];
   matches: EventRoundMatch[];
+  finishSignals: EventMatchFinishSignal[];
   currentUserStats: EventPlayerRoundStat[];
   summary: EventPlayerSummary | null;
   currentRound: EventSessionRound | null;
